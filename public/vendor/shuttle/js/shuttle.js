@@ -8595,7 +8595,6 @@ __webpack_require__.r(__webpack_exports__);
 window.Shuttle = function (config) {
   return {
     config: config,
-    context: {},
     uppy: null,
     state: 'IDLE',
     percent: 0,
@@ -8617,13 +8616,13 @@ window.Shuttle = function (config) {
       this.files = {};
       this.filesUploaded = 0;
       setTimeout(function () {
-        if (_this.state == 'COMPLETE') {
+        if (_this.state === 'COMPLETE') {
           _this.setState('IDLE');
         }
       }, 3000);
     },
     unload: function unloadHandler(e) {
-      if (this.state == 'UPLOADING') {
+      if (this.state === 'UPLOADING') {
         e.preventDefault();
         e.returnValue = 'Are you sure you want to leave this page? Uploads in progress will be cancelled.';
       }

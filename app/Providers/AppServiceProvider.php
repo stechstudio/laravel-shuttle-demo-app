@@ -31,11 +31,8 @@ class AppServiceProvider extends ServiceProvider
     {
         Model::unguard();
 
-        Shuttle::resolveOwnerWith(function (array $metadata) {
-            return Folder::findOrFail($metadata['folder_id']);
-        })
-            ->whenComplete(function($upload) {
-                $upload->owner->storeUpload($upload);
-            });
+        Shuttle::resolveOwnerWith(fn (array $meta) => Folder::findOrFail($meta['folder_id']))
+            ->whenComplete(fn ($upload) => $upload->owner->storeUpload($upload));
+
     }
 }
