@@ -12,6 +12,7 @@ use STS\Shuttle\Models\Upload;
 
 /**
  * @property mixed id
+ * @property mixed uploads
  */
 class Folder extends Model
 {
