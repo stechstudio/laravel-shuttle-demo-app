@@ -1,6 +1,6 @@
 <div class="flex h-screen">
     <div class="m-auto">
-        <x-shuttle::uploader trigger=".uppy-trigger" />
+        <x-shuttle::uploader />
 
         <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
             <div class="space-y-1 text-center">

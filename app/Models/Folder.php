@@ -6,7 +6,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use STS\Shuttle\Models\Concerns\HasUploads;
+use STS\Shuttle\Models\Upload;
 
 /**
  * @property mixed id

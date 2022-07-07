@@ -12,6 +12,6 @@ Auth::login(User::first());
 
 Route::get(uri: '/folders/{folder}', action: FileDump::class);
 
-Route::middleware(['auth:sanctum', 'verified'])->group(function() {
+Route::middleware(['auth'])->group(function() {
     Shuttle::routes();
 });
