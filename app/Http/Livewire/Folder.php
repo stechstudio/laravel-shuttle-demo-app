@@ -11,12 +11,9 @@ use Livewire\Component;
 
 class Folder extends Component
 {
-    protected function getListeners(): array
-    {
-        return [
-            'uploadSuccess' => '$refresh',
-        ];
-    }
+    protected $listeners = [
+        'uploadSuccess',
+    ];
 
     public $uploadContext = [];
 
@@ -55,5 +52,12 @@ class Folder extends Component
     public function togglePanel(): void
     {
         $this->show = ! $this->show;
+    }
+
+    public function uploadSuccess($file): void
+    {
+        $this->fileUploads = $this->folder->uploads;
+
+        $this->emit('refresh');
     }
 }
