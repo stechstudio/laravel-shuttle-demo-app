@@ -24,7 +24,9 @@
                     </div>
                 </div>
             @empty
-                <p>There are currently no folders to display.</p>
+                <div class="block text-center text-4xl items-center p-6 border-2 border-dashed cursor-not-allowed">
+                    <p>There are currently no folders to display.</p>
+                </div>
             @endforelse
         </div>
     </div>
