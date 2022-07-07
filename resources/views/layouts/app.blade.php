@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-screen">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,7 +16,7 @@
         <script src="{{ asset('vendor/shuttle/js/shuttle.js') }}"></script>
     </head>
 
-    <body>
+    <body class="h-screen">
         {{ $slot }}
 
         <livewire:scripts />
