@@ -33,11 +33,11 @@ return [
     'colors' => [
 
         'details-panel' => [
-            'uploading' => 'bg-orange-500',
+            'uploading' => env(key: 'DETAILS_PANEL_UPLOADING', default: 'bg-blue-500'),
 
-            'upload-success' => 'bg-green-500',
+            'upload-success' => env(key: 'DETAILS_PANEL_UPLOAD_SUCCESS', default: 'bg-green-500'),
 
-            'upload-error' => 'bg-red-500',
+            'upload-error' => env(key: 'DETAILS_PANEL_UPLOAD_ERROR', default: 'bg-red-500'),
         ],
 
     ],
