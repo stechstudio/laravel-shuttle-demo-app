@@ -42,5875 +42,242 @@ module.exports = function prettierBytes (num) {
 
 /***/ }),
 
-/***/ "./node_modules/@uppy/aws-s3-multipart/lib/MultipartUploader.js":
-/*!**********************************************************************!*\
-  !*** ./node_modules/@uppy/aws-s3-multipart/lib/MultipartUploader.js ***!
-  \**********************************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+/***/ "./node_modules/js-base64/base64.js":
+/*!******************************************!*\
+  !*** ./node_modules/js-base64/base64.js ***!
+  \******************************************/
+/***/ (function(module, exports, __webpack_require__) {
 
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
-var _require = __webpack_require__(/*! @uppy/utils/lib/AbortController */ "./node_modules/@uppy/utils/lib/AbortController.js"),
-    AbortController = _require.AbortController,
-    createAbortError = _require.createAbortError;
-
-var delay = __webpack_require__(/*! @uppy/utils/lib/delay */ "./node_modules/@uppy/utils/lib/delay.js");
-
-var MB = 1024 * 1024;
-var defaultOptions = {
-  limit: 1,
-  retryDelays: [0, 1000, 3000, 5000],
-  getChunkSize: function getChunkSize(file) {
-    return Math.ceil(file.size / 10000);
-  },
-  onStart: function onStart() {},
-  onProgress: function onProgress() {},
-  onPartComplete: function onPartComplete() {},
-  onSuccess: function onSuccess() {},
-  onError: function onError(err) {
-    throw err;
-  }
-};
-
-function ensureInt(value) {
-  if (typeof value === 'string') {
-    return parseInt(value, 10);
-  }
-
-  if (typeof value === 'number') {
-    return value;
-  }
-
-  throw new TypeError('Expected a number');
-}
-
-var MultipartUploader = /*#__PURE__*/function () {
-  function MultipartUploader(file, options) {
-    this.options = _extends({}, defaultOptions, options); // Use default `getChunkSize` if it was null or something
-
-    if (!this.options.getChunkSize) {
-      this.options.getChunkSize = defaultOptions.getChunkSize;
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
+ *  base64.js
+ *
+ *  Licensed under the BSD 3-Clause License.
+ *    http://opensource.org/licenses/BSD-3-Clause
+ *
+ *  References:
+ *    http://en.wikipedia.org/wiki/Base64
+ */
+;(function (global, factory) {
+     true
+        ? module.exports = factory(global)
+        : 0
+}((
+    typeof self !== 'undefined' ? self
+        : typeof window !== 'undefined' ? window
+        : typeof __webpack_require__.g !== 'undefined' ? __webpack_require__.g
+: this
+), function(global) {
+    'use strict';
+    // existing version for noConflict()
+    global = global || {};
+    var _Base64 = global.Base64;
+    var version = "2.6.4";
+    // constants
+    var b64chars
+        = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    var b64tab = function(bin) {
+        var t = {};
+        for (var i = 0, l = bin.length; i < l; i++) t[bin.charAt(i)] = i;
+        return t;
+    }(b64chars);
+    var fromCharCode = String.fromCharCode;
+    // encoder stuff
+    var cb_utob = function(c) {
+        if (c.length < 2) {
+            var cc = c.charCodeAt(0);
+            return cc < 0x80 ? c
+                : cc < 0x800 ? (fromCharCode(0xc0 | (cc >>> 6))
+                                + fromCharCode(0x80 | (cc & 0x3f)))
+                : (fromCharCode(0xe0 | ((cc >>> 12) & 0x0f))
+                    + fromCharCode(0x80 | ((cc >>>  6) & 0x3f))
+                    + fromCharCode(0x80 | ( cc         & 0x3f)));
+        } else {
+            var cc = 0x10000
+                + (c.charCodeAt(0) - 0xD800) * 0x400
+                + (c.charCodeAt(1) - 0xDC00);
+            return (fromCharCode(0xf0 | ((cc >>> 18) & 0x07))
+                    + fromCharCode(0x80 | ((cc >>> 12) & 0x3f))
+                    + fromCharCode(0x80 | ((cc >>>  6) & 0x3f))
+                    + fromCharCode(0x80 | ( cc         & 0x3f)));
+        }
+    };
+    var re_utob = /[\uD800-\uDBFF][\uDC00-\uDFFFF]|[^\x00-\x7F]/g;
+    var utob = function(u) {
+        return u.replace(re_utob, cb_utob);
+    };
+    var cb_encode = function(ccc) {
+        var padlen = [0, 2, 1][ccc.length % 3],
+        ord = ccc.charCodeAt(0) << 16
+            | ((ccc.length > 1 ? ccc.charCodeAt(1) : 0) << 8)
+            | ((ccc.length > 2 ? ccc.charCodeAt(2) : 0)),
+        chars = [
+            b64chars.charAt( ord >>> 18),
+            b64chars.charAt((ord >>> 12) & 63),
+            padlen >= 2 ? '=' : b64chars.charAt((ord >>> 6) & 63),
+            padlen >= 1 ? '=' : b64chars.charAt(ord & 63)
+        ];
+        return chars.join('');
+    };
+    var btoa = global.btoa && typeof global.btoa == 'function'
+        ? function(b){ return global.btoa(b) } : function(b) {
+        if (b.match(/[^\x00-\xFF]/)) throw new RangeError(
+            'The string contains invalid characters.'
+        );
+        return b.replace(/[\s\S]{1,3}/g, cb_encode);
+    };
+    var _encode = function(u) {
+        return btoa(utob(String(u)));
+    };
+    var mkUriSafe = function (b64) {
+        return b64.replace(/[+\/]/g, function(m0) {
+            return m0 == '+' ? '-' : '_';
+        }).replace(/=/g, '');
+    };
+    var encode = function(u, urisafe) {
+        return urisafe ? mkUriSafe(_encode(u)) : _encode(u);
+    };
+    var encodeURI = function(u) { return encode(u, true) };
+    var fromUint8Array;
+    if (global.Uint8Array) fromUint8Array = function(a, urisafe) {
+        // return btoa(fromCharCode.apply(null, a));
+        var b64 = '';
+        for (var i = 0, l = a.length; i < l; i += 3) {
+            var a0 = a[i], a1 = a[i+1], a2 = a[i+2];
+            var ord = a0 << 16 | a1 << 8 | a2;
+            b64 +=    b64chars.charAt( ord >>> 18)
+                +     b64chars.charAt((ord >>> 12) & 63)
+                + ( typeof a1 != 'undefined'
+                    ? b64chars.charAt((ord >>>  6) & 63) : '=')
+                + ( typeof a2 != 'undefined'
+                    ? b64chars.charAt( ord         & 63) : '=');
+        }
+        return urisafe ? mkUriSafe(b64) : b64;
+    };
+    // decoder stuff
+    var re_btou = /[\xC0-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF7][\x80-\xBF]{3}/g;
+    var cb_btou = function(cccc) {
+        switch(cccc.length) {
+        case 4:
+            var cp = ((0x07 & cccc.charCodeAt(0)) << 18)
+                |    ((0x3f & cccc.charCodeAt(1)) << 12)
+                |    ((0x3f & cccc.charCodeAt(2)) <<  6)
+                |     (0x3f & cccc.charCodeAt(3)),
+            offset = cp - 0x10000;
+            return (fromCharCode((offset  >>> 10) + 0xD800)
+                    + fromCharCode((offset & 0x3FF) + 0xDC00));
+        case 3:
+            return fromCharCode(
+                ((0x0f & cccc.charCodeAt(0)) << 12)
+                    | ((0x3f & cccc.charCodeAt(1)) << 6)
+                    |  (0x3f & cccc.charCodeAt(2))
+            );
+        default:
+            return  fromCharCode(
+                ((0x1f & cccc.charCodeAt(0)) << 6)
+                    |  (0x3f & cccc.charCodeAt(1))
+            );
+        }
+    };
+    var btou = function(b) {
+        return b.replace(re_btou, cb_btou);
+    };
+    var cb_decode = function(cccc) {
+        var len = cccc.length,
+        padlen = len % 4,
+        n = (len > 0 ? b64tab[cccc.charAt(0)] << 18 : 0)
+            | (len > 1 ? b64tab[cccc.charAt(1)] << 12 : 0)
+            | (len > 2 ? b64tab[cccc.charAt(2)] <<  6 : 0)
+            | (len > 3 ? b64tab[cccc.charAt(3)]       : 0),
+        chars = [
+            fromCharCode( n >>> 16),
+            fromCharCode((n >>>  8) & 0xff),
+            fromCharCode( n         & 0xff)
+        ];
+        chars.length -= [0, 0, 2, 1][padlen];
+        return chars.join('');
+    };
+    var _atob = global.atob && typeof global.atob == 'function'
+        ? function(a){ return global.atob(a) } : function(a){
+        return a.replace(/\S{1,4}/g, cb_decode);
+    };
+    var atob = function(a) {
+        return _atob(String(a).replace(/[^A-Za-z0-9\+\/]/g, ''));
+    };
+    var _decode = function(a) { return btou(_atob(a)) };
+    var _fromURI = function(a) {
+        return String(a).replace(/[-_]/g, function(m0) {
+            return m0 == '-' ? '+' : '/'
+        }).replace(/[^A-Za-z0-9\+\/]/g, '');
+    };
+    var decode = function(a){
+        return _decode(_fromURI(a));
+    };
+    var toUint8Array;
+    if (global.Uint8Array) toUint8Array = function(a) {
+        return Uint8Array.from(atob(_fromURI(a)), function(c) {
+            return c.charCodeAt(0);
+        });
+    };
+    var noConflict = function() {
+        var Base64 = global.Base64;
+        global.Base64 = _Base64;
+        return Base64;
+    };
+    // export Base64
+    global.Base64 = {
+        VERSION: version,
+        atob: atob,
+        btoa: btoa,
+        fromBase64: decode,
+        toBase64: encode,
+        utob: utob,
+        encode: encode,
+        encodeURI: encodeURI,
+        btou: btou,
+        decode: decode,
+        noConflict: noConflict,
+        fromUint8Array: fromUint8Array,
+        toUint8Array: toUint8Array
+    };
+    // if ES5 is available, make Base64.extendString() available
+    if (typeof Object.defineProperty === 'function') {
+        var noEnum = function(v){
+            return {value:v,enumerable:false,writable:true,configurable:true};
+        };
+        global.Base64.extendString = function () {
+            Object.defineProperty(
+                String.prototype, 'fromBase64', noEnum(function () {
+                    return decode(this)
+                }));
+            Object.defineProperty(
+                String.prototype, 'toBase64', noEnum(function (urisafe) {
+                    return encode(this, urisafe)
+                }));
+            Object.defineProperty(
+                String.prototype, 'toBase64URI', noEnum(function () {
+                    return encode(this, true)
+                }));
+        };
     }
-
-    this.file = file;
-    this.abortController = new AbortController();
-    this.key = this.options.key || null;
-    this.uploadId = this.options.uploadId || null;
-    this.parts = []; // Do `this.createdPromise.then(OP)` to execute an operation `OP` _only_ if the
-    // upload was created already. That also ensures that the sequencing is right
-    // (so the `OP` definitely happens if the upload is created).
     //
-    // This mostly exists to make `_abortUpload` work well: only sending the abort request if
-    // the upload was already created, and if the createMultipartUpload request is still in flight,
-    // aborting it immediately after it finishes.
-
-    this.createdPromise = Promise.reject(); // eslint-disable-line prefer-promise-reject-errors
-
-    this.isPaused = false;
-    this.partsInProgress = 0;
-    this.chunks = null;
-    this.chunkState = null;
-
-    this._initChunks();
-
-    this.createdPromise.catch(function () {}); // silence uncaught rejection warning
-  }
-  /**
-   * Was this upload aborted?
-   *
-   * If yes, we may need to throw an AbortError.
-   *
-   * @returns {boolean}
-   */
-
-
-  var _proto = MultipartUploader.prototype;
-
-  _proto._aborted = function _aborted() {
-    return this.abortController.signal.aborted;
-  };
-
-  _proto._initChunks = function _initChunks() {
-    var chunks = [];
-    var desiredChunkSize = this.options.getChunkSize(this.file); // at least 5MB per request, at most 10k requests
-
-    var minChunkSize = Math.max(5 * MB, Math.ceil(this.file.size / 10000));
-    var chunkSize = Math.max(desiredChunkSize, minChunkSize); // Upload zero-sized files in one zero-sized chunk
-
-    if (this.file.size === 0) {
-      chunks.push(this.file);
-    } else {
-      for (var i = 0; i < this.file.size; i += chunkSize) {
-        var end = Math.min(this.file.size, i + chunkSize);
-        chunks.push(this.file.slice(i, end));
-      }
-    }
-
-    this.chunks = chunks;
-    this.chunkState = chunks.map(function () {
-      return {
-        uploaded: 0,
-        busy: false,
-        done: false
-      };
-    });
-  };
-
-  _proto._createUpload = function _createUpload() {
-    var _this = this;
-
-    this.createdPromise = Promise.resolve().then(function () {
-      return _this.options.createMultipartUpload();
-    });
-    return this.createdPromise.then(function (result) {
-      if (_this._aborted()) throw createAbortError();
-      var valid = typeof result === 'object' && result && typeof result.uploadId === 'string' && typeof result.key === 'string';
-
-      if (!valid) {
-        throw new TypeError('AwsS3/Multipart: Got incorrect result from `createMultipartUpload()`, expected an object `{ uploadId, key }`.');
-      }
-
-      _this.key = result.key;
-      _this.uploadId = result.uploadId;
-
-      _this.options.onStart(result);
-
-      _this._uploadParts();
-    }).catch(function (err) {
-      _this._onError(err);
-    });
-  };
-
-  _proto._resumeUpload = function _resumeUpload() {
-    var _this2 = this;
-
-    return Promise.resolve().then(function () {
-      return _this2.options.listParts({
-        uploadId: _this2.uploadId,
-        key: _this2.key
-      });
-    }).then(function (parts) {
-      if (_this2._aborted()) throw createAbortError();
-      parts.forEach(function (part) {
-        var i = part.PartNumber - 1;
-        _this2.chunkState[i] = {
-          uploaded: ensureInt(part.Size),
-          etag: part.ETag,
-          done: true
-        }; // Only add if we did not yet know about this part.
-
-        if (!_this2.parts.some(function (p) {
-          return p.PartNumber === part.PartNumber;
-        })) {
-          _this2.parts.push({
-            PartNumber: part.PartNumber,
-            ETag: part.ETag
-          });
-        }
-      });
-
-      _this2._uploadParts();
-    }).catch(function (err) {
-      _this2._onError(err);
-    });
-  };
-
-  _proto._uploadParts = function _uploadParts() {
-    var _this3 = this;
-
-    if (this.isPaused) return;
-    var need = this.options.limit - this.partsInProgress;
-    if (need === 0) return; // All parts are uploaded.
-
-    if (this.chunkState.every(function (state) {
-      return state.done;
-    })) {
-      this._completeUpload();
-
-      return;
-    }
-
-    var candidates = [];
-
-    for (var i = 0; i < this.chunkState.length; i++) {
-      var state = this.chunkState[i];
-      if (state.done || state.busy) continue;
-      candidates.push(i);
-
-      if (candidates.length >= need) {
-        break;
-      }
-    }
-
-    candidates.forEach(function (index) {
-      _this3._uploadPartRetryable(index).then(function () {
-        // Continue uploading parts
-        _this3._uploadParts();
-      }, function (err) {
-        _this3._onError(err);
-      });
-    });
-  };
-
-  _proto._retryable = function _retryable(_ref) {
-    var _this4 = this;
-
-    var before = _ref.before,
-        attempt = _ref.attempt,
-        after = _ref.after;
-    var retryDelays = this.options.retryDelays;
-    var signal = this.abortController.signal;
-    if (before) before();
-
-    function shouldRetry(err) {
-      if (err.source && typeof err.source.status === 'number') {
-        var status = err.source.status; // 0 probably indicates network failure
-
-        return status === 0 || status === 409 || status === 423 || status >= 500 && status < 600;
-      }
-
-      return false;
-    }
-
-    var doAttempt = function doAttempt(retryAttempt) {
-      return attempt().catch(function (err) {
-        if (_this4._aborted()) throw createAbortError();
-
-        if (shouldRetry(err) && retryAttempt < retryDelays.length) {
-          return delay(retryDelays[retryAttempt], {
-            signal: signal
-          }).then(function () {
-            return doAttempt(retryAttempt + 1);
-          });
-        }
-
-        throw err;
-      });
-    };
-
-    return doAttempt(0).then(function (result) {
-      if (after) after();
-      return result;
-    }, function (err) {
-      if (after) after();
-      throw err;
-    });
-  };
-
-  _proto._uploadPartRetryable = function _uploadPartRetryable(index) {
-    var _this5 = this;
-
-    return this._retryable({
-      before: function before() {
-        _this5.partsInProgress += 1;
-      },
-      attempt: function attempt() {
-        return _this5._uploadPart(index);
-      },
-      after: function after() {
-        _this5.partsInProgress -= 1;
-      }
-    });
-  };
-
-  _proto._uploadPart = function _uploadPart(index) {
-    var _this6 = this;
-
-    var body = this.chunks[index];
-    this.chunkState[index].busy = true;
-    return Promise.resolve().then(function () {
-      return _this6.options.prepareUploadPart({
-        key: _this6.key,
-        uploadId: _this6.uploadId,
-        body: body,
-        number: index + 1
-      });
-    }).then(function (result) {
-      var valid = typeof result === 'object' && result && typeof result.url === 'string';
-
-      if (!valid) {
-        throw new TypeError('AwsS3/Multipart: Got incorrect result from `prepareUploadPart()`, expected an object `{ url }`.');
-      }
-
-      return result;
-    }).then(function (_ref2) {
-      var url = _ref2.url,
-          headers = _ref2.headers;
-
-      if (_this6._aborted()) {
-        _this6.chunkState[index].busy = false;
-        throw createAbortError();
-      }
-
-      return _this6._uploadPartBytes(index, url, headers);
-    });
-  };
-
-  _proto._onPartProgress = function _onPartProgress(index, sent, total) {
-    this.chunkState[index].uploaded = ensureInt(sent);
-    var totalUploaded = this.chunkState.reduce(function (n, c) {
-      return n + c.uploaded;
-    }, 0);
-    this.options.onProgress(totalUploaded, this.file.size);
-  };
-
-  _proto._onPartComplete = function _onPartComplete(index, etag) {
-    this.chunkState[index].etag = etag;
-    this.chunkState[index].done = true;
-    var part = {
-      PartNumber: index + 1,
-      ETag: etag
-    };
-    this.parts.push(part);
-    this.options.onPartComplete(part);
-  };
-
-  _proto._uploadPartBytes = function _uploadPartBytes(index, url, headers) {
-    var _this7 = this;
-
-    var body = this.chunks[index];
-    var signal = this.abortController.signal;
-    var defer;
-    var promise = new Promise(function (resolve, reject) {
-      defer = {
-        resolve: resolve,
-        reject: reject
-      };
-    });
-    var xhr = new XMLHttpRequest();
-    xhr.open('PUT', url, true);
-
-    if (headers) {
-      Object.keys(headers).map(function (key) {
-        xhr.setRequestHeader(key, headers[key]);
-      });
-    }
-
-    xhr.responseType = 'text';
-
-    function cleanup() {
-      signal.removeEventListener('abort', onabort);
-    }
-
-    function onabort() {
-      xhr.abort();
-    }
-
-    signal.addEventListener('abort', onabort);
-    xhr.upload.addEventListener('progress', function (ev) {
-      if (!ev.lengthComputable) return;
-
-      _this7._onPartProgress(index, ev.loaded, ev.total);
-    });
-    xhr.addEventListener('abort', function (ev) {
-      cleanup();
-      _this7.chunkState[index].busy = false;
-      defer.reject(createAbortError());
-    });
-    xhr.addEventListener('load', function (ev) {
-      cleanup();
-      _this7.chunkState[index].busy = false;
-
-      if (ev.target.status < 200 || ev.target.status >= 300) {
-        var error = new Error('Non 2xx');
-        error.source = ev.target;
-        defer.reject(error);
-        return;
-      }
-
-      _this7._onPartProgress(index, body.size, body.size); // NOTE This must be allowed by CORS.
-
-
-      var etag = ev.target.getResponseHeader('ETag');
-
-      if (etag === null) {
-        defer.reject(new Error('AwsS3/Multipart: Could not read the ETag header. This likely means CORS is not configured correctly on the S3 Bucket. See https://uppy.io/docs/aws-s3-multipart#S3-Bucket-Configuration for instructions.'));
-        return;
-      }
-
-      _this7._onPartComplete(index, etag);
-
-      defer.resolve();
-    });
-    xhr.addEventListener('error', function (ev) {
-      cleanup();
-      _this7.chunkState[index].busy = false;
-      var error = new Error('Unknown error');
-      error.source = ev.target;
-      defer.reject(error);
-    });
-    xhr.send(body);
-    return promise;
-  };
-
-  _proto._completeUpload = function _completeUpload() {
-    var _this8 = this;
-
-    // Parts may not have completed uploading in sorted order, if limit > 1.
-    this.parts.sort(function (a, b) {
-      return a.PartNumber - b.PartNumber;
-    });
-    return Promise.resolve().then(function () {
-      return _this8.options.completeMultipartUpload({
-        key: _this8.key,
-        uploadId: _this8.uploadId,
-        parts: _this8.parts
-      });
-    }).then(function (result) {
-      _this8.options.onSuccess(result);
-    }, function (err) {
-      _this8._onError(err);
-    });
-  };
-
-  _proto._abortUpload = function _abortUpload() {
-    var _this9 = this;
-
-    this.abortController.abort();
-    this.createdPromise.then(function () {
-      _this9.options.abortMultipartUpload({
-        key: _this9.key,
-        uploadId: _this9.uploadId
-      });
-    }, function () {// if the creation failed we do not need to abort
-    });
-  };
-
-  _proto._onError = function _onError(err) {
-    if (err && err.name === 'AbortError') {
-      return;
-    }
-
-    this.options.onError(err);
-  };
-
-  _proto.start = function start() {
-    this.isPaused = false;
-
-    if (this.uploadId) {
-      this._resumeUpload();
-    } else {
-      this._createUpload();
-    }
-  };
-
-  _proto.pause = function pause() {
-    this.abortController.abort(); // Swap it out for a new controller, because this instance may be resumed later.
-
-    this.abortController = new AbortController();
-    this.isPaused = true;
-  };
-
-  _proto.abort = function abort(opts) {
-    if (opts === void 0) {
-      opts = {};
-    }
-
-    var really = opts.really || false;
-    if (!really) return this.pause();
-
-    this._abortUpload();
-  };
-
-  return MultipartUploader;
-}();
-
-module.exports = MultipartUploader;
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/aws-s3-multipart/lib/index.js":
-/*!**********************************************************!*\
-  !*** ./node_modules/@uppy/aws-s3-multipart/lib/index.js ***!
-  \**********************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-var _class, _temp;
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
-var _require = __webpack_require__(/*! @uppy/core */ "./node_modules/@uppy/core/lib/index.js"),
-    Plugin = _require.Plugin;
-
-var _require2 = __webpack_require__(/*! @uppy/companion-client */ "./node_modules/@uppy/companion-client/lib/index.js"),
-    Socket = _require2.Socket,
-    Provider = _require2.Provider,
-    RequestClient = _require2.RequestClient;
-
-var EventTracker = __webpack_require__(/*! @uppy/utils/lib/EventTracker */ "./node_modules/@uppy/utils/lib/EventTracker.js");
-
-var emitSocketProgress = __webpack_require__(/*! @uppy/utils/lib/emitSocketProgress */ "./node_modules/@uppy/utils/lib/emitSocketProgress.js");
-
-var getSocketHost = __webpack_require__(/*! @uppy/utils/lib/getSocketHost */ "./node_modules/@uppy/utils/lib/getSocketHost.js");
-
-var RateLimitedQueue = __webpack_require__(/*! @uppy/utils/lib/RateLimitedQueue */ "./node_modules/@uppy/utils/lib/RateLimitedQueue.js");
-
-var Uploader = __webpack_require__(/*! ./MultipartUploader */ "./node_modules/@uppy/aws-s3-multipart/lib/MultipartUploader.js");
-
-function assertServerError(res) {
-  if (res && res.error) {
-    var error = new Error(res.message);
-
-    _extends(error, res.error);
-
-    throw error;
-  }
-
-  return res;
-}
-
-module.exports = (_temp = _class = /*#__PURE__*/function (_Plugin) {
-  _inheritsLoose(AwsS3Multipart, _Plugin);
-
-  function AwsS3Multipart(uppy, opts) {
-    var _this;
-
-    _this = _Plugin.call(this, uppy, opts) || this;
-    _this.type = 'uploader';
-    _this.id = _this.opts.id || 'AwsS3Multipart';
-    _this.title = 'AWS S3 Multipart';
-    _this.client = new RequestClient(uppy, opts);
-    var defaultOptions = {
-      timeout: 30 * 1000,
-      limit: 0,
-      retryDelays: [0, 1000, 3000, 5000],
-      createMultipartUpload: _this.createMultipartUpload.bind(_assertThisInitialized(_this)),
-      listParts: _this.listParts.bind(_assertThisInitialized(_this)),
-      prepareUploadPart: _this.prepareUploadPart.bind(_assertThisInitialized(_this)),
-      abortMultipartUpload: _this.abortMultipartUpload.bind(_assertThisInitialized(_this)),
-      completeMultipartUpload: _this.completeMultipartUpload.bind(_assertThisInitialized(_this))
-    };
-    _this.opts = _extends({}, defaultOptions, opts);
-    _this.upload = _this.upload.bind(_assertThisInitialized(_this));
-    _this.requests = new RateLimitedQueue(_this.opts.limit);
-    _this.uploaders = Object.create(null);
-    _this.uploaderEvents = Object.create(null);
-    _this.uploaderSockets = Object.create(null);
-    return _this;
-  }
-  /**
-   * Clean up all references for a file's upload: the MultipartUploader instance,
-   * any events related to the file, and the Companion WebSocket connection.
-   *
-   * Set `opts.abort` to tell S3 that the multipart upload is cancelled and must be removed.
-   * This should be done when the user cancels the upload, not when the upload is completed or errored.
-   */
-
-
-  var _proto = AwsS3Multipart.prototype;
-
-  _proto.resetUploaderReferences = function resetUploaderReferences(fileID, opts) {
-    if (opts === void 0) {
-      opts = {};
-    }
-
-    if (this.uploaders[fileID]) {
-      this.uploaders[fileID].abort({
-        really: opts.abort || false
-      });
-      this.uploaders[fileID] = null;
-    }
-
-    if (this.uploaderEvents[fileID]) {
-      this.uploaderEvents[fileID].remove();
-      this.uploaderEvents[fileID] = null;
-    }
-
-    if (this.uploaderSockets[fileID]) {
-      this.uploaderSockets[fileID].close();
-      this.uploaderSockets[fileID] = null;
-    }
-  };
-
-  _proto.assertHost = function assertHost(method) {
-    if (!this.opts.companionUrl) {
-      throw new Error("Expected a `companionUrl` option containing a Companion address, or if you are not using Companion, a custom `" + method + "` implementation.");
-    }
-  };
-
-  _proto.createMultipartUpload = function createMultipartUpload(file) {
-    this.assertHost('createMultipartUpload');
-    var metadata = {};
-    Object.keys(file.meta).map(function (key) {
-      if (file.meta[key] != null) {
-        metadata[key] = file.meta[key].toString();
-      }
-    });
-    return this.client.post('s3/multipart', {
-      filename: file.name,
-      type: file.type,
-      metadata: metadata
-    }).then(assertServerError);
-  };
-
-  _proto.listParts = function listParts(file, _ref) {
-    var key = _ref.key,
-        uploadId = _ref.uploadId;
-    this.assertHost('listParts');
-    var filename = encodeURIComponent(key);
-    return this.client.get("s3/multipart/" + uploadId + "?key=" + filename).then(assertServerError);
-  };
-
-  _proto.prepareUploadPart = function prepareUploadPart(file, _ref2) {
-    var key = _ref2.key,
-        uploadId = _ref2.uploadId,
-        number = _ref2.number;
-    this.assertHost('prepareUploadPart');
-    var filename = encodeURIComponent(key);
-    return this.client.get("s3/multipart/" + uploadId + "/" + number + "?key=" + filename).then(assertServerError);
-  };
-
-  _proto.completeMultipartUpload = function completeMultipartUpload(file, _ref3) {
-    var key = _ref3.key,
-        uploadId = _ref3.uploadId,
-        parts = _ref3.parts;
-    this.assertHost('completeMultipartUpload');
-    var filename = encodeURIComponent(key);
-    var uploadIdEnc = encodeURIComponent(uploadId);
-    return this.client.post("s3/multipart/" + uploadIdEnc + "/complete?key=" + filename, {
-      parts: parts
-    }).then(assertServerError);
-  };
-
-  _proto.abortMultipartUpload = function abortMultipartUpload(file, _ref4) {
-    var key = _ref4.key,
-        uploadId = _ref4.uploadId;
-    this.assertHost('abortMultipartUpload');
-    var filename = encodeURIComponent(key);
-    var uploadIdEnc = encodeURIComponent(uploadId);
-    return this.client.delete("s3/multipart/" + uploadIdEnc + "?key=" + filename).then(assertServerError);
-  };
-
-  _proto.uploadFile = function uploadFile(file) {
-    var _this2 = this;
-
-    return new Promise(function (resolve, reject) {
-      var onStart = function onStart(data) {
-        var cFile = _this2.uppy.getFile(file.id);
-
-        _this2.uppy.setFileState(file.id, {
-          s3Multipart: _extends({}, cFile.s3Multipart, {
-            key: data.key,
-            uploadId: data.uploadId
-          })
-        });
-      };
-
-      var onProgress = function onProgress(bytesUploaded, bytesTotal) {
-        _this2.uppy.emit('upload-progress', file, {
-          uploader: _this2,
-          bytesUploaded: bytesUploaded,
-          bytesTotal: bytesTotal
-        });
-      };
-
-      var onError = function onError(err) {
-        _this2.uppy.log(err);
-
-        _this2.uppy.emit('upload-error', file, err);
-
-        queuedRequest.done();
-
-        _this2.resetUploaderReferences(file.id);
-
-        reject(err);
-      };
-
-      var onSuccess = function onSuccess(result) {
-        var uploadResp = {
-          body: _extends({}, result),
-          uploadURL: result.location
-        };
-        queuedRequest.done();
-
-        _this2.resetUploaderReferences(file.id);
-
-        var cFile = _this2.uppy.getFile(file.id);
-
-        _this2.uppy.emit('upload-success', cFile || file, uploadResp);
-
-        if (result.location) {
-          _this2.uppy.log("Download " + upload.file.name + " from " + result.location);
-        }
-
-        resolve(upload);
-      };
-
-      var onPartComplete = function onPartComplete(part) {
-        var cFile = _this2.uppy.getFile(file.id);
-
-        if (!cFile) {
-          return;
-        }
-
-        _this2.uppy.emit('s3-multipart:part-uploaded', cFile, part);
-      };
-
-      var upload = new Uploader(file.data, _extends({
-        // .bind to pass the file object to each handler.
-        createMultipartUpload: _this2.opts.createMultipartUpload.bind(_this2, file),
-        listParts: _this2.opts.listParts.bind(_this2, file),
-        prepareUploadPart: _this2.opts.prepareUploadPart.bind(_this2, file),
-        completeMultipartUpload: _this2.opts.completeMultipartUpload.bind(_this2, file),
-        abortMultipartUpload: _this2.opts.abortMultipartUpload.bind(_this2, file),
-        getChunkSize: _this2.opts.getChunkSize ? _this2.opts.getChunkSize.bind(_this2) : null,
-        onStart: onStart,
-        onProgress: onProgress,
-        onError: onError,
-        onSuccess: onSuccess,
-        onPartComplete: onPartComplete,
-        limit: _this2.opts.limit || 5,
-        retryDelays: _this2.opts.retryDelays || []
-      }, file.s3Multipart));
-      _this2.uploaders[file.id] = upload;
-      _this2.uploaderEvents[file.id] = new EventTracker(_this2.uppy);
-
-      var queuedRequest = _this2.requests.run(function () {
-        if (!file.isPaused) {
-          upload.start();
-        } // Don't do anything here, the caller will take care of cancelling the upload itself
-        // using resetUploaderReferences(). This is because resetUploaderReferences() has to be
-        // called when this request is still in the queue, and has not been started yet, too. At
-        // that point this cancellation function is not going to be called.
-
-
-        return function () {};
-      });
-
-      _this2.onFileRemove(file.id, function (removed) {
-        queuedRequest.abort();
-
-        _this2.resetUploaderReferences(file.id, {
-          abort: true
-        });
-
-        resolve("upload " + removed.id + " was removed");
-      });
-
-      _this2.onCancelAll(file.id, function () {
-        queuedRequest.abort();
-
-        _this2.resetUploaderReferences(file.id, {
-          abort: true
-        });
-
-        resolve("upload " + file.id + " was canceled");
-      });
-
-      _this2.onFilePause(file.id, function (isPaused) {
-        if (isPaused) {
-          // Remove this file from the queue so another file can start in its place.
-          queuedRequest.abort();
-          upload.pause();
-        } else {
-          // Resuming an upload should be queued, else you could pause and then resume a queued upload to make it skip the queue.
-          queuedRequest.abort();
-          queuedRequest = _this2.requests.run(function () {
-            upload.start();
-            return function () {};
-          });
-        }
-      });
-
-      _this2.onPauseAll(file.id, function () {
-        queuedRequest.abort();
-        upload.pause();
-      });
-
-      _this2.onResumeAll(file.id, function () {
-        queuedRequest.abort();
-
-        if (file.error) {
-          upload.abort();
-        }
-
-        queuedRequest = _this2.requests.run(function () {
-          upload.start();
-          return function () {};
-        });
-      }); // Don't double-emit upload-started for Golden Retriever-restored files that were already started
-
-
-      if (!file.progress.uploadStarted || !file.isRestored) {
-        _this2.uppy.emit('upload-started', file);
-      }
-    });
-  };
-
-  _proto.uploadRemote = function uploadRemote(file) {
-    var _this3 = this;
-
-    this.resetUploaderReferences(file.id); // Don't double-emit upload-started for Golden Retriever-restored files that were already started
-
-    if (!file.progress.uploadStarted || !file.isRestored) {
-      this.uppy.emit('upload-started', file);
-    }
-
-    if (file.serverToken) {
-      return this.connectToServerSocket(file);
-    }
-
-    return new Promise(function (resolve, reject) {
-      var Client = file.remote.providerOptions.provider ? Provider : RequestClient;
-      var client = new Client(_this3.uppy, file.remote.providerOptions);
-      client.post(file.remote.url, _extends({}, file.remote.body, {
-        protocol: 's3-multipart',
-        size: file.data.size,
-        metadata: file.meta
-      })).then(function (res) {
-        _this3.uppy.setFileState(file.id, {
-          serverToken: res.token
-        });
-
-        file = _this3.uppy.getFile(file.id);
-        return file;
-      }).then(function (file) {
-        return _this3.connectToServerSocket(file);
-      }).then(function () {
-        resolve();
-      }).catch(function (err) {
-        _this3.uppy.emit('upload-error', file, err);
-
-        reject(err);
-      });
-    });
-  };
-
-  _proto.connectToServerSocket = function connectToServerSocket(file) {
-    var _this4 = this;
-
-    return new Promise(function (resolve, reject) {
-      var token = file.serverToken;
-      var host = getSocketHost(file.remote.companionUrl);
-      var socket = new Socket({
-        target: host + "/api/" + token,
-        autoOpen: false
-      });
-      _this4.uploaderSockets[file.id] = socket;
-      _this4.uploaderEvents[file.id] = new EventTracker(_this4.uppy);
-
-      _this4.onFileRemove(file.id, function (removed) {
-        queuedRequest.abort();
-        socket.send('pause', {});
-
-        _this4.resetUploaderReferences(file.id, {
-          abort: true
-        });
-
-        resolve("upload " + file.id + " was removed");
-      });
-
-      _this4.onFilePause(file.id, function (isPaused) {
-        if (isPaused) {
-          // Remove this file from the queue so another file can start in its place.
-          queuedRequest.abort();
-          socket.send('pause', {});
-        } else {
-          // Resuming an upload should be queued, else you could pause and then resume a queued upload to make it skip the queue.
-          queuedRequest.abort();
-          queuedRequest = _this4.requests.run(function () {
-            socket.send('resume', {});
-            return function () {};
-          });
-        }
-      });
-
-      _this4.onPauseAll(file.id, function () {
-        queuedRequest.abort();
-        socket.send('pause', {});
-      });
-
-      _this4.onCancelAll(file.id, function () {
-        queuedRequest.abort();
-        socket.send('pause', {});
-
-        _this4.resetUploaderReferences(file.id);
-
-        resolve("upload " + file.id + " was canceled");
-      });
-
-      _this4.onResumeAll(file.id, function () {
-        queuedRequest.abort();
-
-        if (file.error) {
-          socket.send('pause', {});
-        }
-
-        queuedRequest = _this4.requests.run(function () {
-          socket.send('resume', {});
-        });
-      });
-
-      _this4.onRetry(file.id, function () {
-        // Only do the retry if the upload is actually in progress;
-        // else we could try to send these messages when the upload is still queued.
-        // We may need a better check for this since the socket may also be closed
-        // for other reasons, like network failures.
-        if (socket.isOpen) {
-          socket.send('pause', {});
-          socket.send('resume', {});
-        }
-      });
-
-      _this4.onRetryAll(file.id, function () {
-        if (socket.isOpen) {
-          socket.send('pause', {});
-          socket.send('resume', {});
-        }
-      });
-
-      socket.on('progress', function (progressData) {
-        return emitSocketProgress(_this4, progressData, file);
-      });
-      socket.on('error', function (errData) {
-        _this4.uppy.emit('upload-error', file, new Error(errData.error));
-
-        _this4.resetUploaderReferences(file.id);
-
-        queuedRequest.done();
-        reject(new Error(errData.error));
-      });
-      socket.on('success', function (data) {
-        var uploadResp = {
-          uploadURL: data.url
-        };
-
-        _this4.uppy.emit('upload-success', file, uploadResp);
-
-        _this4.resetUploaderReferences(file.id);
-
-        queuedRequest.done();
-        resolve();
-      });
-
-      var queuedRequest = _this4.requests.run(function () {
-        socket.open();
-
-        if (file.isPaused) {
-          socket.send('pause', {});
-        }
-
-        return function () {};
-      });
-    });
-  };
-
-  _proto.upload = function upload(fileIDs) {
-    var _this5 = this;
-
-    if (fileIDs.length === 0) return Promise.resolve();
-    var promises = fileIDs.map(function (id) {
-      var file = _this5.uppy.getFile(id);
-
-      if (file.isRemote) {
-        return _this5.uploadRemote(file);
-      }
-
-      return _this5.uploadFile(file);
-    });
-    return Promise.all(promises);
-  };
-
-  _proto.onFileRemove = function onFileRemove(fileID, cb) {
-    this.uploaderEvents[fileID].on('file-removed', function (file) {
-      if (fileID === file.id) cb(file.id);
-    });
-  };
-
-  _proto.onFilePause = function onFilePause(fileID, cb) {
-    this.uploaderEvents[fileID].on('upload-pause', function (targetFileID, isPaused) {
-      if (fileID === targetFileID) {
-        // const isPaused = this.uppy.pauseResume(fileID)
-        cb(isPaused);
-      }
-    });
-  };
-
-  _proto.onRetry = function onRetry(fileID, cb) {
-    this.uploaderEvents[fileID].on('upload-retry', function (targetFileID) {
-      if (fileID === targetFileID) {
-        cb();
-      }
-    });
-  };
-
-  _proto.onRetryAll = function onRetryAll(fileID, cb) {
-    var _this6 = this;
-
-    this.uploaderEvents[fileID].on('retry-all', function (filesToRetry) {
-      if (!_this6.uppy.getFile(fileID)) return;
-      cb();
-    });
-  };
-
-  _proto.onPauseAll = function onPauseAll(fileID, cb) {
-    var _this7 = this;
-
-    this.uploaderEvents[fileID].on('pause-all', function () {
-      if (!_this7.uppy.getFile(fileID)) return;
-      cb();
-    });
-  };
-
-  _proto.onCancelAll = function onCancelAll(fileID, cb) {
-    var _this8 = this;
-
-    this.uploaderEvents[fileID].on('cancel-all', function () {
-      if (!_this8.uppy.getFile(fileID)) return;
-      cb();
-    });
-  };
-
-  _proto.onResumeAll = function onResumeAll(fileID, cb) {
-    var _this9 = this;
-
-    this.uploaderEvents[fileID].on('resume-all', function () {
-      if (!_this9.uppy.getFile(fileID)) return;
-      cb();
-    });
-  };
-
-  _proto.install = function install() {
-    var _this$uppy$getState = this.uppy.getState(),
-        capabilities = _this$uppy$getState.capabilities;
-
-    this.uppy.setState({
-      capabilities: _extends({}, capabilities, {
-        resumableUploads: true
-      })
-    });
-    this.uppy.addUploader(this.upload);
-  };
-
-  _proto.uninstall = function uninstall() {
-    var _this$uppy$getState2 = this.uppy.getState(),
-        capabilities = _this$uppy$getState2.capabilities;
-
-    this.uppy.setState({
-      capabilities: _extends({}, capabilities, {
-        resumableUploads: false
-      })
-    });
-    this.uppy.removeUploader(this.upload);
-  };
-
-  return AwsS3Multipart;
-}(Plugin), _class.VERSION = "1.8.18", _temp);
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/companion-client/lib/AuthError.js":
-/*!**************************************************************!*\
-  !*** ./node_modules/@uppy/companion-client/lib/AuthError.js ***!
-  \**************************************************************/
-/***/ ((module) => {
-
-"use strict";
-
-
-function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-
-function _wrapNativeSuper(Class) { var _cache = typeof Map === "function" ? new Map() : undefined; _wrapNativeSuper = function _wrapNativeSuper(Class) { if (Class === null || !_isNativeFunction(Class)) return Class; if (typeof Class !== "function") { throw new TypeError("Super expression must either be null or a function"); } if (typeof _cache !== "undefined") { if (_cache.has(Class)) return _cache.get(Class); _cache.set(Class, Wrapper); } function Wrapper() { return _construct(Class, arguments, _getPrototypeOf(this).constructor); } Wrapper.prototype = Object.create(Class.prototype, { constructor: { value: Wrapper, enumerable: false, writable: true, configurable: true } }); return _setPrototypeOf(Wrapper, Class); }; return _wrapNativeSuper(Class); }
-
-function _construct(Parent, args, Class) { if (_isNativeReflectConstruct()) { _construct = Reflect.construct; } else { _construct = function _construct(Parent, args, Class) { var a = [null]; a.push.apply(a, args); var Constructor = Function.bind.apply(Parent, a); var instance = new Constructor(); if (Class) _setPrototypeOf(instance, Class.prototype); return instance; }; } return _construct.apply(null, arguments); }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _isNativeFunction(fn) { return Function.toString.call(fn).indexOf("[native code]") !== -1; }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-var AuthError = /*#__PURE__*/function (_Error) {
-  _inheritsLoose(AuthError, _Error);
-
-  function AuthError() {
-    var _this;
-
-    _this = _Error.call(this, 'Authorization required') || this;
-    _this.name = 'AuthError';
-    _this.isAuthError = true;
-    return _this;
-  }
-
-  return AuthError;
-}( /*#__PURE__*/_wrapNativeSuper(Error));
-
-module.exports = AuthError;
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/companion-client/lib/Provider.js":
-/*!*************************************************************!*\
-  !*** ./node_modules/@uppy/companion-client/lib/Provider.js ***!
-  \*************************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-
-
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
-function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-var qsStringify = __webpack_require__(/*! qs-stringify */ "./node_modules/qs-stringify/index.js");
-
-var URL = __webpack_require__(/*! url-parse */ "./node_modules/url-parse/index.js");
-
-var RequestClient = __webpack_require__(/*! ./RequestClient */ "./node_modules/@uppy/companion-client/lib/RequestClient.js");
-
-var tokenStorage = __webpack_require__(/*! ./tokenStorage */ "./node_modules/@uppy/companion-client/lib/tokenStorage.js");
-
-var _getName = function _getName(id) {
-  return id.split('-').map(function (s) {
-    return s.charAt(0).toUpperCase() + s.slice(1);
-  }).join(' ');
-};
-
-module.exports = /*#__PURE__*/function (_RequestClient) {
-  _inheritsLoose(Provider, _RequestClient);
-
-  function Provider(uppy, opts) {
-    var _this;
-
-    _this = _RequestClient.call(this, uppy, opts) || this;
-    _this.provider = opts.provider;
-    _this.id = _this.provider;
-    _this.name = _this.opts.name || _getName(_this.id);
-    _this.pluginId = _this.opts.pluginId;
-    _this.tokenKey = "companion-" + _this.pluginId + "-auth-token";
-    _this.companionKeysParams = _this.opts.companionKeysParams;
-    _this.preAuthToken = null;
-    return _this;
-  }
-
-  var _proto = Provider.prototype;
-
-  _proto.headers = function headers() {
-    var _this2 = this;
-
-    return Promise.all([_RequestClient.prototype.headers.call(this), this.getAuthToken()]).then(function (_ref) {
-      var headers = _ref[0],
-          token = _ref[1];
-      var authHeaders = {};
-
-      if (token) {
-        authHeaders['uppy-auth-token'] = token;
-      }
-
-      if (_this2.companionKeysParams) {
-        authHeaders['uppy-credentials-params'] = btoa(JSON.stringify({
-          params: _this2.companionKeysParams
-        }));
-      }
-
-      return _extends({}, headers, authHeaders);
-    });
-  };
-
-  _proto.onReceiveResponse = function onReceiveResponse(response) {
-    response = _RequestClient.prototype.onReceiveResponse.call(this, response);
-    var plugin = this.uppy.getPlugin(this.pluginId);
-    var oldAuthenticated = plugin.getPluginState().authenticated;
-    var authenticated = oldAuthenticated ? response.status !== 401 : response.status < 400;
-    plugin.setPluginState({
-      authenticated: authenticated
-    });
-    return response;
-  } // @todo(i.olarewaju) consider whether or not this method should be exposed
-  ;
-
-  _proto.setAuthToken = function setAuthToken(token) {
-    return this.uppy.getPlugin(this.pluginId).storage.setItem(this.tokenKey, token);
-  };
-
-  _proto.getAuthToken = function getAuthToken() {
-    return this.uppy.getPlugin(this.pluginId).storage.getItem(this.tokenKey);
-  };
-
-  _proto.authUrl = function authUrl(queries) {
-    if (queries === void 0) {
-      queries = {};
-    }
-
-    if (this.preAuthToken) {
-      queries.uppyPreAuthToken = this.preAuthToken;
-    }
-
-    var strigifiedQueries = qsStringify(queries);
-    strigifiedQueries = strigifiedQueries ? "?" + strigifiedQueries : strigifiedQueries;
-    return this.hostname + "/" + this.id + "/connect" + strigifiedQueries;
-  };
-
-  _proto.fileUrl = function fileUrl(id) {
-    return this.hostname + "/" + this.id + "/get/" + id;
-  };
-
-  _proto.fetchPreAuthToken = function fetchPreAuthToken() {
-    var _this3 = this;
-
-    if (!this.companionKeysParams) {
-      return Promise.resolve();
-    }
-
-    return this.post(this.id + "/preauth/", {
-      params: this.companionKeysParams
-    }).then(function (res) {
-      _this3.preAuthToken = res.token;
-    }).catch(function (err) {
-      _this3.uppy.log("[CompanionClient] unable to fetch preAuthToken " + err, 'warning');
-    });
-  };
-
-  _proto.list = function list(directory) {
-    return this.get(this.id + "/list/" + (directory || ''));
-  };
-
-  _proto.logout = function logout() {
-    var _this4 = this;
-
-    return this.get(this.id + "/logout").then(function (response) {
-      return Promise.all([response, _this4.uppy.getPlugin(_this4.pluginId).storage.removeItem(_this4.tokenKey)]);
-    }).then(function (_ref2) {
-      var response = _ref2[0];
-      return response;
-    });
-  };
-
-  Provider.initPlugin = function initPlugin(plugin, opts, defaultOpts) {
-    plugin.type = 'acquirer';
-    plugin.files = [];
-
-    if (defaultOpts) {
-      plugin.opts = _extends({}, defaultOpts, opts);
-    }
-
-    if (opts.serverUrl || opts.serverPattern) {
-      throw new Error('`serverUrl` and `serverPattern` have been renamed to `companionUrl` and `companionAllowedHosts` respectively in the 0.30.5 release. Please consult the docs (for example, https://uppy.io/docs/instagram/ for the Instagram plugin) and use the updated options.`');
-    }
-
-    if (opts.companionAllowedHosts) {
-      var pattern = opts.companionAllowedHosts; // validate companionAllowedHosts param
-
-      if (typeof pattern !== 'string' && !Array.isArray(pattern) && !(pattern instanceof RegExp)) {
-        throw new TypeError(plugin.id + ": the option \"companionAllowedHosts\" must be one of string, Array, RegExp");
-      }
-
-      plugin.opts.companionAllowedHosts = pattern;
-    } else {
-      // does not start with https://
-      if (/^(?!https?:\/\/).*$/i.test(opts.companionUrl)) {
-        plugin.opts.companionAllowedHosts = "https://" + opts.companionUrl.replace(/^\/\//, '');
-      } else {
-        plugin.opts.companionAllowedHosts = new URL(opts.companionUrl).origin;
-      }
-    }
-
-    plugin.storage = plugin.opts.storage || tokenStorage;
-  };
-
-  return Provider;
-}(RequestClient);
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/companion-client/lib/RequestClient.js":
-/*!******************************************************************!*\
-  !*** ./node_modules/@uppy/companion-client/lib/RequestClient.js ***!
-  \******************************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-
-
-var _class, _temp;
-
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-var AuthError = __webpack_require__(/*! ./AuthError */ "./node_modules/@uppy/companion-client/lib/AuthError.js");
-
-var fetchWithNetworkError = __webpack_require__(/*! @uppy/utils/lib/fetchWithNetworkError */ "./node_modules/@uppy/utils/lib/fetchWithNetworkError.js"); // Remove the trailing slash so we can always safely append /xyz.
-
-
-function stripSlash(url) {
-  return url.replace(/\/$/, '');
-}
-
-module.exports = (_temp = _class = /*#__PURE__*/function () {
-  function RequestClient(uppy, opts) {
-    this.uppy = uppy;
-    this.opts = opts;
-    this.onReceiveResponse = this.onReceiveResponse.bind(this);
-    this.allowedHeaders = ['accept', 'content-type', 'uppy-auth-token'];
-    this.preflightDone = false;
-  }
-
-  var _proto = RequestClient.prototype;
-
-  _proto.headers = function headers() {
-    var userHeaders = this.opts.companionHeaders || this.opts.serverHeaders || {};
-    return Promise.resolve(_extends({}, this.defaultHeaders, userHeaders));
-  };
-
-  _proto._getPostResponseFunc = function _getPostResponseFunc(skip) {
-    var _this = this;
-
-    return function (response) {
-      if (!skip) {
-        return _this.onReceiveResponse(response);
-      }
-
-      return response;
-    };
-  };
-
-  _proto.onReceiveResponse = function onReceiveResponse(response) {
-    var state = this.uppy.getState();
-    var companion = state.companion || {};
-    var host = this.opts.companionUrl;
-    var headers = response.headers; // Store the self-identified domain name for the Companion instance we just hit.
-
-    if (headers.has('i-am') && headers.get('i-am') !== companion[host]) {
-      var _extends2;
-
-      this.uppy.setState({
-        companion: _extends({}, companion, (_extends2 = {}, _extends2[host] = headers.get('i-am'), _extends2))
-      });
-    }
-
-    return response;
-  };
-
-  _proto._getUrl = function _getUrl(url) {
-    if (/^(https?:|)\/\//.test(url)) {
-      return url;
-    }
-
-    return this.hostname + "/" + url;
-  };
-
-  _proto._json = function _json(res) {
-    if (res.status === 401) {
-      throw new AuthError();
-    }
-
-    if (res.status < 200 || res.status > 300) {
-      var errMsg = "Failed request with status: " + res.status + ". " + res.statusText;
-      return res.json().then(function (errData) {
-        errMsg = errData.message ? errMsg + " message: " + errData.message : errMsg;
-        errMsg = errData.requestId ? errMsg + " request-Id: " + errData.requestId : errMsg;
-        throw new Error(errMsg);
-      }).catch(function () {
-        throw new Error(errMsg);
-      });
-    }
-
-    return res.json();
-  };
-
-  _proto.preflight = function preflight(path) {
-    var _this2 = this;
-
-    if (this.preflightDone) {
-      return Promise.resolve(this.allowedHeaders.slice());
-    }
-
-    return fetch(this._getUrl(path), {
-      method: 'OPTIONS'
-    }).then(function (response) {
-      if (response.headers.has('access-control-allow-headers')) {
-        _this2.allowedHeaders = response.headers.get('access-control-allow-headers').split(',').map(function (headerName) {
-          return headerName.trim().toLowerCase();
-        });
-      }
-
-      _this2.preflightDone = true;
-      return _this2.allowedHeaders.slice();
-    }).catch(function (err) {
-      _this2.uppy.log("[CompanionClient] unable to make preflight request " + err, 'warning');
-
-      _this2.preflightDone = true;
-      return _this2.allowedHeaders.slice();
-    });
-  };
-
-  _proto.preflightAndHeaders = function preflightAndHeaders(path) {
-    var _this3 = this;
-
-    return Promise.all([this.preflight(path), this.headers()]).then(function (_ref) {
-      var allowedHeaders = _ref[0],
-          headers = _ref[1];
-      // filter to keep only allowed Headers
-      Object.keys(headers).forEach(function (header) {
-        if (allowedHeaders.indexOf(header.toLowerCase()) === -1) {
-          _this3.uppy.log("[CompanionClient] excluding unallowed header " + header);
-
-          delete headers[header];
-        }
-      });
-      return headers;
-    });
-  };
-
-  _proto.get = function get(path, skipPostResponse) {
-    var _this4 = this;
-
-    return this.preflightAndHeaders(path).then(function (headers) {
-      return fetchWithNetworkError(_this4._getUrl(path), {
-        method: 'get',
-        headers: headers,
-        credentials: _this4.opts.companionCookiesRule || 'same-origin'
-      });
-    }).then(this._getPostResponseFunc(skipPostResponse)).then(function (res) {
-      return _this4._json(res);
-    }).catch(function (err) {
-      if (!err.isAuthError) {
-        err.message = "Could not get " + _this4._getUrl(path) + ". " + err.message;
-      }
-
-      return Promise.reject(err);
-    });
-  };
-
-  _proto.post = function post(path, data, skipPostResponse) {
-    var _this5 = this;
-
-    return this.preflightAndHeaders(path).then(function (headers) {
-      return fetchWithNetworkError(_this5._getUrl(path), {
-        method: 'post',
-        headers: headers,
-        credentials: _this5.opts.companionCookiesRule || 'same-origin',
-        body: JSON.stringify(data)
-      });
-    }).then(this._getPostResponseFunc(skipPostResponse)).then(function (res) {
-      return _this5._json(res);
-    }).catch(function (err) {
-      if (!err.isAuthError) {
-        err.message = "Could not post " + _this5._getUrl(path) + ". " + err.message;
-      }
-
-      return Promise.reject(err);
-    });
-  };
-
-  _proto.delete = function _delete(path, data, skipPostResponse) {
-    var _this6 = this;
-
-    return this.preflightAndHeaders(path).then(function (headers) {
-      return fetchWithNetworkError(_this6.hostname + "/" + path, {
-        method: 'delete',
-        headers: headers,
-        credentials: _this6.opts.companionCookiesRule || 'same-origin',
-        body: data ? JSON.stringify(data) : null
-      });
-    }).then(this._getPostResponseFunc(skipPostResponse)).then(function (res) {
-      return _this6._json(res);
-    }).catch(function (err) {
-      if (!err.isAuthError) {
-        err.message = "Could not delete " + _this6._getUrl(path) + ". " + err.message;
-      }
-
-      return Promise.reject(err);
-    });
-  };
-
-  _createClass(RequestClient, [{
-    key: "hostname",
-    get: function get() {
-      var _this$uppy$getState = this.uppy.getState(),
-          companion = _this$uppy$getState.companion;
-
-      var host = this.opts.companionUrl;
-      return stripSlash(companion && companion[host] ? companion[host] : host);
-    }
-  }, {
-    key: "defaultHeaders",
-    get: function get() {
-      return {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        'Uppy-Versions': "@uppy/companion-client=" + RequestClient.VERSION
-      };
-    }
-  }]);
-
-  return RequestClient;
-}(), _class.VERSION = "1.10.2", _temp);
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/companion-client/lib/SearchProvider.js":
-/*!*******************************************************************!*\
-  !*** ./node_modules/@uppy/companion-client/lib/SearchProvider.js ***!
-  \*******************************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-
-
-function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-var RequestClient = __webpack_require__(/*! ./RequestClient */ "./node_modules/@uppy/companion-client/lib/RequestClient.js");
-
-var _getName = function _getName(id) {
-  return id.split('-').map(function (s) {
-    return s.charAt(0).toUpperCase() + s.slice(1);
-  }).join(' ');
-};
-
-module.exports = /*#__PURE__*/function (_RequestClient) {
-  _inheritsLoose(SearchProvider, _RequestClient);
-
-  function SearchProvider(uppy, opts) {
-    var _this;
-
-    _this = _RequestClient.call(this, uppy, opts) || this;
-    _this.provider = opts.provider;
-    _this.id = _this.provider;
-    _this.name = _this.opts.name || _getName(_this.id);
-    _this.pluginId = _this.opts.pluginId;
-    return _this;
-  }
-
-  var _proto = SearchProvider.prototype;
-
-  _proto.fileUrl = function fileUrl(id) {
-    return this.hostname + "/search/" + this.id + "/get/" + id;
-  };
-
-  _proto.search = function search(text, queries) {
-    queries = queries ? "&" + queries : '';
-    return this.get("search/" + this.id + "/list?q=" + encodeURIComponent(text) + queries);
-  };
-
-  return SearchProvider;
-}(RequestClient);
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/companion-client/lib/Socket.js":
-/*!***********************************************************!*\
-  !*** ./node_modules/@uppy/companion-client/lib/Socket.js ***!
-  \***********************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-var ee = __webpack_require__(/*! namespace-emitter */ "./node_modules/namespace-emitter/index.js");
-
-module.exports = /*#__PURE__*/function () {
-  function UppySocket(opts) {
-    this.opts = opts;
-    this._queued = [];
-    this.isOpen = false;
-    this.emitter = ee();
-    this._handleMessage = this._handleMessage.bind(this);
-    this.close = this.close.bind(this);
-    this.emit = this.emit.bind(this);
-    this.on = this.on.bind(this);
-    this.once = this.once.bind(this);
-    this.send = this.send.bind(this);
-
-    if (!opts || opts.autoOpen !== false) {
-      this.open();
-    }
-  }
-
-  var _proto = UppySocket.prototype;
-
-  _proto.open = function open() {
-    var _this = this;
-
-    this.socket = new WebSocket(this.opts.target);
-
-    this.socket.onopen = function (e) {
-      _this.isOpen = true;
-
-      while (_this._queued.length > 0 && _this.isOpen) {
-        var first = _this._queued[0];
-
-        _this.send(first.action, first.payload);
-
-        _this._queued = _this._queued.slice(1);
-      }
-    };
-
-    this.socket.onclose = function (e) {
-      _this.isOpen = false;
-    };
-
-    this.socket.onmessage = this._handleMessage;
-  };
-
-  _proto.close = function close() {
-    if (this.socket) {
-      this.socket.close();
-    }
-  };
-
-  _proto.send = function send(action, payload) {
-    // attach uuid
-    if (!this.isOpen) {
-      this._queued.push({
-        action: action,
-        payload: payload
-      });
-
-      return;
-    }
-
-    this.socket.send(JSON.stringify({
-      action: action,
-      payload: payload
-    }));
-  };
-
-  _proto.on = function on(action, handler) {
-    this.emitter.on(action, handler);
-  };
-
-  _proto.emit = function emit(action, payload) {
-    this.emitter.emit(action, payload);
-  };
-
-  _proto.once = function once(action, handler) {
-    this.emitter.once(action, handler);
-  };
-
-  _proto._handleMessage = function _handleMessage(e) {
-    try {
-      var message = JSON.parse(e.data);
-      this.emit(message.action, message.payload);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  return UppySocket;
-}();
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/companion-client/lib/index.js":
-/*!**********************************************************!*\
-  !*** ./node_modules/@uppy/companion-client/lib/index.js ***!
-  \**********************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-
-/**
- * Manages communications with Companion
- */
-
-var RequestClient = __webpack_require__(/*! ./RequestClient */ "./node_modules/@uppy/companion-client/lib/RequestClient.js");
-
-var Provider = __webpack_require__(/*! ./Provider */ "./node_modules/@uppy/companion-client/lib/Provider.js");
-
-var SearchProvider = __webpack_require__(/*! ./SearchProvider */ "./node_modules/@uppy/companion-client/lib/SearchProvider.js");
-
-var Socket = __webpack_require__(/*! ./Socket */ "./node_modules/@uppy/companion-client/lib/Socket.js");
-
-module.exports = {
-  RequestClient: RequestClient,
-  Provider: Provider,
-  SearchProvider: SearchProvider,
-  Socket: Socket
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/companion-client/lib/tokenStorage.js":
-/*!*****************************************************************!*\
-  !*** ./node_modules/@uppy/companion-client/lib/tokenStorage.js ***!
-  \*****************************************************************/
-/***/ ((module) => {
-
-"use strict";
-
-/**
- * This module serves as an Async wrapper for LocalStorage
- */
-
-module.exports.setItem = function (key, value) {
-  return new Promise(function (resolve) {
-    localStorage.setItem(key, value);
-    resolve();
-  });
-};
-
-module.exports.getItem = function (key) {
-  return Promise.resolve(localStorage.getItem(key));
-};
-
-module.exports.removeItem = function (key) {
-  return new Promise(function (resolve) {
-    localStorage.removeItem(key);
-    resolve();
-  });
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/core/lib/Plugin.js":
-/*!***********************************************!*\
-  !*** ./node_modules/@uppy/core/lib/Plugin.js ***!
-  \***********************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
-var preact = __webpack_require__(/*! preact */ "./node_modules/preact/dist/preact.esm.js");
-
-var findDOMElement = __webpack_require__(/*! @uppy/utils/lib/findDOMElement */ "./node_modules/@uppy/utils/lib/findDOMElement.js");
-/**
- * Defer a frequent call to the microtask queue.
- */
-
-
-function debounce(fn) {
-  var calling = null;
-  var latestArgs = null;
-  return function () {
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    latestArgs = args;
-
-    if (!calling) {
-      calling = Promise.resolve().then(function () {
-        calling = null; // At this point `args` may be different from the most
-        // recent state, if multiple calls happened since this task
-        // was queued. So we use the `latestArgs`, which definitely
-        // is the most recent call.
-
-        return fn.apply(void 0, latestArgs);
-      });
-    }
-
-    return calling;
-  };
-}
-/**
- * Boilerplate that all Plugins share - and should not be used
- * directly. It also shows which methods final plugins should implement/override,
- * this deciding on structure.
- *
- * @param {object} main Uppy core object
- * @param {object} object with plugin options
- * @returns {Array|string} files or success/fail message
- */
-
-
-module.exports = /*#__PURE__*/function () {
-  function Plugin(uppy, opts) {
-    this.uppy = uppy;
-    this.opts = opts || {};
-    this.update = this.update.bind(this);
-    this.mount = this.mount.bind(this);
-    this.install = this.install.bind(this);
-    this.uninstall = this.uninstall.bind(this);
-  }
-
-  var _proto = Plugin.prototype;
-
-  _proto.getPluginState = function getPluginState() {
-    var _this$uppy$getState = this.uppy.getState(),
-        plugins = _this$uppy$getState.plugins;
-
-    return plugins[this.id] || {};
-  };
-
-  _proto.setPluginState = function setPluginState(update) {
-    var _extends2;
-
-    var _this$uppy$getState2 = this.uppy.getState(),
-        plugins = _this$uppy$getState2.plugins;
-
-    this.uppy.setState({
-      plugins: _extends({}, plugins, (_extends2 = {}, _extends2[this.id] = _extends({}, plugins[this.id], update), _extends2))
-    });
-  };
-
-  _proto.setOptions = function setOptions(newOpts) {
-    this.opts = _extends({}, this.opts, newOpts);
-    this.setPluginState(); // so that UI re-renders with new options
-  };
-
-  _proto.update = function update(state) {
-    if (typeof this.el === 'undefined') {
-      return;
-    }
-
-    if (this._updateUI) {
-      this._updateUI(state);
-    }
-  } // Called after every state update, after everything's mounted. Debounced.
-  ;
-
-  _proto.afterUpdate = function afterUpdate() {}
-  /**
-   * Called when plugin is mounted, whether in DOM or into another plugin.
-   * Needed because sometimes plugins are mounted separately/after `install`,
-   * so this.el and this.parent might not be available in `install`.
-   * This is the case with @uppy/react plugins, for example.
-   */
-  ;
-
-  _proto.onMount = function onMount() {}
-  /**
-   * Check if supplied `target` is a DOM element or an `object`.
-   * If it’s an object — target is a plugin, and we search `plugins`
-   * for a plugin with same name and return its target.
-   *
-   * @param {string|object} target
-   *
-   */
-  ;
-
-  _proto.mount = function mount(target, plugin) {
-    var _this = this;
-
-    var callerPluginName = plugin.id;
-    var targetElement = findDOMElement(target);
-
-    if (targetElement) {
-      this.isTargetDOMEl = true; // API for plugins that require a synchronous rerender.
-
-      this.rerender = function (state) {
-        // plugin could be removed, but this.rerender is debounced below,
-        // so it could still be called even after uppy.removePlugin or uppy.close
-        // hence the check
-        if (!_this.uppy.getPlugin(_this.id)) return;
-        _this.el = preact.render(_this.render(state), targetElement, _this.el);
-
-        _this.afterUpdate();
-      };
-
-      this._updateUI = debounce(this.rerender);
-      this.uppy.log("Installing " + callerPluginName + " to a DOM element '" + target + "'"); // clear everything inside the target container
-
-      if (this.opts.replaceTargetContent) {
-        targetElement.innerHTML = '';
-      }
-
-      this.el = preact.render(this.render(this.uppy.getState()), targetElement);
-      this.onMount();
-      return this.el;
-    }
-
-    var targetPlugin;
-
-    if (typeof target === 'object' && target instanceof Plugin) {
-      // Targeting a plugin *instance*
-      targetPlugin = target;
-    } else if (typeof target === 'function') {
-      // Targeting a plugin type
-      var Target = target; // Find the target plugin instance.
-
-      this.uppy.iteratePlugins(function (plugin) {
-        if (plugin instanceof Target) {
-          targetPlugin = plugin;
-          return false;
-        }
-      });
-    }
-
-    if (targetPlugin) {
-      this.uppy.log("Installing " + callerPluginName + " to " + targetPlugin.id);
-      this.parent = targetPlugin;
-      this.el = targetPlugin.addTarget(plugin);
-      this.onMount();
-      return this.el;
-    }
-
-    this.uppy.log("Not installing " + callerPluginName);
-    var message = "Invalid target option given to " + callerPluginName + ".";
-
-    if (typeof target === 'function') {
-      message += ' The given target is not a Plugin class. ' + 'Please check that you\'re not specifying a React Component instead of a plugin. ' + 'If you are using @uppy/* packages directly, make sure you have only 1 version of @uppy/core installed: ' + 'run `npm ls @uppy/core` on the command line and verify that all the versions match and are deduped correctly.';
-    } else {
-      message += 'If you meant to target an HTML element, please make sure that the element exists. ' + 'Check that the <script> tag initializing Uppy is right before the closing </body> tag at the end of the page. ' + '(see https://github.com/transloadit/uppy/issues/1042)\n\n' + 'If you meant to target a plugin, please confirm that your `import` statements or `require` calls are correct.';
-    }
-
-    throw new Error(message);
-  };
-
-  _proto.render = function render(state) {
-    throw new Error('Extend the render method to add your plugin to a DOM element');
-  };
-
-  _proto.addTarget = function addTarget(plugin) {
-    throw new Error('Extend the addTarget method to add your plugin to another plugin\'s target');
-  };
-
-  _proto.unmount = function unmount() {
-    if (this.isTargetDOMEl && this.el && this.el.parentNode) {
-      this.el.parentNode.removeChild(this.el);
-    }
-  };
-
-  _proto.install = function install() {};
-
-  _proto.uninstall = function uninstall() {
-    this.unmount();
-  };
-
-  return Plugin;
-}();
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/core/lib/index.js":
-/*!**********************************************!*\
-  !*** ./node_modules/@uppy/core/lib/index.js ***!
-  \**********************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-
-function _wrapNativeSuper(Class) { var _cache = typeof Map === "function" ? new Map() : undefined; _wrapNativeSuper = function _wrapNativeSuper(Class) { if (Class === null || !_isNativeFunction(Class)) return Class; if (typeof Class !== "function") { throw new TypeError("Super expression must either be null or a function"); } if (typeof _cache !== "undefined") { if (_cache.has(Class)) return _cache.get(Class); _cache.set(Class, Wrapper); } function Wrapper() { return _construct(Class, arguments, _getPrototypeOf(this).constructor); } Wrapper.prototype = Object.create(Class.prototype, { constructor: { value: Wrapper, enumerable: false, writable: true, configurable: true } }); return _setPrototypeOf(Wrapper, Class); }; return _wrapNativeSuper(Class); }
-
-function _construct(Parent, args, Class) { if (_isNativeReflectConstruct()) { _construct = Reflect.construct; } else { _construct = function _construct(Parent, args, Class) { var a = [null]; a.push.apply(a, args); var Constructor = Function.bind.apply(Parent, a); var instance = new Constructor(); if (Class) _setPrototypeOf(instance, Class.prototype); return instance; }; } return _construct.apply(null, arguments); }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _isNativeFunction(fn) { return Function.toString.call(fn).indexOf("[native code]") !== -1; }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-/* global AggregateError */
-var Translator = __webpack_require__(/*! @uppy/utils/lib/Translator */ "./node_modules/@uppy/utils/lib/Translator.js");
-
-var ee = __webpack_require__(/*! namespace-emitter */ "./node_modules/namespace-emitter/index.js");
-
-var cuid = __webpack_require__(/*! cuid */ "./node_modules/cuid/index.js");
-
-var throttle = __webpack_require__(/*! lodash.throttle */ "./node_modules/lodash.throttle/index.js");
-
-var prettierBytes = __webpack_require__(/*! @transloadit/prettier-bytes */ "./node_modules/@transloadit/prettier-bytes/prettierBytes.js");
-
-var match = __webpack_require__(/*! mime-match */ "./node_modules/mime-match/index.js");
-
-var DefaultStore = __webpack_require__(/*! @uppy/store-default */ "./node_modules/@uppy/store-default/lib/index.js");
-
-var getFileType = __webpack_require__(/*! @uppy/utils/lib/getFileType */ "./node_modules/@uppy/utils/lib/getFileType.js");
-
-var getFileNameAndExtension = __webpack_require__(/*! @uppy/utils/lib/getFileNameAndExtension */ "./node_modules/@uppy/utils/lib/getFileNameAndExtension.js");
-
-var generateFileID = __webpack_require__(/*! @uppy/utils/lib/generateFileID */ "./node_modules/@uppy/utils/lib/generateFileID.js");
-
-var findIndex = __webpack_require__(/*! @uppy/utils/lib/findIndex */ "./node_modules/@uppy/utils/lib/findIndex.js");
-
-var supportsUploadProgress = __webpack_require__(/*! ./supportsUploadProgress */ "./node_modules/@uppy/core/lib/supportsUploadProgress.js");
-
-var _require = __webpack_require__(/*! ./loggers */ "./node_modules/@uppy/core/lib/loggers.js"),
-    justErrorsLogger = _require.justErrorsLogger,
-    debugLogger = _require.debugLogger;
-
-var Plugin = __webpack_require__(/*! ./Plugin */ "./node_modules/@uppy/core/lib/Plugin.js"); // Exported from here.
-
-
-var RestrictionError = /*#__PURE__*/function (_Error) {
-  _inheritsLoose(RestrictionError, _Error);
-
-  function RestrictionError() {
-    var _this;
-
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    _this = _Error.call.apply(_Error, [this].concat(args)) || this;
-    _this.isRestriction = true;
-    return _this;
-  }
-
-  return RestrictionError;
-}( /*#__PURE__*/_wrapNativeSuper(Error));
-
-if (typeof AggregateError === 'undefined') {
-  // eslint-disable-next-line no-global-assign
-  AggregateError = /*#__PURE__*/function (_Error2) {
-    _inheritsLoose(AggregateError, _Error2);
-
-    function AggregateError(message, errors) {
-      var _this2;
-
-      _this2 = _Error2.call(this, message) || this;
-      _this2.errors = errors;
-      return _this2;
-    }
-
-    return AggregateError;
-  }( /*#__PURE__*/_wrapNativeSuper(Error));
-}
-
-var AggregateRestrictionError = /*#__PURE__*/function (_AggregateError) {
-  _inheritsLoose(AggregateRestrictionError, _AggregateError);
-
-  function AggregateRestrictionError() {
-    var _this3;
-
-    for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-      args[_key2] = arguments[_key2];
-    }
-
-    _this3 = _AggregateError.call.apply(_AggregateError, [this].concat(args)) || this;
-    _this3.isRestriction = true;
-    return _this3;
-  }
-
-  return AggregateRestrictionError;
-}(AggregateError);
-/**
- * Uppy Core module.
- * Manages plugins, state updates, acts as an event bus,
- * adds/removes files and metadata.
- */
-
-
-var Uppy = /*#__PURE__*/function () {
-  // eslint-disable-next-line global-require
-
-  /**
-   * Instantiate Uppy
-   *
-   * @param {object} opts — Uppy options
-   */
-  function Uppy(opts) {
-    var _this4 = this;
-
-    this.defaultLocale = {
-      strings: {
-        addBulkFilesFailed: {
-          0: 'Failed to add %{smart_count} file due to an internal error',
-          1: 'Failed to add %{smart_count} files due to internal errors'
-        },
-        youCanOnlyUploadX: {
-          0: 'You can only upload %{smart_count} file',
-          1: 'You can only upload %{smart_count} files'
-        },
-        youHaveToAtLeastSelectX: {
-          0: 'You have to select at least %{smart_count} file',
-          1: 'You have to select at least %{smart_count} files'
-        },
-        missingRequiredMetaField: 'Missing required meta fields',
-        missingRequiredMetaFieldOnFile: 'Missing required meta fields in %{fileName}',
-        // The default `exceedsSize2` string only combines the `exceedsSize` string (%{backwardsCompat}) with the size.
-        // Locales can override `exceedsSize2` to specify a different word order. This is for backwards compat with
-        // Uppy 1.9.x and below which did a naive concatenation of `exceedsSize2 + size` instead of using a locale-specific
-        // substitution.
-        // TODO: In 2.0 `exceedsSize2` should be removed in and `exceedsSize` updated to use substitution.
-        exceedsSize2: '%{backwardsCompat} %{size}',
-        exceedsSize: '%{file} exceeds maximum allowed size of',
-        inferiorSize: 'This file is smaller than the allowed size of %{size}',
-        youCanOnlyUploadFileTypes: 'You can only upload: %{types}',
-        noNewAlreadyUploading: 'Cannot add new files: already uploading',
-        noDuplicates: 'Cannot add the duplicate file \'%{fileName}\', it already exists',
-        companionError: 'Connection with Companion failed',
-        companionUnauthorizeHint: 'To unauthorize to your %{provider} account, please go to %{url}',
-        failedToUpload: 'Failed to upload %{file}',
-        noInternetConnection: 'No Internet connection',
-        connectedToInternet: 'Connected to the Internet',
-        // Strings for remote providers
-        noFilesFound: 'You have no files or folders here',
-        selectX: {
-          0: 'Select %{smart_count}',
-          1: 'Select %{smart_count}'
-        },
-        selectAllFilesFromFolderNamed: 'Select all files from folder %{name}',
-        unselectAllFilesFromFolderNamed: 'Unselect all files from folder %{name}',
-        selectFileNamed: 'Select file %{name}',
-        unselectFileNamed: 'Unselect file %{name}',
-        openFolderNamed: 'Open folder %{name}',
-        cancel: 'Cancel',
-        logOut: 'Log out',
-        filter: 'Filter',
-        resetFilter: 'Reset filter',
-        loading: 'Loading...',
-        authenticateWithTitle: 'Please authenticate with %{pluginName} to select files',
-        authenticateWith: 'Connect to %{pluginName}',
-        searchImages: 'Search for images',
-        enterTextToSearch: 'Enter text to search for images',
-        backToSearch: 'Back to Search',
-        emptyFolderAdded: 'No files were added from empty folder',
-        folderAdded: {
-          0: 'Added %{smart_count} file from %{folder}',
-          1: 'Added %{smart_count} files from %{folder}'
-        }
-      }
-    };
-    var defaultOptions = {
-      id: 'uppy',
-      autoProceed: false,
-      allowMultipleUploads: true,
-      debug: false,
-      restrictions: {
-        maxFileSize: null,
-        minFileSize: null,
-        maxTotalFileSize: null,
-        maxNumberOfFiles: null,
-        minNumberOfFiles: null,
-        allowedFileTypes: null,
-        requiredMetaFields: []
-      },
-      meta: {},
-      onBeforeFileAdded: function onBeforeFileAdded(currentFile) {
-        return currentFile;
-      },
-      onBeforeUpload: function onBeforeUpload(files) {
-        return files;
-      },
-      store: DefaultStore(),
-      logger: justErrorsLogger,
-      infoTimeout: 5000
-    }; // Merge default options with the ones set by user,
-    // making sure to merge restrictions too
-
-    this.opts = _extends({}, defaultOptions, opts, {
-      restrictions: _extends({}, defaultOptions.restrictions, opts && opts.restrictions)
-    }); // Support debug: true for backwards-compatability, unless logger is set in opts
-    // opts instead of this.opts to avoid comparing objects — we set logger: justErrorsLogger in defaultOptions
-
-    if (opts && opts.logger && opts.debug) {
-      this.log('You are using a custom `logger`, but also set `debug: true`, which uses built-in logger to output logs to console. Ignoring `debug: true` and using your custom `logger`.', 'warning');
-    } else if (opts && opts.debug) {
-      this.opts.logger = debugLogger;
-    }
-
-    this.log("Using Core v" + this.constructor.VERSION);
-
-    if (this.opts.restrictions.allowedFileTypes && this.opts.restrictions.allowedFileTypes !== null && !Array.isArray(this.opts.restrictions.allowedFileTypes)) {
-      throw new TypeError('`restrictions.allowedFileTypes` must be an array');
-    }
-
-    this.i18nInit(); // Container for different types of plugins
-
-    this.plugins = {};
-    this.getState = this.getState.bind(this);
-    this.getPlugin = this.getPlugin.bind(this);
-    this.setFileMeta = this.setFileMeta.bind(this);
-    this.setFileState = this.setFileState.bind(this);
-    this.log = this.log.bind(this);
-    this.info = this.info.bind(this);
-    this.hideInfo = this.hideInfo.bind(this);
-    this.addFile = this.addFile.bind(this);
-    this.removeFile = this.removeFile.bind(this);
-    this.pauseResume = this.pauseResume.bind(this);
-    this.validateRestrictions = this.validateRestrictions.bind(this); // ___Why throttle at 500ms?
-    //    - We must throttle at >250ms for superfocus in Dashboard to work well
-    //    (because animation takes 0.25s, and we want to wait for all animations to be over before refocusing).
-    //    [Practical Check]: if thottle is at 100ms, then if you are uploading a file,
-    //    and click 'ADD MORE FILES', - focus won't activate in Firefox.
-    //    - We must throttle at around >500ms to avoid performance lags.
-    //    [Practical Check] Firefox, try to upload a big file for a prolonged period of time. Laptop will start to heat up.
-
-    this.calculateProgress = throttle(this.calculateProgress.bind(this), 500, {
-      leading: true,
-      trailing: true
-    });
-    this.updateOnlineStatus = this.updateOnlineStatus.bind(this);
-    this.resetProgress = this.resetProgress.bind(this);
-    this.pauseAll = this.pauseAll.bind(this);
-    this.resumeAll = this.resumeAll.bind(this);
-    this.retryAll = this.retryAll.bind(this);
-    this.cancelAll = this.cancelAll.bind(this);
-    this.retryUpload = this.retryUpload.bind(this);
-    this.upload = this.upload.bind(this);
-    this.emitter = ee();
-    this.on = this.on.bind(this);
-    this.off = this.off.bind(this);
-    this.once = this.emitter.once.bind(this.emitter);
-    this.emit = this.emitter.emit.bind(this.emitter);
-    this.preProcessors = [];
-    this.uploaders = [];
-    this.postProcessors = [];
-    this.store = this.opts.store;
-    this.setState({
-      plugins: {},
-      files: {},
-      currentUploads: {},
-      allowNewUpload: true,
-      capabilities: {
-        uploadProgress: supportsUploadProgress(),
-        individualCancellation: true,
-        resumableUploads: false
-      },
-      totalProgress: 0,
-      meta: _extends({}, this.opts.meta),
-      info: {
-        isHidden: true,
-        type: 'info',
-        message: ''
-      },
-      recoveredState: null
-    });
-    this.storeUnsubscribe = this.store.subscribe(function (prevState, nextState, patch) {
-      _this4.emit('state-update', prevState, nextState, patch);
-
-      _this4.updateAll(nextState);
-    }); // Exposing uppy object on window for debugging and testing
-
-    if (this.opts.debug && typeof window !== 'undefined') {
-      window[this.opts.id] = this;
-    }
-
-    this.addListeners(); // Re-enable if we’ll need some capabilities on boot, like isMobileDevice
-    // this._setCapabilities()
-  } // _setCapabilities = () => {
-  //   const capabilities = {
-  //     isMobileDevice: isMobileDevice()
-  //   }
-  //   this.setState({
-  //     ...this.getState().capabilities,
-  //     capabilities
-  //   })
-  // }
-
-
-  var _proto = Uppy.prototype;
-
-  _proto.on = function on(event, callback) {
-    this.emitter.on(event, callback);
-    return this;
-  };
-
-  _proto.off = function off(event, callback) {
-    this.emitter.off(event, callback);
-    return this;
-  }
-  /**
-   * Iterate on all plugins and run `update` on them.
-   * Called each time state changes.
-   *
-   */
-  ;
-
-  _proto.updateAll = function updateAll(state) {
-    this.iteratePlugins(function (plugin) {
-      plugin.update(state);
-    });
-  }
-  /**
-   * Updates state with a patch
-   *
-   * @param {object} patch {foo: 'bar'}
-   */
-  ;
-
-  _proto.setState = function setState(patch) {
-    this.store.setState(patch);
-  }
-  /**
-   * Returns current state.
-   *
-   * @returns {object}
-   */
-  ;
-
-  _proto.getState = function getState() {
-    return this.store.getState();
-  }
-  /**
-   * Back compat for when uppy.state is used instead of uppy.getState().
-   * @deprecated
-   */
-  ;
-
-  /**
-   * Shorthand to set state for a specific file.
-   */
-  _proto.setFileState = function setFileState(fileID, state) {
-    var _extends2;
-
-    if (!this.getState().files[fileID]) {
-      throw new Error("Can\u2019t set state for " + fileID + " (the file could have been removed)");
-    }
-
-    this.setState({
-      files: _extends({}, this.getState().files, (_extends2 = {}, _extends2[fileID] = _extends({}, this.getState().files[fileID], state), _extends2))
-    });
-  };
-
-  _proto.i18nInit = function i18nInit() {
-    this.translator = new Translator([this.defaultLocale, this.opts.locale]);
-    this.locale = this.translator.locale;
-    this.i18n = this.translator.translate.bind(this.translator);
-    this.i18nArray = this.translator.translateArray.bind(this.translator);
-  };
-
-  _proto.setOptions = function setOptions(newOpts) {
-    this.opts = _extends({}, this.opts, newOpts, {
-      restrictions: _extends({}, this.opts.restrictions, newOpts && newOpts.restrictions)
-    });
-
-    if (newOpts.meta) {
-      this.setMeta(newOpts.meta);
-    }
-
-    this.i18nInit();
-
-    if (newOpts.locale) {
-      this.iteratePlugins(function (plugin) {
-        plugin.setOptions();
-      });
-    } // Note: this is not the preact `setState`, it's an internal function that has the same name.
-
-
-    this.setState(); // so that UI re-renders with new options
-  };
-
-  _proto.resetProgress = function resetProgress() {
-    var defaultProgress = {
-      percentage: 0,
-      bytesUploaded: 0,
-      uploadComplete: false,
-      uploadStarted: null
-    };
-
-    var files = _extends({}, this.getState().files);
-
-    var updatedFiles = {};
-    Object.keys(files).forEach(function (fileID) {
-      var updatedFile = _extends({}, files[fileID]);
-
-      updatedFile.progress = _extends({}, updatedFile.progress, defaultProgress);
-      updatedFiles[fileID] = updatedFile;
-    });
-    this.setState({
-      files: updatedFiles,
-      totalProgress: 0
-    });
-    this.emit('reset-progress');
-  };
-
-  _proto.addPreProcessor = function addPreProcessor(fn) {
-    this.preProcessors.push(fn);
-  };
-
-  _proto.removePreProcessor = function removePreProcessor(fn) {
-    var i = this.preProcessors.indexOf(fn);
-
-    if (i !== -1) {
-      this.preProcessors.splice(i, 1);
-    }
-  };
-
-  _proto.addPostProcessor = function addPostProcessor(fn) {
-    this.postProcessors.push(fn);
-  };
-
-  _proto.removePostProcessor = function removePostProcessor(fn) {
-    var i = this.postProcessors.indexOf(fn);
-
-    if (i !== -1) {
-      this.postProcessors.splice(i, 1);
-    }
-  };
-
-  _proto.addUploader = function addUploader(fn) {
-    this.uploaders.push(fn);
-  };
-
-  _proto.removeUploader = function removeUploader(fn) {
-    var i = this.uploaders.indexOf(fn);
-
-    if (i !== -1) {
-      this.uploaders.splice(i, 1);
-    }
-  };
-
-  _proto.setMeta = function setMeta(data) {
-    var updatedMeta = _extends({}, this.getState().meta, data);
-
-    var updatedFiles = _extends({}, this.getState().files);
-
-    Object.keys(updatedFiles).forEach(function (fileID) {
-      updatedFiles[fileID] = _extends({}, updatedFiles[fileID], {
-        meta: _extends({}, updatedFiles[fileID].meta, data)
-      });
-    });
-    this.log('Adding metadata:');
-    this.log(data);
-    this.setState({
-      meta: updatedMeta,
-      files: updatedFiles
-    });
-  };
-
-  _proto.setFileMeta = function setFileMeta(fileID, data) {
-    var updatedFiles = _extends({}, this.getState().files);
-
-    if (!updatedFiles[fileID]) {
-      this.log('Was trying to set metadata for a file that has been removed: ', fileID);
-      return;
-    }
-
-    var newMeta = _extends({}, updatedFiles[fileID].meta, data);
-
-    updatedFiles[fileID] = _extends({}, updatedFiles[fileID], {
-      meta: newMeta
-    });
-    this.setState({
-      files: updatedFiles
-    });
-  }
-  /**
-   * Get a file object.
-   *
-   * @param {string} fileID The ID of the file object to return.
-   */
-  ;
-
-  _proto.getFile = function getFile(fileID) {
-    return this.getState().files[fileID];
-  }
-  /**
-   * Get all files in an array.
-   */
-  ;
-
-  _proto.getFiles = function getFiles() {
-    var _this$getState = this.getState(),
-        files = _this$getState.files;
-
-    return Object.keys(files).map(function (fileID) {
-      return files[fileID];
-    });
-  }
-  /**
-   * A public wrapper for _checkRestrictions — checks if a file passes a set of restrictions.
-   * For use in UI pluigins (like Providers), to disallow selecting files that won’t pass restrictions.
-   *
-   * @param {object} file object to check
-   * @param {Array} [files] array to check maxNumberOfFiles and maxTotalFileSize
-   * @returns {object} { result: true/false, reason: why file didn’t pass restrictions }
-   */
-  ;
-
-  _proto.validateRestrictions = function validateRestrictions(file, files) {
-    try {
-      this.checkRestrictions(file, files);
-      return {
-        result: true
-      };
-    } catch (err) {
-      return {
-        result: false,
-        reason: err.message
-      };
-    }
-  }
-  /**
-   * Check if file passes a set of restrictions set in options: maxFileSize, minFileSize,
-   * maxNumberOfFiles and allowedFileTypes.
-   *
-   * @param {object} file object to check
-   * @param {Array} [files] array to check maxNumberOfFiles and maxTotalFileSize
-   * @private
-   */
-  ;
-
-  _proto.checkRestrictions = function checkRestrictions(file, files) {
-    if (files === void 0) {
-      files = this.getFiles();
-    }
-
-    var _this$opts$restrictio = this.opts.restrictions,
-        maxFileSize = _this$opts$restrictio.maxFileSize,
-        minFileSize = _this$opts$restrictio.minFileSize,
-        maxTotalFileSize = _this$opts$restrictio.maxTotalFileSize,
-        maxNumberOfFiles = _this$opts$restrictio.maxNumberOfFiles,
-        allowedFileTypes = _this$opts$restrictio.allowedFileTypes;
-
-    if (maxNumberOfFiles) {
-      if (files.length + 1 > maxNumberOfFiles) {
-        throw new RestrictionError("" + this.i18n('youCanOnlyUploadX', {
-          smart_count: maxNumberOfFiles
-        }));
-      }
-    }
-
-    if (allowedFileTypes) {
-      var isCorrectFileType = allowedFileTypes.some(function (type) {
-        // check if this is a mime-type
-        if (type.indexOf('/') > -1) {
-          if (!file.type) return false;
-          return match(file.type.replace(/;.*?$/, ''), type);
-        } // otherwise this is likely an extension
-
-
-        if (type[0] === '.' && file.extension) {
-          return file.extension.toLowerCase() === type.substr(1).toLowerCase();
-        }
-
-        return false;
-      });
-
-      if (!isCorrectFileType) {
-        var allowedFileTypesString = allowedFileTypes.join(', ');
-        throw new RestrictionError(this.i18n('youCanOnlyUploadFileTypes', {
-          types: allowedFileTypesString
-        }));
-      }
-    } // We can't check maxTotalFileSize if the size is unknown.
-
-
-    if (maxTotalFileSize && file.size != null) {
-      var totalFilesSize = 0;
-      totalFilesSize += file.size;
-      files.forEach(function (f) {
-        totalFilesSize += f.size;
-      });
-
-      if (totalFilesSize > maxTotalFileSize) {
-        throw new RestrictionError(this.i18n('exceedsSize2', {
-          backwardsCompat: this.i18n('exceedsSize'),
-          size: prettierBytes(maxTotalFileSize),
-          file: file.name
-        }));
-      }
-    } // We can't check maxFileSize if the size is unknown.
-
-
-    if (maxFileSize && file.size != null) {
-      if (file.size > maxFileSize) {
-        throw new RestrictionError(this.i18n('exceedsSize2', {
-          backwardsCompat: this.i18n('exceedsSize'),
-          size: prettierBytes(maxFileSize),
-          file: file.name
-        }));
-      }
-    } // We can't check minFileSize if the size is unknown.
-
-
-    if (minFileSize && file.size != null) {
-      if (file.size < minFileSize) {
-        throw new RestrictionError(this.i18n('inferiorSize', {
-          size: prettierBytes(minFileSize)
-        }));
-      }
-    }
-  }
-  /**
-   * Check if minNumberOfFiles restriction is reached before uploading.
-   *
-   * @private
-   */
-  ;
-
-  _proto.checkMinNumberOfFiles = function checkMinNumberOfFiles(files) {
-    var minNumberOfFiles = this.opts.restrictions.minNumberOfFiles;
-
-    if (Object.keys(files).length < minNumberOfFiles) {
-      throw new RestrictionError("" + this.i18n('youHaveToAtLeastSelectX', {
-        smart_count: minNumberOfFiles
-      }));
-    }
-  }
-  /**
-   * Check if requiredMetaField restriction is met before uploading.
-   *
-   * @private
-   */
-  ;
-
-  _proto.checkRequiredMetaFields = function checkRequiredMetaFields(files) {
-    var requiredMetaFields = this.opts.restrictions.requiredMetaFields;
-    var hasOwnProperty = Object.prototype.hasOwnProperty;
-    var errors = [];
-    var fileIDs = Object.keys(files);
-
-    for (var i = 0; i < fileIDs.length; i++) {
-      var file = this.getFile(fileIDs[i]);
-
-      for (var _i = 0; _i < requiredMetaFields.length; _i++) {
-        if (!hasOwnProperty.call(file.meta, requiredMetaFields[_i]) || file.meta[requiredMetaFields[_i]] === '') {
-          var err = new RestrictionError("" + this.i18n('missingRequiredMetaFieldOnFile', {
-            fileName: file.name
-          }));
-          errors.push(err);
-          this.showOrLogErrorAndThrow(err, {
-            file: file,
-            throwErr: false
-          });
-        }
-      }
-    }
-
-    if (errors.length) {
-      throw new AggregateRestrictionError("" + this.i18n('missingRequiredMetaField'), errors);
-    }
-  }
-  /**
-   * Logs an error, sets Informer message, then throws the error.
-   * Emits a 'restriction-failed' event if it’s a restriction error
-   *
-   * @param {object | string} err — Error object or plain string message
-   * @param {object} [options]
-   * @param {boolean} [options.showInformer=true] — Sometimes developer might want to show Informer manually
-   * @param {object} [options.file=null] — File object used to emit the restriction error
-   * @param {boolean} [options.throwErr=true] — Errors shouldn’t be thrown, for example, in `upload-error` event
-   * @private
-   */
-  ;
-
-  _proto.showOrLogErrorAndThrow = function showOrLogErrorAndThrow(err, _temp) {
-    var _ref = _temp === void 0 ? {} : _temp,
-        _ref$showInformer = _ref.showInformer,
-        showInformer = _ref$showInformer === void 0 ? true : _ref$showInformer,
-        _ref$file = _ref.file,
-        file = _ref$file === void 0 ? null : _ref$file,
-        _ref$throwErr = _ref.throwErr,
-        throwErr = _ref$throwErr === void 0 ? true : _ref$throwErr;
-
-    var message = typeof err === 'object' ? err.message : err;
-    var details = typeof err === 'object' && err.details ? err.details : ''; // Restriction errors should be logged, but not as errors,
-    // as they are expected and shown in the UI.
-
-    var logMessageWithDetails = message;
-
-    if (details) {
-      logMessageWithDetails += " " + details;
-    }
-
-    if (err.isRestriction) {
-      this.log(logMessageWithDetails);
-      this.emit('restriction-failed', file, err);
-    } else {
-      this.log(logMessageWithDetails, 'error');
-    } // Sometimes informer has to be shown manually by the developer,
-    // for example, in `onBeforeFileAdded`.
-
-
-    if (showInformer) {
-      this.info({
-        message: message,
-        details: details
-      }, 'error', this.opts.infoTimeout);
-    }
-
-    if (throwErr) {
-      throw typeof err === 'object' ? err : new Error(err);
-    }
-  };
-
-  _proto.assertNewUploadAllowed = function assertNewUploadAllowed(file) {
-    var _this$getState2 = this.getState(),
-        allowNewUpload = _this$getState2.allowNewUpload;
-
-    if (allowNewUpload === false) {
-      this.showOrLogErrorAndThrow(new RestrictionError(this.i18n('noNewAlreadyUploading')), {
-        file: file
-      });
-    }
-  }
-  /**
-   * Create a file state object based on user-provided `addFile()` options.
-   *
-   * Note this is extremely side-effectful and should only be done when a file state object will be added to state immediately afterward!
-   *
-   * The `files` value is passed in because it may be updated by the caller without updating the store.
-   */
-  ;
-
-  _proto.checkAndCreateFileStateObject = function checkAndCreateFileStateObject(files, f) {
-    var fileType = getFileType(f);
-    var file = f;
-    file.type = fileType;
-    var onBeforeFileAddedResult = this.opts.onBeforeFileAdded(file, files);
-
-    if (onBeforeFileAddedResult === false) {
-      // Don’t show UI info for this error, as it should be done by the developer
-      this.showOrLogErrorAndThrow(new RestrictionError('Cannot add the file because onBeforeFileAdded returned false.'), {
-        showInformer: false,
-        file: file
-      });
-    }
-
-    if (typeof onBeforeFileAddedResult === 'object' && onBeforeFileAddedResult) {
-      file = onBeforeFileAddedResult;
-    }
-
-    var fileName;
-
-    if (file.name) {
-      fileName = file.name;
-    } else if (fileType.split('/')[0] === 'image') {
-      fileName = fileType.split('/')[0] + "." + fileType.split('/')[1];
-    } else {
-      fileName = 'noname';
-    }
-
-    var fileExtension = getFileNameAndExtension(fileName).extension;
-    var isRemote = file.isRemote || false;
-    var fileID = generateFileID(file);
-
-    if (files[fileID] && !files[fileID].isGhost) {
-      this.showOrLogErrorAndThrow(new RestrictionError(this.i18n('noDuplicates', {
-        fileName: fileName
-      })), {
-        file: file
-      });
-    }
-
-    var meta = file.meta || {};
-    meta.name = fileName;
-    meta.type = fileType; // `null` means the size is unknown.
-
-    var size = isFinite(file.data.size) ? file.data.size : null;
-    var newFile = {
-      source: file.source || '',
-      id: fileID,
-      name: fileName,
-      extension: fileExtension || '',
-      meta: _extends({}, this.getState().meta, meta),
-      type: fileType,
-      data: file.data,
-      progress: {
-        percentage: 0,
-        bytesUploaded: 0,
-        bytesTotal: size,
-        uploadComplete: false,
-        uploadStarted: null
-      },
-      size: size,
-      isRemote: isRemote,
-      remote: file.remote || '',
-      preview: file.preview
-    };
-
-    try {
-      var filesArray = Object.keys(files).map(function (i) {
-        return files[i];
-      });
-      this.checkRestrictions(newFile, filesArray);
-    } catch (err) {
-      this.showOrLogErrorAndThrow(err, {
-        file: newFile
-      });
-    }
-
-    return newFile;
-  } // Schedule an upload if `autoProceed` is enabled.
-  ;
-
-  _proto.startIfAutoProceed = function startIfAutoProceed() {
-    var _this5 = this;
-
-    if (this.opts.autoProceed && !this.scheduledAutoProceed) {
-      this.scheduledAutoProceed = setTimeout(function () {
-        _this5.scheduledAutoProceed = null;
-
-        _this5.upload().catch(function (err) {
-          if (!err.isRestriction) {
-            _this5.log(err.stack || err.message || err);
-          }
-        });
-      }, 4);
-    }
-  }
-  /**
-   * Add a new file to `state.files`. This will run `onBeforeFileAdded`,
-   * try to guess file type in a clever way, check file against restrictions,
-   * and start an upload if `autoProceed === true`.
-   *
-   * @param {object} file object to add
-   * @returns {string} id for the added file
-   */
-  ;
-
-  _proto.addFile = function addFile(file) {
-    var _extends3;
-
-    this.assertNewUploadAllowed(file);
-
-    var _this$getState3 = this.getState(),
-        files = _this$getState3.files;
-
-    var newFile = this.checkAndCreateFileStateObject(files, file); // Users are asked to re-select recovered files without data,
-    // and to keep the progress, meta and everthing else, we only replace said data
-
-    if (files[newFile.id] && files[newFile.id].isGhost) {
-      newFile = _extends({}, files[newFile.id], {
-        data: file.data,
-        isGhost: false
-      });
-      this.log("Replaced the blob in the restored ghost file: " + newFile.name + ", " + newFile.id);
-    }
-
-    this.setState({
-      files: _extends({}, files, (_extends3 = {}, _extends3[newFile.id] = newFile, _extends3))
-    });
-    this.emit('file-added', newFile);
-    this.emit('files-added', [newFile]);
-    this.log("Added file: " + newFile.name + ", " + newFile.id + ", mime type: " + newFile.type);
-    this.startIfAutoProceed();
-    return newFile.id;
-  }
-  /**
-   * Add multiple files to `state.files`. See the `addFile()` documentation.
-   *
-   * If an error occurs while adding a file, it is logged and the user is notified.
-   * This is good for UI plugins, but not for programmatic use.
-   * Programmatic users should usually still use `addFile()` on individual files.
-   */
-  ;
-
-  _proto.addFiles = function addFiles(fileDescriptors) {
-    var _this6 = this;
-
-    this.assertNewUploadAllowed(); // create a copy of the files object only once
-
-    var files = _extends({}, this.getState().files);
-
-    var newFiles = [];
-    var errors = [];
-
-    for (var i = 0; i < fileDescriptors.length; i++) {
-      try {
-        var newFile = this.checkAndCreateFileStateObject(files, fileDescriptors[i]); // Users are asked to re-select recovered files without data,
-        // and to keep the progress, meta and everthing else, we only replace said data
-
-        if (files[newFile.id] && files[newFile.id].isGhost) {
-          newFile = _extends({}, files[newFile.id], {
-            data: fileDescriptors[i].data,
-            isGhost: false
-          });
-          this.log("Replaced blob in a ghost file: " + newFile.name + ", " + newFile.id);
-        }
-
-        files[newFile.id] = newFile;
-        newFiles.push(newFile);
-      } catch (err) {
-        if (!err.isRestriction) {
-          errors.push(err);
-        }
-      }
-    }
-
-    this.setState({
-      files: files
-    });
-    newFiles.forEach(function (newFile) {
-      _this6.emit('file-added', newFile);
-    });
-    this.emit('files-added', newFiles);
-
-    if (newFiles.length > 5) {
-      this.log("Added batch of " + newFiles.length + " files");
-    } else {
-      Object.keys(newFiles).forEach(function (fileID) {
-        _this6.log("Added file: " + newFiles[fileID].name + "\n id: " + newFiles[fileID].id + "\n type: " + newFiles[fileID].type);
-      });
-    }
-
-    if (newFiles.length > 0) {
-      this.startIfAutoProceed();
-    }
-
-    if (errors.length > 0) {
-      var message = 'Multiple errors occurred while adding files:\n';
-      errors.forEach(function (subError) {
-        message += "\n * " + subError.message;
-      });
-      this.info({
-        message: this.i18n('addBulkFilesFailed', {
-          smart_count: errors.length
-        }),
-        details: message
-      }, 'error', this.opts.infoTimeout);
-
-      if (typeof AggregateError === 'function') {
-        throw new AggregateError(errors, message);
-      } else {
-        var err = new Error(message);
-        err.errors = errors;
-        throw err;
-      }
-    }
-  };
-
-  _proto.removeFiles = function removeFiles(fileIDs, reason) {
-    var _this7 = this;
-
-    var _this$getState4 = this.getState(),
-        files = _this$getState4.files,
-        currentUploads = _this$getState4.currentUploads;
-
-    var updatedFiles = _extends({}, files);
-
-    var updatedUploads = _extends({}, currentUploads);
-
-    var removedFiles = Object.create(null);
-    fileIDs.forEach(function (fileID) {
-      if (files[fileID]) {
-        removedFiles[fileID] = files[fileID];
-        delete updatedFiles[fileID];
-      }
-    }); // Remove files from the `fileIDs` list in each upload.
-
-    function fileIsNotRemoved(uploadFileID) {
-      return removedFiles[uploadFileID] === undefined;
-    }
-
-    Object.keys(updatedUploads).forEach(function (uploadID) {
-      var newFileIDs = currentUploads[uploadID].fileIDs.filter(fileIsNotRemoved); // Remove the upload if no files are associated with it anymore.
-
-      if (newFileIDs.length === 0) {
-        delete updatedUploads[uploadID];
-        return;
-      }
-
-      updatedUploads[uploadID] = _extends({}, currentUploads[uploadID], {
-        fileIDs: newFileIDs
-      });
-    });
-    var stateUpdate = {
-      currentUploads: updatedUploads,
-      files: updatedFiles
-    }; // If all files were removed - allow new uploads,
-    // and clear recoveredState
-
-    if (Object.keys(updatedFiles).length === 0) {
-      stateUpdate.allowNewUpload = true;
-      stateUpdate.error = null;
-      stateUpdate.recoveredState = null;
-    }
-
-    this.setState(stateUpdate);
-    this.calculateTotalProgress();
-    var removedFileIDs = Object.keys(removedFiles);
-    removedFileIDs.forEach(function (fileID) {
-      _this7.emit('file-removed', removedFiles[fileID], reason);
-    });
-
-    if (removedFileIDs.length > 5) {
-      this.log("Removed " + removedFileIDs.length + " files");
-    } else {
-      this.log("Removed files: " + removedFileIDs.join(', '));
-    }
-  };
-
-  _proto.removeFile = function removeFile(fileID, reason) {
-    if (reason === void 0) {
-      reason = null;
-    }
-
-    this.removeFiles([fileID], reason);
-  };
-
-  _proto.pauseResume = function pauseResume(fileID) {
-    if (!this.getState().capabilities.resumableUploads || this.getFile(fileID).uploadComplete) {
-      return undefined;
-    }
-
-    var wasPaused = this.getFile(fileID).isPaused || false;
-    var isPaused = !wasPaused;
-    this.setFileState(fileID, {
-      isPaused: isPaused
-    });
-    this.emit('upload-pause', fileID, isPaused);
-    return isPaused;
-  };
-
-  _proto.pauseAll = function pauseAll() {
-    var updatedFiles = _extends({}, this.getState().files);
-
-    var inProgressUpdatedFiles = Object.keys(updatedFiles).filter(function (file) {
-      return !updatedFiles[file].progress.uploadComplete && updatedFiles[file].progress.uploadStarted;
-    });
-    inProgressUpdatedFiles.forEach(function (file) {
-      var updatedFile = _extends({}, updatedFiles[file], {
-        isPaused: true
-      });
-
-      updatedFiles[file] = updatedFile;
-    });
-    this.setState({
-      files: updatedFiles
-    });
-    this.emit('pause-all');
-  };
-
-  _proto.resumeAll = function resumeAll() {
-    var updatedFiles = _extends({}, this.getState().files);
-
-    var inProgressUpdatedFiles = Object.keys(updatedFiles).filter(function (file) {
-      return !updatedFiles[file].progress.uploadComplete && updatedFiles[file].progress.uploadStarted;
-    });
-    inProgressUpdatedFiles.forEach(function (file) {
-      var updatedFile = _extends({}, updatedFiles[file], {
-        isPaused: false,
-        error: null
-      });
-
-      updatedFiles[file] = updatedFile;
-    });
-    this.setState({
-      files: updatedFiles
-    });
-    this.emit('resume-all');
-  };
-
-  _proto.retryAll = function retryAll() {
-    var updatedFiles = _extends({}, this.getState().files);
-
-    var filesToRetry = Object.keys(updatedFiles).filter(function (file) {
-      return updatedFiles[file].error;
-    });
-    filesToRetry.forEach(function (file) {
-      var updatedFile = _extends({}, updatedFiles[file], {
-        isPaused: false,
-        error: null
-      });
-
-      updatedFiles[file] = updatedFile;
-    });
-    this.setState({
-      files: updatedFiles,
-      error: null
-    });
-    this.emit('retry-all', filesToRetry);
-
-    if (filesToRetry.length === 0) {
-      return Promise.resolve({
-        successful: [],
-        failed: []
-      });
-    }
-
-    var uploadID = this.createUpload(filesToRetry, {
-      forceAllowNewUpload: true // create new upload even if allowNewUpload: false
-
-    });
-    return this.runUpload(uploadID);
-  };
-
-  _proto.cancelAll = function cancelAll() {
-    this.emit('cancel-all');
-
-    var _this$getState5 = this.getState(),
-        files = _this$getState5.files;
-
-    var fileIDs = Object.keys(files);
-
-    if (fileIDs.length) {
-      this.removeFiles(fileIDs, 'cancel-all');
-    }
-
-    this.setState({
-      totalProgress: 0,
-      error: null,
-      recoveredState: null
-    });
-  };
-
-  _proto.retryUpload = function retryUpload(fileID) {
-    this.setFileState(fileID, {
-      error: null,
-      isPaused: false
-    });
-    this.emit('upload-retry', fileID);
-    var uploadID = this.createUpload([fileID], {
-      forceAllowNewUpload: true // create new upload even if allowNewUpload: false
-
-    });
-    return this.runUpload(uploadID);
-  };
-
-  _proto.reset = function reset() {
-    this.cancelAll();
-  };
-
-  _proto.logout = function logout() {
-    this.iteratePlugins(function (plugin) {
-      if (plugin.provider && plugin.provider.logout) {
-        plugin.provider.logout();
-      }
-    });
-  };
-
-  _proto.calculateProgress = function calculateProgress(file, data) {
-    if (!this.getFile(file.id)) {
-      this.log("Not setting progress for a file that has been removed: " + file.id);
-      return;
-    } // bytesTotal may be null or zero; in that case we can't divide by it
-
-
-    var canHavePercentage = isFinite(data.bytesTotal) && data.bytesTotal > 0;
-    this.setFileState(file.id, {
-      progress: _extends({}, this.getFile(file.id).progress, {
-        bytesUploaded: data.bytesUploaded,
-        bytesTotal: data.bytesTotal,
-        percentage: canHavePercentage // TODO(goto-bus-stop) flooring this should probably be the choice of the UI?
-        // we get more accurate calculations if we don't round this at all.
-        ? Math.round(data.bytesUploaded / data.bytesTotal * 100) : 0
-      })
-    });
-    this.calculateTotalProgress();
-  };
-
-  _proto.calculateTotalProgress = function calculateTotalProgress() {
-    // calculate total progress, using the number of files currently uploading,
-    // multiplied by 100 and the summ of individual progress of each file
-    var files = this.getFiles();
-    var inProgress = files.filter(function (file) {
-      return file.progress.uploadStarted || file.progress.preprocess || file.progress.postprocess;
-    });
-
-    if (inProgress.length === 0) {
-      this.emit('progress', 0);
-      this.setState({
-        totalProgress: 0
-      });
-      return;
-    }
-
-    var sizedFiles = inProgress.filter(function (file) {
-      return file.progress.bytesTotal != null;
-    });
-    var unsizedFiles = inProgress.filter(function (file) {
-      return file.progress.bytesTotal == null;
-    });
-
-    if (sizedFiles.length === 0) {
-      var progressMax = inProgress.length * 100;
-      var currentProgress = unsizedFiles.reduce(function (acc, file) {
-        return acc + file.progress.percentage;
-      }, 0);
-
-      var _totalProgress = Math.round(currentProgress / progressMax * 100);
-
-      this.setState({
-        totalProgress: _totalProgress
-      });
-      return;
-    }
-
-    var totalSize = sizedFiles.reduce(function (acc, file) {
-      return acc + file.progress.bytesTotal;
-    }, 0);
-    var averageSize = totalSize / sizedFiles.length;
-    totalSize += averageSize * unsizedFiles.length;
-    var uploadedSize = 0;
-    sizedFiles.forEach(function (file) {
-      uploadedSize += file.progress.bytesUploaded;
-    });
-    unsizedFiles.forEach(function (file) {
-      uploadedSize += averageSize * (file.progress.percentage || 0) / 100;
-    });
-    var totalProgress = totalSize === 0 ? 0 : Math.round(uploadedSize / totalSize * 100); // hot fix, because:
-    // uploadedSize ended up larger than totalSize, resulting in 1325% total
-
-    if (totalProgress > 100) {
-      totalProgress = 100;
-    }
-
-    this.setState({
-      totalProgress: totalProgress
-    });
-    this.emit('progress', totalProgress);
-  }
-  /**
-   * Registers listeners for all global actions, like:
-   * `error`, `file-removed`, `upload-progress`
-   */
-  ;
-
-  _proto.addListeners = function addListeners() {
-    var _this8 = this;
-
-    /**
-     * @param {Error} error
-     * @param {object} [file]
-     * @param {object} [response]
-     */
-    var errorHandler = function errorHandler(error, file, response) {
-      var errorMsg = error.message || 'Unknown error';
-
-      if (error.details) {
-        errorMsg += " " + error.details;
-      }
-
-      _this8.setState({
-        error: errorMsg
-      }); // When a file is also given, we store the error on the file object.
-
-
-      if (file != null && typeof file.id === 'string') {
-        _this8.setFileState(file.id, {
-          error: errorMsg,
-          response: response
-        });
-      }
-    };
-
-    this.on('error', errorHandler);
-    this.on('upload-error', function (file, error, response) {
-      errorHandler(error, file, response);
-
-      if (typeof error === 'object' && error.message) {
-        var newError = new Error(error.message);
-        newError.details = error.message;
-
-        if (error.details) {
-          newError.details += " " + error.details;
-        }
-
-        newError.message = _this8.i18n('failedToUpload', {
-          file: file.name
-        });
-
-        _this8.showOrLogErrorAndThrow(newError, {
-          throwErr: false
-        });
-      } else {
-        _this8.showOrLogErrorAndThrow(error, {
-          throwErr: false
-        });
-      }
-    });
-    this.on('upload', function () {
-      _this8.setState({
-        error: null
-      });
-    });
-    this.on('upload-started', function (file) {
-      if (!_this8.getFile(file.id)) {
-        _this8.log("Not setting progress for a file that has been removed: " + file.id);
-
-        return;
-      }
-
-      _this8.setFileState(file.id, {
-        progress: {
-          uploadStarted: Date.now(),
-          uploadComplete: false,
-          percentage: 0,
-          bytesUploaded: 0,
-          bytesTotal: file.size
-        }
-      });
-    });
-    this.on('upload-progress', this.calculateProgress);
-    this.on('upload-success', function (file, uploadResp) {
-      if (!_this8.getFile(file.id)) {
-        _this8.log("Not setting progress for a file that has been removed: " + file.id);
-
-        return;
-      }
-
-      var currentProgress = _this8.getFile(file.id).progress;
-
-      _this8.setFileState(file.id, {
-        progress: _extends({}, currentProgress, {
-          postprocess: _this8.postProcessors.length > 0 ? {
-            mode: 'indeterminate'
-          } : null,
-          uploadComplete: true,
-          percentage: 100,
-          bytesUploaded: currentProgress.bytesTotal
-        }),
-        response: uploadResp,
-        uploadURL: uploadResp.uploadURL,
-        isPaused: false
-      }); // Remote providers sometimes don't tell us the file size,
-      // but we can know how many bytes we uploaded once the upload is complete.
-
-
-      if (file.size == null) {
-        _this8.setFileState(file.id, {
-          size: uploadResp.bytesUploaded || currentProgress.bytesTotal
-        });
-      }
-
-      _this8.calculateTotalProgress();
-    });
-    this.on('preprocess-progress', function (file, progress) {
-      if (!_this8.getFile(file.id)) {
-        _this8.log("Not setting progress for a file that has been removed: " + file.id);
-
-        return;
-      }
-
-      _this8.setFileState(file.id, {
-        progress: _extends({}, _this8.getFile(file.id).progress, {
-          preprocess: progress
-        })
-      });
-    });
-    this.on('preprocess-complete', function (file) {
-      if (!_this8.getFile(file.id)) {
-        _this8.log("Not setting progress for a file that has been removed: " + file.id);
-
-        return;
-      }
-
-      var files = _extends({}, _this8.getState().files);
-
-      files[file.id] = _extends({}, files[file.id], {
-        progress: _extends({}, files[file.id].progress)
-      });
-      delete files[file.id].progress.preprocess;
-
-      _this8.setState({
-        files: files
-      });
-    });
-    this.on('postprocess-progress', function (file, progress) {
-      if (!_this8.getFile(file.id)) {
-        _this8.log("Not setting progress for a file that has been removed: " + file.id);
-
-        return;
-      }
-
-      _this8.setFileState(file.id, {
-        progress: _extends({}, _this8.getState().files[file.id].progress, {
-          postprocess: progress
-        })
-      });
-    });
-    this.on('postprocess-complete', function (file) {
-      if (!_this8.getFile(file.id)) {
-        _this8.log("Not setting progress for a file that has been removed: " + file.id);
-
-        return;
-      }
-
-      var files = _extends({}, _this8.getState().files);
-
-      files[file.id] = _extends({}, files[file.id], {
-        progress: _extends({}, files[file.id].progress)
-      });
-      delete files[file.id].progress.postprocess; // TODO should we set some kind of `fullyComplete` property on the file object
-      // so it's easier to see that the file is upload…fully complete…rather than
-      // what we have to do now (`uploadComplete && !postprocess`)
-
-      _this8.setState({
-        files: files
-      });
-    });
-    this.on('restored', function () {
-      // Files may have changed--ensure progress is still accurate.
-      _this8.calculateTotalProgress();
-    }); // show informer if offline
-
-    if (typeof window !== 'undefined' && window.addEventListener) {
-      window.addEventListener('online', function () {
-        return _this8.updateOnlineStatus();
-      });
-      window.addEventListener('offline', function () {
-        return _this8.updateOnlineStatus();
-      });
-      setTimeout(function () {
-        return _this8.updateOnlineStatus();
-      }, 3000);
-    }
-  };
-
-  _proto.updateOnlineStatus = function updateOnlineStatus() {
-    var online = typeof window.navigator.onLine !== 'undefined' ? window.navigator.onLine : true;
-
-    if (!online) {
-      this.emit('is-offline');
-      this.info(this.i18n('noInternetConnection'), 'error', 0);
-      this.wasOffline = true;
-    } else {
-      this.emit('is-online');
-
-      if (this.wasOffline) {
-        this.emit('back-online');
-        this.info(this.i18n('connectedToInternet'), 'success', 3000);
-        this.wasOffline = false;
-      }
-    }
-  };
-
-  _proto.getID = function getID() {
-    return this.opts.id;
-  }
-  /**
-   * Registers a plugin with Core.
-   *
-   * @param {object} Plugin object
-   * @param {object} [opts] object with options to be passed to Plugin
-   * @returns {object} self for chaining
-   */
-  // eslint-disable-next-line no-shadow
-  ;
-
-  _proto.use = function use(Plugin, opts) {
-    if (typeof Plugin !== 'function') {
-      var msg = "Expected a plugin class, but got " + (Plugin === null ? 'null' : typeof Plugin) + "." + ' Please verify that the plugin was imported and spelled correctly.';
-      throw new TypeError(msg);
-    } // Instantiate
-
-
-    var plugin = new Plugin(this, opts);
-    var pluginId = plugin.id;
-    this.plugins[plugin.type] = this.plugins[plugin.type] || [];
-
-    if (!pluginId) {
-      throw new Error('Your plugin must have an id');
-    }
-
-    if (!plugin.type) {
-      throw new Error('Your plugin must have a type');
-    }
-
-    var existsPluginAlready = this.getPlugin(pluginId);
-
-    if (existsPluginAlready) {
-      var _msg = "Already found a plugin named '" + existsPluginAlready.id + "'. " + ("Tried to use: '" + pluginId + "'.\n") + 'Uppy plugins must have unique `id` options. See https://uppy.io/docs/plugins/#id.';
-
-      throw new Error(_msg);
-    }
-
-    if (Plugin.VERSION) {
-      this.log("Using " + pluginId + " v" + Plugin.VERSION);
-    }
-
-    this.plugins[plugin.type].push(plugin);
-    plugin.install();
-    return this;
-  }
-  /**
-   * Find one Plugin by name.
-   *
-   * @param {string} id plugin id
-   * @returns {object|boolean}
-   */
-  ;
-
-  _proto.getPlugin = function getPlugin(id) {
-    var foundPlugin = null;
-    this.iteratePlugins(function (plugin) {
-      if (plugin.id === id) {
-        foundPlugin = plugin;
-        return false;
-      }
-    });
-    return foundPlugin;
-  }
-  /**
-   * Iterate through all `use`d plugins.
-   *
-   * @param {Function} method that will be run on each plugin
-   */
-  ;
-
-  _proto.iteratePlugins = function iteratePlugins(method) {
-    var _this9 = this;
-
-    Object.keys(this.plugins).forEach(function (pluginType) {
-      _this9.plugins[pluginType].forEach(method);
-    });
-  }
-  /**
-   * Uninstall and remove a plugin.
-   *
-   * @param {object} instance The plugin instance to remove.
-   */
-  ;
-
-  _proto.removePlugin = function removePlugin(instance) {
-    var _extends4;
-
-    this.log("Removing plugin " + instance.id);
-    this.emit('plugin-remove', instance);
-
-    if (instance.uninstall) {
-      instance.uninstall();
-    }
-
-    var list = this.plugins[instance.type].slice(); // list.indexOf failed here, because Vue3 converted the plugin instance
-    // to a Proxy object, which failed the strict comparison test:
-    // obj !== objProxy
-
-    var index = findIndex(list, function (item) {
-      return item.id === instance.id;
-    });
-
-    if (index !== -1) {
-      list.splice(index, 1);
-      this.plugins[instance.type] = list;
-    }
-
-    var state = this.getState();
-    var updatedState = {
-      plugins: _extends({}, state.plugins, (_extends4 = {}, _extends4[instance.id] = undefined, _extends4))
-    };
-    this.setState(updatedState);
-  }
-  /**
-   * Uninstall all plugins and close down this Uppy instance.
-   */
-  ;
-
-  _proto.close = function close() {
-    var _this10 = this;
-
-    this.log("Closing Uppy instance " + this.opts.id + ": removing all files and uninstalling plugins");
-    this.reset();
-    this.storeUnsubscribe();
-    this.iteratePlugins(function (plugin) {
-      _this10.removePlugin(plugin);
-    });
-  }
-  /**
-   * Set info message in `state.info`, so that UI plugins like `Informer`
-   * can display the message.
-   *
-   * @param {string | object} message Message to be displayed by the informer
-   * @param {string} [type]
-   * @param {number} [duration]
-   */
-  ;
-
-  _proto.info = function info(message, type, duration) {
-    if (type === void 0) {
-      type = 'info';
-    }
-
-    if (duration === void 0) {
-      duration = 3000;
-    }
-
-    var isComplexMessage = typeof message === 'object';
-    this.setState({
-      info: {
-        isHidden: false,
-        type: type,
-        message: isComplexMessage ? message.message : message,
-        details: isComplexMessage ? message.details : null
-      }
-    });
-    this.emit('info-visible');
-    clearTimeout(this.infoTimeoutID);
-
-    if (duration === 0) {
-      this.infoTimeoutID = undefined;
-      return;
-    } // hide the informer after `duration` milliseconds
-
-
-    this.infoTimeoutID = setTimeout(this.hideInfo, duration);
-  };
-
-  _proto.hideInfo = function hideInfo() {
-    var newInfo = _extends({}, this.getState().info, {
-      isHidden: true
-    });
-
-    this.setState({
-      info: newInfo
-    });
-    this.emit('info-hidden');
-  }
-  /**
-   * Passes messages to a function, provided in `opts.logger`.
-   * If `opts.logger: Uppy.debugLogger` or `opts.debug: true`, logs to the browser console.
-   *
-   * @param {string|object} message to log
-   * @param {string} [type] optional `error` or `warning`
-   */
-  ;
-
-  _proto.log = function log(message, type) {
-    var logger = this.opts.logger;
-
-    switch (type) {
-      case 'error':
-        logger.error(message);
-        break;
-
-      case 'warning':
-        logger.warn(message);
-        break;
-
-      default:
-        logger.debug(message);
-        break;
-    }
-  }
-  /**
-   * Obsolete, event listeners are now added in the constructor.
-   */
-  ;
-
-  _proto.run = function run() {
-    this.log('Calling run() is no longer necessary.', 'warning');
-    return this;
-  }
-  /**
-   * Restore an upload by its ID.
-   */
-  ;
-
-  _proto.restore = function restore(uploadID) {
-    this.log("Core: attempting to restore upload \"" + uploadID + "\"");
-
-    if (!this.getState().currentUploads[uploadID]) {
-      this.removeUpload(uploadID);
-      return Promise.reject(new Error('Nonexistent upload'));
-    }
-
-    return this.runUpload(uploadID);
-  }
-  /**
-   * Create an upload for a bunch of files.
-   *
-   * @param {Array<string>} fileIDs File IDs to include in this upload.
-   * @returns {string} ID of this upload.
-   */
-  ;
-
-  _proto.createUpload = function createUpload(fileIDs, opts) {
-    var _extends5;
-
-    if (opts === void 0) {
-      opts = {};
-    }
-
-    // uppy.retryAll sets this to true — when retrying we want to ignore `allowNewUpload: false`
-    var _opts = opts,
-        _opts$forceAllowNewUp = _opts.forceAllowNewUpload,
-        forceAllowNewUpload = _opts$forceAllowNewUp === void 0 ? false : _opts$forceAllowNewUp;
-
-    var _this$getState6 = this.getState(),
-        allowNewUpload = _this$getState6.allowNewUpload,
-        currentUploads = _this$getState6.currentUploads;
-
-    if (!allowNewUpload && !forceAllowNewUpload) {
-      throw new Error('Cannot create a new upload: already uploading.');
-    }
-
-    var uploadID = cuid();
-    this.emit('upload', {
-      id: uploadID,
-      fileIDs: fileIDs
-    });
-    this.setState({
-      allowNewUpload: this.opts.allowMultipleUploads !== false,
-      currentUploads: _extends({}, currentUploads, (_extends5 = {}, _extends5[uploadID] = {
-        fileIDs: fileIDs,
-        step: 0,
-        result: {}
-      }, _extends5))
-    });
-    return uploadID;
-  };
-
-  _proto.getUpload = function getUpload(uploadID) {
-    var _this$getState7 = this.getState(),
-        currentUploads = _this$getState7.currentUploads;
-
-    return currentUploads[uploadID];
-  }
-  /**
-   * Add data to an upload's result object.
-   *
-   * @param {string} uploadID The ID of the upload.
-   * @param {object} data Data properties to add to the result object.
-   */
-  ;
-
-  _proto.addResultData = function addResultData(uploadID, data) {
-    var _extends6;
-
-    if (!this.getUpload(uploadID)) {
-      this.log("Not setting result for an upload that has been removed: " + uploadID);
-      return;
-    }
-
-    var _this$getState8 = this.getState(),
-        currentUploads = _this$getState8.currentUploads;
-
-    var currentUpload = _extends({}, currentUploads[uploadID], {
-      result: _extends({}, currentUploads[uploadID].result, data)
-    });
-
-    this.setState({
-      currentUploads: _extends({}, currentUploads, (_extends6 = {}, _extends6[uploadID] = currentUpload, _extends6))
-    });
-  }
-  /**
-   * Remove an upload, eg. if it has been canceled or completed.
-   *
-   * @param {string} uploadID The ID of the upload.
-   */
-  ;
-
-  _proto.removeUpload = function removeUpload(uploadID) {
-    var currentUploads = _extends({}, this.getState().currentUploads);
-
-    delete currentUploads[uploadID];
-    this.setState({
-      currentUploads: currentUploads
-    });
-  }
-  /**
-   * Run an upload. This picks up where it left off in case the upload is being restored.
-   *
-   * @private
-   */
-  ;
-
-  _proto.runUpload = function runUpload(uploadID) {
-    var _this11 = this;
-
-    var uploadData = this.getState().currentUploads[uploadID];
-    var restoreStep = uploadData.step;
-    var steps = [].concat(this.preProcessors, this.uploaders, this.postProcessors);
-    var lastStep = Promise.resolve();
-    steps.forEach(function (fn, step) {
-      // Skip this step if we are restoring and have already completed this step before.
-      if (step < restoreStep) {
-        return;
-      }
-
-      lastStep = lastStep.then(function () {
-        var _extends7;
-
-        var _this11$getState = _this11.getState(),
-            currentUploads = _this11$getState.currentUploads;
-
-        var currentUpload = currentUploads[uploadID];
-
-        if (!currentUpload) {
-          return;
-        }
-
-        var updatedUpload = _extends({}, currentUpload, {
-          step: step
-        });
-
-        _this11.setState({
-          currentUploads: _extends({}, currentUploads, (_extends7 = {}, _extends7[uploadID] = updatedUpload, _extends7))
-        }); // TODO give this the `updatedUpload` object as its only parameter maybe?
-        // Otherwise when more metadata may be added to the upload this would keep getting more parameters
-        // eslint-disable-next-line consistent-return
-
-
-        return fn(updatedUpload.fileIDs, uploadID);
-      }).then(function () {
-        return null;
-      });
-    }); // Not returning the `catch`ed promise, because we still want to return a rejected
-    // promise from this method if the upload failed.
-
-    lastStep.catch(function (err) {
-      _this11.emit('error', err);
-
-      _this11.removeUpload(uploadID);
-    });
-    return lastStep.then(function () {
-      // Set result data.
-      var _this11$getState2 = _this11.getState(),
-          currentUploads = _this11$getState2.currentUploads;
-
-      var currentUpload = currentUploads[uploadID];
-
-      if (!currentUpload) {
-        return;
-      } // Mark postprocessing step as complete if necessary; this addresses a case where we might get
-      // stuck in the postprocessing UI while the upload is fully complete.
-      // If the postprocessing steps do not do any work, they may not emit postprocessing events at
-      // all, and never mark the postprocessing as complete. This is fine on its own but we
-      // introduced code in the @uppy/core upload-success handler to prepare postprocessing progress
-      // state if any postprocessors are registered. That is to avoid a "flash of completed state"
-      // before the postprocessing plugins can emit events.
-      //
-      // So, just in case an upload with postprocessing plugins *has* completed *without* emitting
-      // postprocessing completion, we do it instead.
-
-
-      currentUpload.fileIDs.forEach(function (fileID) {
-        var file = _this11.getFile(fileID);
-
-        if (file && file.progress.postprocess) {
-          _this11.emit('postprocess-complete', file);
-        }
-      });
-      var files = currentUpload.fileIDs.map(function (fileID) {
-        return _this11.getFile(fileID);
-      });
-      var successful = files.filter(function (file) {
-        return !file.error;
-      });
-      var failed = files.filter(function (file) {
-        return file.error;
-      });
-
-      _this11.addResultData(uploadID, {
-        successful: successful,
-        failed: failed,
-        uploadID: uploadID
-      });
-    }).then(function () {
-      // Emit completion events.
-      // This is in a separate function so that the `currentUploads` variable
-      // always refers to the latest state. In the handler right above it refers
-      // to an outdated object without the `.result` property.
-      var _this11$getState3 = _this11.getState(),
-          currentUploads = _this11$getState3.currentUploads;
-
-      if (!currentUploads[uploadID]) {
-        return;
-      }
-
-      var currentUpload = currentUploads[uploadID];
-      var result = currentUpload.result;
-
-      _this11.emit('complete', result);
-
-      _this11.removeUpload(uploadID); // eslint-disable-next-line consistent-return
-
-
-      return result;
-    }).then(function (result) {
-      if (result == null) {
-        _this11.log("Not setting result for an upload that has been removed: " + uploadID);
-      }
-
-      return result;
-    });
-  }
-  /**
-   * Start an upload for all the files that are not currently being uploaded.
-   *
-   * @returns {Promise}
-   */
-  ;
-
-  _proto.upload = function upload() {
-    var _this12 = this;
-
-    if (!this.plugins.uploader) {
-      this.log('No uploader type plugins are used', 'warning');
-    }
-
-    var _this$getState9 = this.getState(),
-        files = _this$getState9.files;
-
-    var onBeforeUploadResult = this.opts.onBeforeUpload(files);
-
-    if (onBeforeUploadResult === false) {
-      return Promise.reject(new Error('Not starting the upload because onBeforeUpload returned false'));
-    }
-
-    if (onBeforeUploadResult && typeof onBeforeUploadResult === 'object') {
-      files = onBeforeUploadResult; // Updating files in state, because uploader plugins receive file IDs,
-      // and then fetch the actual file object from state
-
-      this.setState({
-        files: files
-      });
-    }
-
-    return Promise.resolve().then(function () {
-      _this12.checkMinNumberOfFiles(files);
-
-      _this12.checkRequiredMetaFields(files);
-    }).catch(function (err) {
-      _this12.showOrLogErrorAndThrow(err);
-    }).then(function () {
-      var _this12$getState = _this12.getState(),
-          currentUploads = _this12$getState.currentUploads; // get a list of files that are currently assigned to uploads
-
-
-      var currentlyUploadingFiles = Object.keys(currentUploads).reduce(function (prev, curr) {
-        return prev.concat(currentUploads[curr].fileIDs);
-      }, []);
-      var waitingFileIDs = [];
-      Object.keys(files).forEach(function (fileID) {
-        var file = _this12.getFile(fileID); // if the file hasn't started uploading and hasn't already been assigned to an upload..
-
-
-        if (!file.progress.uploadStarted && currentlyUploadingFiles.indexOf(fileID) === -1) {
-          waitingFileIDs.push(file.id);
-        }
-      });
-
-      var uploadID = _this12.createUpload(waitingFileIDs);
-
-      return _this12.runUpload(uploadID);
-    }).catch(function (err) {
-      _this12.showOrLogErrorAndThrow(err, {
-        showInformer: false
-      });
-    });
-  };
-
-  _createClass(Uppy, [{
-    key: "state",
-    get: function get() {
-      // Here, state is a non-enumerable property.
-      return this.getState();
-    }
-  }]);
-
-  return Uppy;
-}();
-
-Uppy.VERSION = "1.20.1";
-
-module.exports = function core(opts) {
-  return new Uppy(opts);
-}; // Expose class constructor.
-
-
-module.exports.Uppy = Uppy;
-module.exports.Plugin = Plugin;
-module.exports.debugLogger = debugLogger;
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/core/lib/loggers.js":
-/*!************************************************!*\
-  !*** ./node_modules/@uppy/core/lib/loggers.js ***!
-  \************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-var getTimeStamp = __webpack_require__(/*! @uppy/utils/lib/getTimeStamp */ "./node_modules/@uppy/utils/lib/getTimeStamp.js"); // Swallow all logs, except errors.
-// default if logger is not set or debug: false
-
-
-var justErrorsLogger = {
-  debug: function debug() {},
-  warn: function warn() {},
-  error: function error() {
-    var _console;
-
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    return (_console = console).error.apply(_console, ["[Uppy] [" + getTimeStamp() + "]"].concat(args));
-  }
-}; // Print logs to console with namespace + timestamp,
-// set by logger: Uppy.debugLogger or debug: true
-
-var debugLogger = {
-  debug: function debug() {
-    // IE 10 doesn’t support console.debug
-    var debug = console.debug || console.log;
-
-    for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-      args[_key2] = arguments[_key2];
-    }
-
-    debug.call.apply(debug, [console, "[Uppy] [" + getTimeStamp() + "]"].concat(args));
-  },
-  warn: function warn() {
-    var _console2;
-
-    for (var _len3 = arguments.length, args = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-      args[_key3] = arguments[_key3];
-    }
-
-    return (_console2 = console).warn.apply(_console2, ["[Uppy] [" + getTimeStamp() + "]"].concat(args));
-  },
-  error: function error() {
-    var _console3;
-
-    for (var _len4 = arguments.length, args = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-      args[_key4] = arguments[_key4];
-    }
-
-    return (_console3 = console).error.apply(_console3, ["[Uppy] [" + getTimeStamp() + "]"].concat(args));
-  }
-};
-module.exports = {
-  justErrorsLogger: justErrorsLogger,
-  debugLogger: debugLogger
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/core/lib/supportsUploadProgress.js":
-/*!***************************************************************!*\
-  !*** ./node_modules/@uppy/core/lib/supportsUploadProgress.js ***!
-  \***************************************************************/
-/***/ ((module) => {
-
-// Edge 15.x does not fire 'progress' events on uploads.
-// See https://github.com/transloadit/uppy/issues/945
-// And https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/12224510/
-module.exports = function supportsUploadProgress(userAgent) {
-  // Allow passing in userAgent for tests
-  if (userAgent == null) {
-    userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : null;
-  } // Assume it works because basically everything supports progress events.
-
-
-  if (!userAgent) return true;
-  var m = /Edge\/(\d+\.\d+)/.exec(userAgent);
-  if (!m) return true;
-  var edgeVersion = m[1];
-
-  var _edgeVersion$split = edgeVersion.split('.'),
-      major = _edgeVersion$split[0],
-      minor = _edgeVersion$split[1];
-
-  major = parseInt(major, 10);
-  minor = parseInt(minor, 10); // Worked before:
-  // Edge 40.15063.0.0
-  // Microsoft EdgeHTML 15.15063
-
-  if (major < 15 || major === 15 && minor < 15063) {
-    return true;
-  } // Fixed in:
-  // Microsoft EdgeHTML 18.18218
-
-
-  if (major > 18 || major === 18 && minor >= 18218) {
-    return true;
-  } // other versions don't work.
-
-
-  return false;
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/drop-target/lib/index.js":
-/*!*****************************************************!*\
-  !*** ./node_modules/@uppy/drop-target/lib/index.js ***!
-  \*****************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-var _class, _temp;
-
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
-function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-var _require = __webpack_require__(/*! @uppy/core */ "./node_modules/@uppy/core/lib/index.js"),
-    Plugin = _require.Plugin;
-
-var getDroppedFiles = __webpack_require__(/*! @uppy/utils/lib/getDroppedFiles */ "./node_modules/@uppy/utils/lib/getDroppedFiles/index.js");
-
-var toArray = __webpack_require__(/*! @uppy/utils/lib/toArray */ "./node_modules/@uppy/utils/lib/toArray.js");
-/**
- * Drop Target plugin
- *
- */
-
-
-module.exports = (_temp = _class = /*#__PURE__*/function (_Plugin) {
-  _inheritsLoose(DropTarget, _Plugin);
-
-  function DropTarget(uppy, opts) {
-    var _this;
-
-    _this = _Plugin.call(this, uppy, opts) || this;
-
-    _this.addFiles = function (files) {
-      var descriptors = files.map(function (file) {
-        return {
-          source: _this.id,
-          name: file.name,
-          type: file.type,
-          data: file,
-          meta: {
-            // path of the file relative to the ancestor directory the user selected.
-            // e.g. 'docs/Old Prague/airbnb.pdf'
-            relativePath: file.relativePath || null
-          }
-        };
-      });
-
-      try {
-        _this.uppy.addFiles(descriptors);
-      } catch (err) {
-        _this.uppy.log(err);
-      }
-    };
-
-    _this.handleDrop = function (event) {
-      event.preventDefault();
-      event.stopPropagation();
-      clearTimeout(_this.removeDragOverClassTimeout); // 2. Remove dragover class
-
-      event.currentTarget.classList.remove('uppy-is-drag-over');
-
-      _this.setPluginState({
-        isDraggingOver: false
-      }); // 3. Add all dropped files
-
-
-      _this.uppy.log('[DropTarget] Files were dropped');
-
-      var logDropError = function logDropError(error) {
-        _this.uppy.log(error, 'error');
-      };
-
-      getDroppedFiles(event.dataTransfer, {
-        logDropError: logDropError
-      }).then(function (files) {
-        return _this.addFiles(files);
-      });
-    };
-
-    _this.handleDragOver = function (event) {
-      event.preventDefault();
-      event.stopPropagation(); // 1. Add a small (+) icon on drop
-      // (and prevent browsers from interpreting this as files being _moved_ into the browser,
-      // https://github.com/transloadit/uppy/issues/1978)
-
-      event.dataTransfer.dropEffect = 'copy';
-      clearTimeout(_this.removeDragOverClassTimeout);
-      event.currentTarget.classList.add('uppy-is-drag-over');
-
-      _this.setPluginState({
-        isDraggingOver: true
-      });
-    };
-
-    _this.handleDragLeave = function (event) {
-      event.preventDefault();
-      event.stopPropagation();
-      var currentTarget = event.currentTarget;
-      clearTimeout(_this.removeDragOverClassTimeout); // Timeout against flickering, this solution is taken from drag-drop library.
-      // Solution with 'pointer-events: none' didn't work across browsers.
-
-      _this.removeDragOverClassTimeout = setTimeout(function () {
-        currentTarget.classList.remove('uppy-is-drag-over');
-
-        _this.setPluginState({
-          isDraggingOver: false
-        });
-      }, 50);
-    };
-
-    _this.addListeners = function () {
-      var target = _this.opts.target;
-
-      if (target instanceof Element) {
-        _this.nodes = [target];
-      } else if (typeof target === 'string') {
-        _this.nodes = toArray(document.querySelectorAll(target));
-      }
-
-      if (!_this.nodes && !_this.nodes.length > 0) {
-        throw new Error("\"" + target + "\" does not match any HTML elements");
-      }
-
-      _this.nodes.forEach(function (node) {
-        node.addEventListener('dragover', _this.handleDragOver, false);
-        node.addEventListener('dragleave', _this.handleDragLeave, false);
-        node.addEventListener('drop', _this.handleDrop, false);
-      });
-    };
-
-    _this.removeListeners = function () {
-      if (_this.nodes) {
-        _this.nodes.forEach(function (node) {
-          node.removeEventListener('dragover', _this.handleDragOver, false);
-          node.removeEventListener('dragleave', _this.handleDragLeave, false);
-          node.removeEventListener('drop', _this.handleDrop, false);
-        });
-      }
-    };
-
-    _this.type = 'acquirer';
-    _this.id = _this.opts.id || 'DropTarget';
-    _this.title = 'Drop Target'; // Default options
-
-    var defaultOpts = {
-      target: null
-    }; // Merge default options with the ones set by user
-
-    _this.opts = _extends({}, defaultOpts, opts);
-    _this.removeDragOverClassTimeout = null;
-    return _this;
-  }
-
-  var _proto = DropTarget.prototype;
-
-  _proto.install = function install() {
-    this.setPluginState({
-      isDraggingOver: false
-    });
-    this.addListeners();
-  };
-
-  _proto.uninstall = function uninstall() {
-    this.removeListeners();
-  };
-
-  return DropTarget;
-}(Plugin), _class.VERSION = "0.2.4", _temp);
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/store-default/lib/index.js":
-/*!*******************************************************!*\
-  !*** ./node_modules/@uppy/store-default/lib/index.js ***!
-  \*******************************************************/
-/***/ ((module) => {
-
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
-/**
- * Default store that keeps state in a simple object.
- */
-var DefaultStore = /*#__PURE__*/function () {
-  function DefaultStore() {
-    this.state = {};
-    this.callbacks = [];
-  }
-
-  var _proto = DefaultStore.prototype;
-
-  _proto.getState = function getState() {
-    return this.state;
-  };
-
-  _proto.setState = function setState(patch) {
-    var prevState = _extends({}, this.state);
-
-    var nextState = _extends({}, this.state, patch);
-
-    this.state = nextState;
-
-    this._publish(prevState, nextState, patch);
-  };
-
-  _proto.subscribe = function subscribe(listener) {
-    var _this = this;
-
-    this.callbacks.push(listener);
-    return function () {
-      // Remove the listener.
-      _this.callbacks.splice(_this.callbacks.indexOf(listener), 1);
-    };
-  };
-
-  _proto._publish = function _publish() {
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    this.callbacks.forEach(function (listener) {
-      listener.apply(void 0, args);
-    });
-  };
-
-  return DefaultStore;
-}();
-
-DefaultStore.VERSION = "1.2.7";
-
-module.exports = function defaultStore() {
-  return new DefaultStore();
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/AbortController.js":
-/*!*********************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/AbortController.js ***!
-  \*********************************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-/**
- * Little AbortController proxy module so we can swap out the implementation easily later.
- */
-var _require = __webpack_require__(/*! abortcontroller-polyfill/dist/abortcontroller */ "./node_modules/abortcontroller-polyfill/dist/abortcontroller.js"),
-    AbortController = _require.AbortController,
-    AbortSignal = _require.AbortSignal;
-
-function createAbortError(message) {
-  if (message === void 0) {
-    message = 'Aborted';
-  }
-
-  try {
-    return new DOMException(message, 'AbortError');
-  } catch (_unused) {
-    // For Internet Explorer
-    var error = new Error(message);
-    error.name = 'AbortError';
-    return error;
-  }
-}
-
-exports.AbortController = AbortController;
-exports.AbortSignal = AbortSignal;
-exports.createAbortError = createAbortError;
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/EventTracker.js":
-/*!******************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/EventTracker.js ***!
-  \******************************************************/
-/***/ ((module) => {
-
-/**
- * Create a wrapper around an event emitter with a `remove` method to remove
- * all events that were added using the wrapped emitter.
- */
-module.exports = /*#__PURE__*/function () {
-  function EventTracker(emitter) {
-    this._events = [];
-    this._emitter = emitter;
-  }
-
-  var _proto = EventTracker.prototype;
-
-  _proto.on = function on(event, fn) {
-    this._events.push([event, fn]);
-
-    return this._emitter.on(event, fn);
-  };
-
-  _proto.remove = function remove() {
-    var _this = this;
-
-    this._events.forEach(function (_ref) {
-      var event = _ref[0],
-          fn = _ref[1];
-
-      _this._emitter.off(event, fn);
-    });
-  };
-
-  return EventTracker;
-}();
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/NetworkError.js":
-/*!******************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/NetworkError.js ***!
-  \******************************************************/
-/***/ ((module) => {
-
-function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-
-function _wrapNativeSuper(Class) { var _cache = typeof Map === "function" ? new Map() : undefined; _wrapNativeSuper = function _wrapNativeSuper(Class) { if (Class === null || !_isNativeFunction(Class)) return Class; if (typeof Class !== "function") { throw new TypeError("Super expression must either be null or a function"); } if (typeof _cache !== "undefined") { if (_cache.has(Class)) return _cache.get(Class); _cache.set(Class, Wrapper); } function Wrapper() { return _construct(Class, arguments, _getPrototypeOf(this).constructor); } Wrapper.prototype = Object.create(Class.prototype, { constructor: { value: Wrapper, enumerable: false, writable: true, configurable: true } }); return _setPrototypeOf(Wrapper, Class); }; return _wrapNativeSuper(Class); }
-
-function _construct(Parent, args, Class) { if (_isNativeReflectConstruct()) { _construct = Reflect.construct; } else { _construct = function _construct(Parent, args, Class) { var a = [null]; a.push.apply(a, args); var Constructor = Function.bind.apply(Parent, a); var instance = new Constructor(); if (Class) _setPrototypeOf(instance, Class.prototype); return instance; }; } return _construct.apply(null, arguments); }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _isNativeFunction(fn) { return Function.toString.call(fn).indexOf("[native code]") !== -1; }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-var NetworkError = /*#__PURE__*/function (_Error) {
-  _inheritsLoose(NetworkError, _Error);
-
-  function NetworkError(error, xhr) {
-    var _this;
-
-    if (xhr === void 0) {
-      xhr = null;
-    }
-
-    _this = _Error.call(this, "This looks like a network error, the endpoint might be blocked by an internet provider or a firewall.\n\nSource error: [" + error + "]") || this;
-    _this.isNetworkError = true;
-    _this.request = xhr;
-    return _this;
-  }
-
-  return NetworkError;
-}( /*#__PURE__*/_wrapNativeSuper(Error));
-
-module.exports = NetworkError;
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/RateLimitedQueue.js":
-/*!**********************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/RateLimitedQueue.js ***!
-  \**********************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-var findIndex = __webpack_require__(/*! ./findIndex */ "./node_modules/@uppy/utils/lib/findIndex.js");
-
-function createCancelError() {
-  return new Error('Cancelled');
-}
-
-module.exports = /*#__PURE__*/function () {
-  function RateLimitedQueue(limit) {
-    if (typeof limit !== 'number' || limit === 0) {
-      this.limit = Infinity;
-    } else {
-      this.limit = limit;
-    }
-
-    this.activeRequests = 0;
-    this.queuedHandlers = [];
-  }
-
-  var _proto = RateLimitedQueue.prototype;
-
-  _proto._call = function _call(fn) {
-    var _this = this;
-
-    this.activeRequests += 1;
-    var _done = false;
-    var cancelActive;
-
-    try {
-      cancelActive = fn();
-    } catch (err) {
-      this.activeRequests -= 1;
-      throw err;
-    }
-
-    return {
-      abort: function abort() {
-        if (_done) return;
-        _done = true;
-        _this.activeRequests -= 1;
-        cancelActive();
-
-        _this._queueNext();
-      },
-      done: function done() {
-        if (_done) return;
-        _done = true;
-        _this.activeRequests -= 1;
-
-        _this._queueNext();
-      }
-    };
-  };
-
-  _proto._queueNext = function _queueNext() {
-    var _this2 = this;
-
-    // Do it soon but not immediately, this allows clearing out the entire queue synchronously
-    // one by one without continuously _advancing_ it (and starting new tasks before immediately
-    // aborting them)
-    Promise.resolve().then(function () {
-      _this2._next();
-    });
-  };
-
-  _proto._next = function _next() {
-    if (this.activeRequests >= this.limit) {
-      return;
-    }
-
-    if (this.queuedHandlers.length === 0) {
-      return;
-    } // Dispatch the next request, and update the abort/done handlers
-    // so that cancelling it does the Right Thing (and doesn't just try
-    // to dequeue an already-running request).
-
-
-    var next = this.queuedHandlers.shift();
-
-    var handler = this._call(next.fn);
-
-    next.abort = handler.abort;
-    next.done = handler.done;
-  };
-
-  _proto._queue = function _queue(fn, options) {
-    var _this3 = this;
-
-    if (options === void 0) {
-      options = {};
-    }
-
-    var handler = {
-      fn: fn,
-      priority: options.priority || 0,
-      abort: function abort() {
-        _this3._dequeue(handler);
-      },
-      done: function done() {
-        throw new Error('Cannot mark a queued request as done: this indicates a bug');
-      }
-    };
-    var index = findIndex(this.queuedHandlers, function (other) {
-      return handler.priority > other.priority;
-    });
-
-    if (index === -1) {
-      this.queuedHandlers.push(handler);
-    } else {
-      this.queuedHandlers.splice(index, 0, handler);
-    }
-
-    return handler;
-  };
-
-  _proto._dequeue = function _dequeue(handler) {
-    var index = this.queuedHandlers.indexOf(handler);
-
-    if (index !== -1) {
-      this.queuedHandlers.splice(index, 1);
-    }
-  };
-
-  _proto.run = function run(fn, queueOptions) {
-    if (this.activeRequests < this.limit) {
-      return this._call(fn);
-    }
-
-    return this._queue(fn, queueOptions);
-  };
-
-  _proto.wrapPromiseFunction = function wrapPromiseFunction(fn, queueOptions) {
-    var _this4 = this;
-
-    return function () {
-      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
-      }
-
-      var queuedRequest;
-      var outerPromise = new Promise(function (resolve, reject) {
-        queuedRequest = _this4.run(function () {
-          var cancelError;
-          var innerPromise;
-
-          try {
-            innerPromise = Promise.resolve(fn.apply(void 0, args));
-          } catch (err) {
-            innerPromise = Promise.reject(err);
-          }
-
-          innerPromise.then(function (result) {
-            if (cancelError) {
-              reject(cancelError);
-            } else {
-              queuedRequest.done();
-              resolve(result);
-            }
-          }, function (err) {
-            if (cancelError) {
-              reject(cancelError);
-            } else {
-              queuedRequest.done();
-              reject(err);
-            }
-          });
-          return function () {
-            cancelError = createCancelError();
-          };
-        }, queueOptions);
-      });
-
-      outerPromise.abort = function () {
-        queuedRequest.abort();
-      };
-
-      return outerPromise;
-    };
-  };
-
-  return RateLimitedQueue;
-}();
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/Translator.js":
-/*!****************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/Translator.js ***!
-  \****************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
-var has = __webpack_require__(/*! ./hasProperty */ "./node_modules/@uppy/utils/lib/hasProperty.js");
-/**
- * Translates strings with interpolation & pluralization support.
- * Extensible with custom dictionaries and pluralization functions.
- *
- * Borrows heavily from and inspired by Polyglot https://github.com/airbnb/polyglot.js,
- * basically a stripped-down version of it. Differences: pluralization functions are not hardcoded
- * and can be easily added among with dictionaries, nested objects are used for pluralization
- * as opposed to `||||` delimeter
- *
- * Usage example: `translator.translate('files_chosen', {smart_count: 3})`
- */
-
-
-module.exports = /*#__PURE__*/function () {
-  /**
-   * @param {object|Array<object>} locales - locale or list of locales.
-   */
-  function Translator(locales) {
-    var _this = this;
-
-    this.locale = {
-      strings: {},
-      pluralize: function pluralize(n) {
-        if (n === 1) {
-          return 0;
-        }
-
-        return 1;
-      }
-    };
-
-    if (Array.isArray(locales)) {
-      locales.forEach(function (locale) {
-        return _this._apply(locale);
-      });
-    } else {
-      this._apply(locales);
-    }
-  }
-
-  var _proto = Translator.prototype;
-
-  _proto._apply = function _apply(locale) {
-    if (!locale || !locale.strings) {
-      return;
-    }
-
-    var prevLocale = this.locale;
-    this.locale = _extends({}, prevLocale, {
-      strings: _extends({}, prevLocale.strings, locale.strings)
-    });
-    this.locale.pluralize = locale.pluralize || prevLocale.pluralize;
-  }
-  /**
-   * Takes a string with placeholder variables like `%{smart_count} file selected`
-   * and replaces it with values from options `{smart_count: 5}`
-   *
-   * @license https://github.com/airbnb/polyglot.js/blob/master/LICENSE
-   * taken from https://github.com/airbnb/polyglot.js/blob/master/lib/polyglot.js#L299
-   *
-   * @param {string} phrase that needs interpolation, with placeholders
-   * @param {object} options with values that will be used to replace placeholders
-   * @returns {any[]} interpolated
-   */
-  ;
-
-  _proto.interpolate = function interpolate(phrase, options) {
-    var _String$prototype = String.prototype,
-        split = _String$prototype.split,
-        replace = _String$prototype.replace;
-    var dollarRegex = /\$/g;
-    var dollarBillsYall = '$$$$';
-    var interpolated = [phrase];
-
-    for (var arg in options) {
-      if (arg !== '_' && has(options, arg)) {
-        // Ensure replacement value is escaped to prevent special $-prefixed
-        // regex replace tokens. the "$$$$" is needed because each "$" needs to
-        // be escaped with "$" itself, and we need two in the resulting output.
-        var replacement = options[arg];
-
-        if (typeof replacement === 'string') {
-          replacement = replace.call(options[arg], dollarRegex, dollarBillsYall);
-        } // We create a new `RegExp` each time instead of using a more-efficient
-        // string replace so that the same argument can be replaced multiple times
-        // in the same phrase.
-
-
-        interpolated = insertReplacement(interpolated, new RegExp("%\\{" + arg + "\\}", 'g'), replacement);
-      }
-    }
-
-    return interpolated;
-
-    function insertReplacement(source, rx, replacement) {
-      var newParts = [];
-      source.forEach(function (chunk) {
-        // When the source contains multiple placeholders for interpolation,
-        // we should ignore chunks that are not strings, because those
-        // can be JSX objects and will be otherwise incorrectly turned into strings.
-        // Without this condition we’d get this: [object Object] hello [object Object] my <button>
-        if (typeof chunk !== 'string') {
-          return newParts.push(chunk);
-        }
-
-        split.call(chunk, rx).forEach(function (raw, i, list) {
-          if (raw !== '') {
-            newParts.push(raw);
-          } // Interlace with the `replacement` value
-
-
-          if (i < list.length - 1) {
-            newParts.push(replacement);
-          }
-        });
-      });
-      return newParts;
-    }
-  }
-  /**
-   * Public translate method
-   *
-   * @param {string} key
-   * @param {object} options with values that will be used later to replace placeholders in string
-   * @returns {string} translated (and interpolated)
-   */
-  ;
-
-  _proto.translate = function translate(key, options) {
-    return this.translateArray(key, options).join('');
-  }
-  /**
-   * Get a translation and return the translated and interpolated parts as an array.
-   *
-   * @param {string} key
-   * @param {object} options with values that will be used to replace placeholders
-   * @returns {Array} The translated and interpolated parts, in order.
-   */
-  ;
-
-  _proto.translateArray = function translateArray(key, options) {
-    if (!has(this.locale.strings, key)) {
-      throw new Error("missing string: " + key);
-    }
-
-    var string = this.locale.strings[key];
-    var hasPluralForms = typeof string === 'object';
-
-    if (hasPluralForms) {
-      if (options && typeof options.smart_count !== 'undefined') {
-        var plural = this.locale.pluralize(options.smart_count);
-        return this.interpolate(string[plural], options);
-      }
-
-      throw new Error('Attempted to use a string with plural forms, but no value was given for %{smart_count}');
-    }
-
-    return this.interpolate(string, options);
-  };
-
-  return Translator;
-}();
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/delay.js":
-/*!***********************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/delay.js ***!
-  \***********************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-var _require = __webpack_require__(/*! ./AbortController */ "./node_modules/@uppy/utils/lib/AbortController.js"),
-    createAbortError = _require.createAbortError;
-/**
- * Return a Promise that resolves after `ms` milliseconds.
- *
- * @param {number} ms - Number of milliseconds to wait.
- * @param {{ signal?: AbortSignal }} [opts] - An abort signal that can be used to cancel the delay early.
- * @returns {Promise<void>} A Promise that resolves after the given amount of `ms`.
- */
-
-
-module.exports = function delay(ms, opts) {
-  return new Promise(function (resolve, reject) {
-    if (opts && opts.signal && opts.signal.aborted) {
-      return reject(createAbortError());
-    }
-
-    function onabort() {
-      clearTimeout(timeout);
-      cleanup();
-      reject(createAbortError());
-    }
-
-    var timeout = setTimeout(function () {
-      cleanup();
-      resolve();
-    }, ms);
-
-    if (opts && opts.signal) {
-      opts.signal.addEventListener('abort', onabort);
-    }
-
-    function cleanup() {
-      if (opts && opts.signal) {
-        opts.signal.removeEventListener('abort', onabort);
-      }
-    }
-  });
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/emitSocketProgress.js":
-/*!************************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/emitSocketProgress.js ***!
-  \************************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-var throttle = __webpack_require__(/*! lodash.throttle */ "./node_modules/lodash.throttle/index.js");
-
-function _emitSocketProgress(uploader, progressData, file) {
-  var progress = progressData.progress,
-      bytesUploaded = progressData.bytesUploaded,
-      bytesTotal = progressData.bytesTotal;
-
-  if (progress) {
-    uploader.uppy.log("Upload progress: " + progress);
-    uploader.uppy.emit('upload-progress', file, {
-      uploader: uploader,
-      bytesUploaded: bytesUploaded,
-      bytesTotal: bytesTotal
-    });
-  }
-}
-
-module.exports = throttle(_emitSocketProgress, 300, {
-  leading: true,
-  trailing: true
-});
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/fetchWithNetworkError.js":
-/*!***************************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/fetchWithNetworkError.js ***!
-  \***************************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-var NetworkError = __webpack_require__(/*! ./NetworkError */ "./node_modules/@uppy/utils/lib/NetworkError.js");
-/**
- * Wrapper around window.fetch that throws a NetworkError when appropriate
- */
-
-
-module.exports = function fetchWithNetworkError() {
-  return fetch.apply(void 0, arguments).catch(function (err) {
-    if (err.name === 'AbortError') {
-      throw err;
-    } else {
-      throw new NetworkError(err);
-    }
-  });
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/findDOMElement.js":
-/*!********************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/findDOMElement.js ***!
-  \********************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-var isDOMElement = __webpack_require__(/*! ./isDOMElement */ "./node_modules/@uppy/utils/lib/isDOMElement.js");
-/**
- * Find a DOM element.
- *
- * @param {Node|string} element
- * @returns {Node|null}
- */
-
-
-module.exports = function findDOMElement(element, context) {
-  if (context === void 0) {
-    context = document;
-  }
-
-  if (typeof element === 'string') {
-    return context.querySelector(element);
-  }
-
-  if (isDOMElement(element)) {
-    return element;
-  }
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/findIndex.js":
-/*!***************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/findIndex.js ***!
-  \***************************************************/
-/***/ ((module) => {
-
-/**
- * Array.prototype.findIndex ponyfill for old browsers.
- *
- * @param {Array} array
- * @param {Function} predicate
- * @returns {number}
- */
-module.exports = function findIndex(array, predicate) {
-  for (var i = 0; i < array.length; i++) {
-    if (predicate(array[i])) return i;
-  }
-
-  return -1;
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/generateFileID.js":
-/*!********************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/generateFileID.js ***!
-  \********************************************************/
-/***/ ((module) => {
-
-/**
- * Takes a file object and turns it into fileID, by converting file.name to lowercase,
- * removing extra characters and adding type, size and lastModified
- *
- * @param {object} file
- * @returns {string} the fileID
- */
-module.exports = function generateFileID(file) {
-  // It's tempting to do `[items].filter(Boolean).join('-')` here, but that
-  // is slower! simple string concatenation is fast
-  var id = 'uppy';
-
-  if (typeof file.name === 'string') {
-    id += "-" + encodeFilename(file.name.toLowerCase());
-  }
-
-  if (file.type !== undefined) {
-    id += "-" + file.type;
-  }
-
-  if (file.meta && typeof file.meta.relativePath === 'string') {
-    id += "-" + encodeFilename(file.meta.relativePath.toLowerCase());
-  }
-
-  if (file.data.size !== undefined) {
-    id += "-" + file.data.size;
-  }
-
-  if (file.data.lastModified !== undefined) {
-    id += "-" + file.data.lastModified;
-  }
-
-  return id;
-};
-
-function encodeFilename(name) {
-  var suffix = '';
-  return name.replace(/[^A-Z0-9]/ig, function (character) {
-    suffix += "-" + encodeCharacter(character);
-    return '/';
-  }) + suffix;
-}
-
-function encodeCharacter(character) {
-  return character.charCodeAt(0).toString(32);
-}
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/getDroppedFiles/index.js":
-/*!***************************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/getDroppedFiles/index.js ***!
-  \***************************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-var webkitGetAsEntryApi = __webpack_require__(/*! ./utils/webkitGetAsEntryApi/index */ "./node_modules/@uppy/utils/lib/getDroppedFiles/utils/webkitGetAsEntryApi/index.js");
-
-var fallbackApi = __webpack_require__(/*! ./utils/fallbackApi */ "./node_modules/@uppy/utils/lib/getDroppedFiles/utils/fallbackApi.js");
-/**
- * Returns a promise that resolves to the array of dropped files (if a folder is dropped, and browser supports folder parsing - promise resolves to the flat array of all files in all directories).
- * Each file has .relativePath prop appended to it (e.g. "/docs/Prague/ticket_from_prague_to_ufa.pdf") if browser supports it. Otherwise it's undefined.
- *
- * @param {DataTransfer} dataTransfer
- * @param {Function} logDropError - a function that's called every time some folder or some file error out (e.g. because of the folder name being too long on Windows). Notice that resulting promise will always be resolved anyway.
- *
- * @returns {Promise} - Array<File>
- */
-
-
-module.exports = function getDroppedFiles(dataTransfer, _temp) {
-  var _ref = _temp === void 0 ? {} : _temp,
-      _ref$logDropError = _ref.logDropError,
-      logDropError = _ref$logDropError === void 0 ? function () {} : _ref$logDropError;
-
-  // Get all files from all subdirs. Works (at least) in Chrome, Mozilla, and Safari
-  if (dataTransfer.items && dataTransfer.items[0] && 'webkitGetAsEntry' in dataTransfer.items[0]) {
-    return webkitGetAsEntryApi(dataTransfer, logDropError); // Otherwise just return all first-order files
-  }
-
-  return fallbackApi(dataTransfer);
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/getDroppedFiles/utils/fallbackApi.js":
-/*!***************************************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/getDroppedFiles/utils/fallbackApi.js ***!
-  \***************************************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-var toArray = __webpack_require__(/*! ../../toArray */ "./node_modules/@uppy/utils/lib/toArray.js"); // .files fallback, should be implemented in any browser
-
-
-module.exports = function fallbackApi(dataTransfer) {
-  var files = toArray(dataTransfer.files);
-  return Promise.resolve(files);
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/getDroppedFiles/utils/webkitGetAsEntryApi/getFilesAndDirectoriesFromDirectory.js":
-/*!***********************************************************************************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/getDroppedFiles/utils/webkitGetAsEntryApi/getFilesAndDirectoriesFromDirectory.js ***!
-  \***********************************************************************************************************************/
-/***/ ((module) => {
-
-/**
- * Recursive function, calls the original callback() when the directory is entirely parsed.
- *
- * @param {FileSystemDirectoryReader} directoryReader
- * @param {Array} oldEntries
- * @param {Function} logDropError
- * @param {Function} callback - called with ([ all files and directories in that directoryReader ])
- */
-module.exports = function getFilesAndDirectoriesFromDirectory(directoryReader, oldEntries, logDropError, _ref) {
-  var onSuccess = _ref.onSuccess;
-  directoryReader.readEntries(function (entries) {
-    var newEntries = [].concat(oldEntries, entries); // According to the FileSystem API spec, getFilesAndDirectoriesFromDirectory() must be called until it calls the onSuccess with an empty array.
-
-    if (entries.length) {
-      setTimeout(function () {
-        getFilesAndDirectoriesFromDirectory(directoryReader, newEntries, logDropError, {
-          onSuccess: onSuccess
-        });
-      }, 0); // Done iterating this particular directory
-    } else {
-      onSuccess(newEntries);
-    }
-  }, // Make sure we resolve on error anyway, it's fine if only one directory couldn't be parsed!
-  function (error) {
-    logDropError(error);
-    onSuccess(oldEntries);
-  });
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/getDroppedFiles/utils/webkitGetAsEntryApi/getRelativePath.js":
-/*!***************************************************************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/getDroppedFiles/utils/webkitGetAsEntryApi/getRelativePath.js ***!
-  \***************************************************************************************************/
-/***/ ((module) => {
-
-/**
- * Get the relative path from the FileEntry#fullPath, because File#webkitRelativePath is always '', at least onDrop.
- *
- * @param {FileEntry} fileEntry
- *
- * @returns {string|null} - if file is not in a folder - return null (this is to be consistent with .relativePath-s of files selected from My Device). If file is in a folder - return its fullPath, e.g. '/simpsons/hi.jpeg'.
- */
-module.exports = function getRelativePath(fileEntry) {
-  // fileEntry.fullPath - "/simpsons/hi.jpeg" or undefined (for browsers that don't support it)
-  // fileEntry.name - "hi.jpeg"
-  if (!fileEntry.fullPath || fileEntry.fullPath === "/" + fileEntry.name) {
-    return null;
-  }
-
-  return fileEntry.fullPath;
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/getDroppedFiles/utils/webkitGetAsEntryApi/index.js":
-/*!*****************************************************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/getDroppedFiles/utils/webkitGetAsEntryApi/index.js ***!
-  \*****************************************************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-var toArray = __webpack_require__(/*! ../../../toArray */ "./node_modules/@uppy/utils/lib/toArray.js");
-
-var getRelativePath = __webpack_require__(/*! ./getRelativePath */ "./node_modules/@uppy/utils/lib/getDroppedFiles/utils/webkitGetAsEntryApi/getRelativePath.js");
-
-var getFilesAndDirectoriesFromDirectory = __webpack_require__(/*! ./getFilesAndDirectoriesFromDirectory */ "./node_modules/@uppy/utils/lib/getDroppedFiles/utils/webkitGetAsEntryApi/getFilesAndDirectoriesFromDirectory.js");
-
-module.exports = function webkitGetAsEntryApi(dataTransfer, logDropError) {
-  var files = [];
-  var rootPromises = [];
-  /**
-   * Returns a resolved promise, when :files array is enhanced
-   *
-   * @param {(FileSystemFileEntry|FileSystemDirectoryEntry)} entry
-   * @returns {Promise} - empty promise that resolves when :files is enhanced with a file
-   */
-
-  var createPromiseToAddFileOrParseDirectory = function createPromiseToAddFileOrParseDirectory(entry) {
-    return new Promise(function (resolve) {
-      // This is a base call
-      if (entry.isFile) {
-        // Creates a new File object which can be used to read the file.
-        entry.file(function (file) {
-          file.relativePath = getRelativePath(entry);
-          files.push(file);
-          resolve();
-        }, // Make sure we resolve on error anyway, it's fine if only one file couldn't be read!
-        function (error) {
-          logDropError(error);
-          resolve();
-        }); // This is a recursive call
-      } else if (entry.isDirectory) {
-        var directoryReader = entry.createReader();
-        getFilesAndDirectoriesFromDirectory(directoryReader, [], logDropError, {
-          onSuccess: function onSuccess(entries) {
-            var promises = entries.map(function (entry) {
-              return createPromiseToAddFileOrParseDirectory(entry);
-            });
-            Promise.all(promises).then(function () {
-              return resolve();
-            });
-          }
-        });
-      }
-    });
-  }; // For each dropped item, - make sure it's a file/directory, and start deepening in!
-
-
-  toArray(dataTransfer.items).forEach(function (item) {
-    var entry = item.webkitGetAsEntry(); // :entry can be null when we drop the url e.g.
-
-    if (entry) {
-      rootPromises.push(createPromiseToAddFileOrParseDirectory(entry));
-    }
-  });
-  return Promise.all(rootPromises).then(function () {
-    return files;
-  });
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/getFileNameAndExtension.js":
-/*!*****************************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/getFileNameAndExtension.js ***!
-  \*****************************************************************/
-/***/ ((module) => {
-
-/**
- * Takes a full filename string and returns an object {name, extension}
- *
- * @param {string} fullFileName
- * @returns {object} {name, extension}
- */
-module.exports = function getFileNameAndExtension(fullFileName) {
-  var lastDot = fullFileName.lastIndexOf('.'); // these count as no extension: "no-dot", "trailing-dot."
-
-  if (lastDot === -1 || lastDot === fullFileName.length - 1) {
-    return {
-      name: fullFileName,
-      extension: undefined
-    };
-  }
-
-  return {
-    name: fullFileName.slice(0, lastDot),
-    extension: fullFileName.slice(lastDot + 1)
-  };
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/getFileType.js":
-/*!*****************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/getFileType.js ***!
-  \*****************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-var getFileNameAndExtension = __webpack_require__(/*! ./getFileNameAndExtension */ "./node_modules/@uppy/utils/lib/getFileNameAndExtension.js");
-
-var mimeTypes = __webpack_require__(/*! ./mimeTypes */ "./node_modules/@uppy/utils/lib/mimeTypes.js");
-
-module.exports = function getFileType(file) {
-  var fileExtension = file.name ? getFileNameAndExtension(file.name).extension : null;
-  fileExtension = fileExtension ? fileExtension.toLowerCase() : null;
-
-  if (file.type) {
-    // if mime type is set in the file object already, use that
-    return file.type;
-  }
-
-  if (fileExtension && mimeTypes[fileExtension]) {
-    // else, see if we can map extension to a mime type
-    return mimeTypes[fileExtension];
-  } // if all fails, fall back to a generic byte stream type
-
-
-  return 'application/octet-stream';
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/getSocketHost.js":
-/*!*******************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/getSocketHost.js ***!
-  \*******************************************************/
-/***/ ((module) => {
-
-module.exports = function getSocketHost(url) {
-  // get the host domain
-  var regex = /^(?:https?:\/\/|\/\/)?(?:[^@\n]+@)?(?:www\.)?([^\n]+)/i;
-  var host = regex.exec(url)[1];
-  var socketProtocol = /^http:\/\//i.test(url) ? 'ws' : 'wss';
-  return socketProtocol + "://" + host;
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/getTimeStamp.js":
-/*!******************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/getTimeStamp.js ***!
-  \******************************************************/
-/***/ ((module) => {
-
-/**
- * Returns a timestamp in the format of `hours:minutes:seconds`
- */
-module.exports = function getTimeStamp() {
-  var date = new Date();
-  var hours = pad(date.getHours().toString());
-  var minutes = pad(date.getMinutes().toString());
-  var seconds = pad(date.getSeconds().toString());
-  return hours + ":" + minutes + ":" + seconds;
-};
-/**
- * Adds zero to strings shorter than two characters
- */
-
-
-function pad(str) {
-  return str.length !== 2 ? 0 + str : str;
-}
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/hasProperty.js":
-/*!*****************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/hasProperty.js ***!
-  \*****************************************************/
-/***/ ((module) => {
-
-module.exports = function has(object, key) {
-  return Object.prototype.hasOwnProperty.call(object, key);
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/isDOMElement.js":
-/*!******************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/isDOMElement.js ***!
-  \******************************************************/
-/***/ ((module) => {
-
-/**
- * Check if an object is a DOM element. Duck-typing based on `nodeType`.
- *
- * @param {*} obj
- */
-module.exports = function isDOMElement(obj) {
-  return obj && typeof obj === 'object' && obj.nodeType === Node.ELEMENT_NODE;
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/mimeTypes.js":
-/*!***************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/mimeTypes.js ***!
-  \***************************************************/
-/***/ ((module) => {
-
-// ___Why not add the mime-types package?
-//    It's 19.7kB gzipped, and we only need mime types for well-known extensions (for file previews).
-// ___Where to take new extensions from?
-//    https://github.com/jshttp/mime-db/blob/master/db.json
-module.exports = {
-  md: 'text/markdown',
-  markdown: 'text/markdown',
-  mp4: 'video/mp4',
-  mp3: 'audio/mp3',
-  svg: 'image/svg+xml',
-  jpg: 'image/jpeg',
-  png: 'image/png',
-  gif: 'image/gif',
-  heic: 'image/heic',
-  heif: 'image/heif',
-  yaml: 'text/yaml',
-  yml: 'text/yaml',
-  csv: 'text/csv',
-  tsv: 'text/tab-separated-values',
-  tab: 'text/tab-separated-values',
-  avi: 'video/x-msvideo',
-  mks: 'video/x-matroska',
-  mkv: 'video/x-matroska',
-  mov: 'video/quicktime',
-  doc: 'application/msword',
-  docm: 'application/vnd.ms-word.document.macroenabled.12',
-  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  dot: 'application/msword',
-  dotm: 'application/vnd.ms-word.template.macroenabled.12',
-  dotx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.template',
-  xla: 'application/vnd.ms-excel',
-  xlam: 'application/vnd.ms-excel.addin.macroenabled.12',
-  xlc: 'application/vnd.ms-excel',
-  xlf: 'application/x-xliff+xml',
-  xlm: 'application/vnd.ms-excel',
-  xls: 'application/vnd.ms-excel',
-  xlsb: 'application/vnd.ms-excel.sheet.binary.macroenabled.12',
-  xlsm: 'application/vnd.ms-excel.sheet.macroenabled.12',
-  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  xlt: 'application/vnd.ms-excel',
-  xltm: 'application/vnd.ms-excel.template.macroenabled.12',
-  xltx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.template',
-  xlw: 'application/vnd.ms-excel',
-  txt: 'text/plain',
-  text: 'text/plain',
-  conf: 'text/plain',
-  log: 'text/plain',
-  pdf: 'application/pdf',
-  zip: 'application/zip',
-  '7z': 'application/x-7z-compressed',
-  rar: 'application/x-rar-compressed',
-  tar: 'application/x-tar',
-  gz: 'application/gzip',
-  dmg: 'application/x-apple-diskimage'
-};
-
-/***/ }),
-
-/***/ "./node_modules/@uppy/utils/lib/toArray.js":
-/*!*************************************************!*\
-  !*** ./node_modules/@uppy/utils/lib/toArray.js ***!
-  \*************************************************/
-/***/ ((module) => {
-
-/**
- * Converts list into array
- */
-module.exports = function toArray(list) {
-  return Array.prototype.slice.call(list || [], 0);
-};
-
-/***/ }),
-
-/***/ "./node_modules/abortcontroller-polyfill/dist/abortcontroller.js":
-/*!***********************************************************************!*\
-  !*** ./node_modules/abortcontroller-polyfill/dist/abortcontroller.js ***!
-  \***********************************************************************/
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-
-function _classCallCheck(instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-}
-
-function _defineProperties(target, props) {
-  for (var i = 0; i < props.length; i++) {
-    var descriptor = props[i];
-    descriptor.enumerable = descriptor.enumerable || false;
-    descriptor.configurable = true;
-    if ("value" in descriptor) descriptor.writable = true;
-    Object.defineProperty(target, descriptor.key, descriptor);
-  }
-}
-
-function _createClass(Constructor, protoProps, staticProps) {
-  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-  if (staticProps) _defineProperties(Constructor, staticProps);
-  return Constructor;
-}
-
-function _inherits(subClass, superClass) {
-  if (typeof superClass !== "function" && superClass !== null) {
-    throw new TypeError("Super expression must either be null or a function");
-  }
-
-  subClass.prototype = Object.create(superClass && superClass.prototype, {
-    constructor: {
-      value: subClass,
-      writable: true,
-      configurable: true
-    }
-  });
-  if (superClass) _setPrototypeOf(subClass, superClass);
-}
-
-function _getPrototypeOf(o) {
-  _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
-    return o.__proto__ || Object.getPrototypeOf(o);
-  };
-  return _getPrototypeOf(o);
-}
-
-function _setPrototypeOf(o, p) {
-  _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
-    o.__proto__ = p;
-    return o;
-  };
-
-  return _setPrototypeOf(o, p);
-}
-
-function _isNativeReflectConstruct() {
-  if (typeof Reflect === "undefined" || !Reflect.construct) return false;
-  if (Reflect.construct.sham) return false;
-  if (typeof Proxy === "function") return true;
-
-  try {
-    Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {}));
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-
-function _assertThisInitialized(self) {
-  if (self === void 0) {
-    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }
-
-  return self;
-}
-
-function _possibleConstructorReturn(self, call) {
-  if (call && (typeof call === "object" || typeof call === "function")) {
-    return call;
-  }
-
-  return _assertThisInitialized(self);
-}
-
-function _createSuper(Derived) {
-  var hasNativeReflectConstruct = _isNativeReflectConstruct();
-
-  return function _createSuperInternal() {
-    var Super = _getPrototypeOf(Derived),
-        result;
-
-    if (hasNativeReflectConstruct) {
-      var NewTarget = _getPrototypeOf(this).constructor;
-
-      result = Reflect.construct(Super, arguments, NewTarget);
-    } else {
-      result = Super.apply(this, arguments);
-    }
-
-    return _possibleConstructorReturn(this, result);
-  };
-}
-
-function _superPropBase(object, property) {
-  while (!Object.prototype.hasOwnProperty.call(object, property)) {
-    object = _getPrototypeOf(object);
-    if (object === null) break;
-  }
-
-  return object;
-}
-
-function _get(target, property, receiver) {
-  if (typeof Reflect !== "undefined" && Reflect.get) {
-    _get = Reflect.get;
-  } else {
-    _get = function _get(target, property, receiver) {
-      var base = _superPropBase(target, property);
-
-      if (!base) return;
-      var desc = Object.getOwnPropertyDescriptor(base, property);
-
-      if (desc.get) {
-        return desc.get.call(receiver);
-      }
-
-      return desc.value;
-    };
-  }
-
-  return _get(target, property, receiver || target);
-}
-
-var Emitter = /*#__PURE__*/function () {
-  function Emitter() {
-    _classCallCheck(this, Emitter);
-
-    Object.defineProperty(this, 'listeners', {
-      value: {},
-      writable: true,
-      configurable: true
-    });
-  }
-
-  _createClass(Emitter, [{
-    key: "addEventListener",
-    value: function addEventListener(type, callback, options) {
-      if (!(type in this.listeners)) {
-        this.listeners[type] = [];
-      }
-
-      this.listeners[type].push({
-        callback: callback,
-        options: options
-      });
-    }
-  }, {
-    key: "removeEventListener",
-    value: function removeEventListener(type, callback) {
-      if (!(type in this.listeners)) {
-        return;
-      }
-
-      var stack = this.listeners[type];
-
-      for (var i = 0, l = stack.length; i < l; i++) {
-        if (stack[i].callback === callback) {
-          stack.splice(i, 1);
-          return;
-        }
-      }
-    }
-  }, {
-    key: "dispatchEvent",
-    value: function dispatchEvent(event) {
-      if (!(event.type in this.listeners)) {
-        return;
-      }
-
-      var stack = this.listeners[event.type];
-      var stackToCall = stack.slice();
-
-      for (var i = 0, l = stackToCall.length; i < l; i++) {
-        var listener = stackToCall[i];
-
-        try {
-          listener.callback.call(this, event);
-        } catch (e) {
-          Promise.resolve().then(function () {
-            throw e;
-          });
-        }
-
-        if (listener.options && listener.options.once) {
-          this.removeEventListener(event.type, listener.callback);
-        }
-      }
-
-      return !event.defaultPrevented;
-    }
-  }]);
-
-  return Emitter;
-}();
-
-var AbortSignal = /*#__PURE__*/function (_Emitter) {
-  _inherits(AbortSignal, _Emitter);
-
-  var _super = _createSuper(AbortSignal);
-
-  function AbortSignal() {
-    var _this;
-
-    _classCallCheck(this, AbortSignal);
-
-    _this = _super.call(this); // Some versions of babel does not transpile super() correctly for IE <= 10, if the parent
-    // constructor has failed to run, then "this.listeners" will still be undefined and then we call
-    // the parent constructor directly instead as a workaround. For general details, see babel bug:
-    // https://github.com/babel/babel/issues/3041
-    // This hack was added as a fix for the issue described here:
-    // https://github.com/Financial-Times/polyfill-library/pull/59#issuecomment-477558042
-
-    if (!_this.listeners) {
-      Emitter.call(_assertThisInitialized(_this));
-    } // Compared to assignment, Object.defineProperty makes properties non-enumerable by default and
-    // we want Object.keys(new AbortController().signal) to be [] for compat with the native impl
-
-
-    Object.defineProperty(_assertThisInitialized(_this), 'aborted', {
-      value: false,
-      writable: true,
-      configurable: true
-    });
-    Object.defineProperty(_assertThisInitialized(_this), 'onabort', {
-      value: null,
-      writable: true,
-      configurable: true
-    });
-    return _this;
-  }
-
-  _createClass(AbortSignal, [{
-    key: "toString",
-    value: function toString() {
-      return '[object AbortSignal]';
-    }
-  }, {
-    key: "dispatchEvent",
-    value: function dispatchEvent(event) {
-      if (event.type === 'abort') {
-        this.aborted = true;
-
-        if (typeof this.onabort === 'function') {
-          this.onabort.call(this, event);
-        }
-      }
-
-      _get(_getPrototypeOf(AbortSignal.prototype), "dispatchEvent", this).call(this, event);
-    }
-  }]);
-
-  return AbortSignal;
-}(Emitter);
-var AbortController = /*#__PURE__*/function () {
-  function AbortController() {
-    _classCallCheck(this, AbortController);
-
-    // Compared to assignment, Object.defineProperty makes properties non-enumerable by default and
-    // we want Object.keys(new AbortController()) to be [] for compat with the native impl
-    Object.defineProperty(this, 'signal', {
-      value: new AbortSignal(),
-      writable: true,
-      configurable: true
-    });
-  }
-
-  _createClass(AbortController, [{
-    key: "abort",
-    value: function abort() {
-      var event;
-
-      try {
-        event = new Event('abort');
-      } catch (e) {
-        if (typeof document !== 'undefined') {
-          if (!document.createEvent) {
-            // For Internet Explorer 8:
-            event = document.createEventObject();
-            event.type = 'abort';
-          } else {
-            // For Internet Explorer 11:
-            event = document.createEvent('Event');
-            event.initEvent('abort', false, false);
-          }
-        } else {
-          // Fallback where document isn't available:
-          event = {
-            type: 'abort',
-            bubbles: false,
-            cancelable: false
-          };
-        }
-      }
-
-      this.signal.dispatchEvent(event);
-    }
-  }, {
-    key: "toString",
-    value: function toString() {
-      return '[object AbortController]';
-    }
-  }]);
-
-  return AbortController;
-}();
-
-if (typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-  // These are necessary to make sure that we get correct output for:
-  // Object.prototype.toString.call(new AbortController())
-  AbortController.prototype[Symbol.toStringTag] = 'AbortController';
-  AbortSignal.prototype[Symbol.toStringTag] = 'AbortSignal';
-}
-
-exports.AbortController = AbortController;
-exports.AbortSignal = AbortSignal;
-exports["default"] = AbortController;
-
-
-/***/ }),
-
-/***/ "./node_modules/cuid/index.js":
-/*!************************************!*\
-  !*** ./node_modules/cuid/index.js ***!
-  \************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-/**
- * cuid.js
- * Collision-resistant UID generator for browsers and node.
- * Sequential for fast db lookups and recency sorting.
- * Safe for element IDs and server-side lookups.
- *
- * Extracted from CLCTR
- *
- * Copyright (c) Eric Elliott 2012
- * MIT License
- */
-
-var fingerprint = __webpack_require__(/*! ./lib/fingerprint.js */ "./node_modules/cuid/lib/fingerprint.browser.js");
-var pad = __webpack_require__(/*! ./lib/pad.js */ "./node_modules/cuid/lib/pad.js");
-var getRandomValue = __webpack_require__(/*! ./lib/getRandomValue.js */ "./node_modules/cuid/lib/getRandomValue.browser.js");
-
-var c = 0,
-  blockSize = 4,
-  base = 36,
-  discreteValues = Math.pow(base, blockSize);
-
-function randomBlock () {
-  return pad((getRandomValue() *
-    discreteValues << 0)
-    .toString(base), blockSize);
-}
-
-function safeCounter () {
-  c = c < discreteValues ? c : 0;
-  c++; // this is not subliminal
-  return c - 1;
-}
-
-function cuid () {
-  // Starting with a lowercase letter makes
-  // it HTML element ID friendly.
-  var letter = 'c', // hard-coded allows for sequential access
-
-    // timestamp
-    // warning: this exposes the exact date and time
-    // that the uid was created.
-    timestamp = (new Date().getTime()).toString(base),
-
-    // Prevent same-machine collisions.
-    counter = pad(safeCounter().toString(base), blockSize),
-
-    // A few chars to generate distinct ids for different
-    // clients (so different computers are far less
-    // likely to generate the same id)
-    print = fingerprint(),
-
-    // Grab some more chars from Math.random()
-    random = randomBlock() + randomBlock();
-
-  return letter + timestamp + counter + print + random;
-}
-
-cuid.slug = function slug () {
-  var date = new Date().getTime().toString(36),
-    counter = safeCounter().toString(36).slice(-4),
-    print = fingerprint().slice(0, 1) +
-      fingerprint().slice(-1),
-    random = randomBlock().slice(-2);
-
-  return date.slice(-2) +
-    counter + print + random;
-};
-
-cuid.isCuid = function isCuid (stringToCheck) {
-  if (typeof stringToCheck !== 'string') return false;
-  if (stringToCheck.startsWith('c')) return true;
-  return false;
-};
-
-cuid.isSlug = function isSlug (stringToCheck) {
-  if (typeof stringToCheck !== 'string') return false;
-  var stringLength = stringToCheck.length;
-  if (stringLength >= 7 && stringLength <= 10) return true;
-  return false;
-};
-
-cuid.fingerprint = fingerprint;
-
-module.exports = cuid;
-
-
-/***/ }),
-
-/***/ "./node_modules/cuid/lib/fingerprint.browser.js":
-/*!******************************************************!*\
-  !*** ./node_modules/cuid/lib/fingerprint.browser.js ***!
-  \******************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-var pad = __webpack_require__(/*! ./pad.js */ "./node_modules/cuid/lib/pad.js");
-
-var env = typeof window === 'object' ? window : self;
-var globalCount = Object.keys(env).length;
-var mimeTypesLength = navigator.mimeTypes ? navigator.mimeTypes.length : 0;
-var clientId = pad((mimeTypesLength +
-  navigator.userAgent.length).toString(36) +
-  globalCount.toString(36), 4);
-
-module.exports = function fingerprint () {
-  return clientId;
-};
-
-
-/***/ }),
-
-/***/ "./node_modules/cuid/lib/getRandomValue.browser.js":
-/*!*********************************************************!*\
-  !*** ./node_modules/cuid/lib/getRandomValue.browser.js ***!
-  \*********************************************************/
-/***/ ((module) => {
-
-
-var getRandomValue;
-
-var crypto = typeof window !== 'undefined' &&
-  (window.crypto || window.msCrypto) ||
-  typeof self !== 'undefined' &&
-  self.crypto;
-
-if (crypto) {
-    var lim = Math.pow(2, 32) - 1;
-    getRandomValue = function () {
-        return Math.abs(crypto.getRandomValues(new Uint32Array(1))[0] / lim);
-    };
-} else {
-    getRandomValue = Math.random;
-}
-
-module.exports = getRandomValue;
-
-
-/***/ }),
-
-/***/ "./node_modules/cuid/lib/pad.js":
-/*!**************************************!*\
-  !*** ./node_modules/cuid/lib/pad.js ***!
-  \**************************************/
-/***/ ((module) => {
-
-module.exports = function pad (num, size) {
-  var s = '000000000' + num;
-  return s.substr(s.length - size);
-};
+    // export Base64 to the namespace
+    //
+    if (global['Meteor']) { // Meteor.js
+        Base64 = global.Base64;
+    }
+    // module.exports and AMD are mutually exclusive.
+    // module.exports has precedence.
+    if ( true && module.exports) {
+        module.exports.Base64 = global.Base64;
+    }
+    else if (true) {
+        // AMD. Register as an anonymous module.
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = (function(){ return global.Base64 }).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+		__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+    }
+    // that's it!
+    return {Base64: global.Base64}
+}));
 
 
 /***/ }),
@@ -6544,1070 +911,30 @@ module.exports = function createNamespaceEmitter () {
 
 /***/ }),
 
-/***/ "./node_modules/preact/dist/preact.esm.js":
-/*!************************************************!*\
-  !*** ./node_modules/preact/dist/preact.esm.js ***!
-  \************************************************/
+/***/ "./node_modules/preact/dist/preact.module.js":
+/*!***************************************************!*\
+  !*** ./node_modules/preact/dist/preact.module.js ***!
+  \***************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "Component": () => (/* binding */ Component),
-/* harmony export */   "cloneElement": () => (/* binding */ cloneElement),
-/* harmony export */   "createElement": () => (/* binding */ h),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
-/* harmony export */   "h": () => (/* binding */ h),
-/* harmony export */   "options": () => (/* binding */ options),
-/* harmony export */   "render": () => (/* binding */ render),
-/* harmony export */   "rerender": () => (/* binding */ rerender)
+/* harmony export */   "Component": () => (/* binding */ _),
+/* harmony export */   "Fragment": () => (/* binding */ d),
+/* harmony export */   "cloneElement": () => (/* binding */ B),
+/* harmony export */   "createContext": () => (/* binding */ D),
+/* harmony export */   "createElement": () => (/* binding */ v),
+/* harmony export */   "createRef": () => (/* binding */ p),
+/* harmony export */   "h": () => (/* binding */ v),
+/* harmony export */   "hydrate": () => (/* binding */ q),
+/* harmony export */   "isValidElement": () => (/* binding */ i),
+/* harmony export */   "options": () => (/* binding */ l),
+/* harmony export */   "render": () => (/* binding */ S),
+/* harmony export */   "toChildArray": () => (/* binding */ A)
 /* harmony export */ });
-/** Virtual DOM Node */
-function VNode() {}
-
-/** Global options
- *	@public
- *	@namespace options {Object}
- */
-var options = {
-
-	/** If `true`, `prop` changes trigger synchronous component updates.
-  *	@name syncComponentUpdates
-  *	@type Boolean
-  *	@default true
-  */
-	//syncComponentUpdates: true,
-
-	/** Processes all created VNodes.
-  *	@param {VNode} vnode	A newly-created VNode to normalize/process
-  */
-	//vnode(vnode) { }
-
-	/** Hook invoked after a component is mounted. */
-	// afterMount(component) { }
-
-	/** Hook invoked after the DOM is updated with a component's latest render. */
-	// afterUpdate(component) { }
-
-	/** Hook invoked immediately before a component is unmounted. */
-	// beforeUnmount(component) { }
-};
-
-var stack = [];
-
-var EMPTY_CHILDREN = [];
-
-/**
- * JSX/hyperscript reviver.
- * @see http://jasonformat.com/wtf-is-jsx
- * Benchmarks: https://esbench.com/bench/57ee8f8e330ab09900a1a1a0
- *
- * Note: this is exported as both `h()` and `createElement()` for compatibility reasons.
- *
- * Creates a VNode (virtual DOM element). A tree of VNodes can be used as a lightweight representation
- * of the structure of a DOM tree. This structure can be realized by recursively comparing it against
- * the current _actual_ DOM structure, and applying only the differences.
- *
- * `h()`/`createElement()` accepts an element name, a list of attributes/props,
- * and optionally children to append to the element.
- *
- * @example The following DOM tree
- *
- * `<div id="foo" name="bar">Hello!</div>`
- *
- * can be constructed using this function as:
- *
- * `h('div', { id: 'foo', name : 'bar' }, 'Hello!');`
- *
- * @param {string} nodeName	An element name. Ex: `div`, `a`, `span`, etc.
- * @param {Object} attributes	Any attributes/props to set on the created element.
- * @param rest			Additional arguments are taken to be children to append. Can be infinitely nested Arrays.
- *
- * @public
- */
-function h(nodeName, attributes) {
-	var children = EMPTY_CHILDREN,
-	    lastSimple,
-	    child,
-	    simple,
-	    i;
-	for (i = arguments.length; i-- > 2;) {
-		stack.push(arguments[i]);
-	}
-	if (attributes && attributes.children != null) {
-		if (!stack.length) stack.push(attributes.children);
-		delete attributes.children;
-	}
-	while (stack.length) {
-		if ((child = stack.pop()) && child.pop !== undefined) {
-			for (i = child.length; i--;) {
-				stack.push(child[i]);
-			}
-		} else {
-			if (typeof child === 'boolean') child = null;
-
-			if (simple = typeof nodeName !== 'function') {
-				if (child == null) child = '';else if (typeof child === 'number') child = String(child);else if (typeof child !== 'string') simple = false;
-			}
-
-			if (simple && lastSimple) {
-				children[children.length - 1] += child;
-			} else if (children === EMPTY_CHILDREN) {
-				children = [child];
-			} else {
-				children.push(child);
-			}
-
-			lastSimple = simple;
-		}
-	}
-
-	var p = new VNode();
-	p.nodeName = nodeName;
-	p.children = children;
-	p.attributes = attributes == null ? undefined : attributes;
-	p.key = attributes == null ? undefined : attributes.key;
-
-	// if a "vnode hook" is defined, pass every created VNode to it
-	if (options.vnode !== undefined) options.vnode(p);
-
-	return p;
-}
-
-/**
- *  Copy all properties from `props` onto `obj`.
- *  @param {Object} obj		Object onto which properties should be copied.
- *  @param {Object} props	Object from which to copy properties.
- *  @returns obj
- *  @private
- */
-function extend(obj, props) {
-  for (var i in props) {
-    obj[i] = props[i];
-  }return obj;
-}
-
-/**
- * Call a function asynchronously, as soon as possible. Makes
- * use of HTML Promise to schedule the callback if available,
- * otherwise falling back to `setTimeout` (mainly for IE<11).
- *
- * @param {Function} callback
- */
-var defer = typeof Promise == 'function' ? Promise.resolve().then.bind(Promise.resolve()) : setTimeout;
-
-/**
- * Clones the given VNode, optionally adding attributes/props and replacing its children.
- * @param {VNode} vnode		The virtual DOM element to clone
- * @param {Object} props	Attributes/props to add when cloning
- * @param {VNode} rest		Any additional arguments will be used as replacement children.
- */
-function cloneElement(vnode, props) {
-  return h(vnode.nodeName, extend(extend({}, vnode.attributes), props), arguments.length > 2 ? [].slice.call(arguments, 2) : vnode.children);
-}
-
-// DOM properties that should NOT have "px" added when numeric
-var IS_NON_DIMENSIONAL = /acit|ex(?:s|g|n|p|$)|rph|ows|mnc|ntw|ine[ch]|zoo|^ord/i;
-
-/** Managed queue of dirty components to be re-rendered */
-
-var items = [];
-
-function enqueueRender(component) {
-	if (!component._dirty && (component._dirty = true) && items.push(component) == 1) {
-		(options.debounceRendering || defer)(rerender);
-	}
-}
-
-function rerender() {
-	var p,
-	    list = items;
-	items = [];
-	while (p = list.pop()) {
-		if (p._dirty) renderComponent(p);
-	}
-}
-
-/**
- * Check if two nodes are equivalent.
- *
- * @param {Node} node			DOM Node to compare
- * @param {VNode} vnode			Virtual DOM node to compare
- * @param {boolean} [hydrating=false]	If true, ignores component constructors when comparing.
- * @private
- */
-function isSameNodeType(node, vnode, hydrating) {
-  if (typeof vnode === 'string' || typeof vnode === 'number') {
-    return node.splitText !== undefined;
-  }
-  if (typeof vnode.nodeName === 'string') {
-    return !node._componentConstructor && isNamedNode(node, vnode.nodeName);
-  }
-  return hydrating || node._componentConstructor === vnode.nodeName;
-}
-
-/**
- * Check if an Element has a given nodeName, case-insensitively.
- *
- * @param {Element} node	A DOM Element to inspect the name of.
- * @param {String} nodeName	Unnormalized name to compare against.
- */
-function isNamedNode(node, nodeName) {
-  return node.normalizedNodeName === nodeName || node.nodeName.toLowerCase() === nodeName.toLowerCase();
-}
-
-/**
- * Reconstruct Component-style `props` from a VNode.
- * Ensures default/fallback values from `defaultProps`:
- * Own-properties of `defaultProps` not present in `vnode.attributes` are added.
- *
- * @param {VNode} vnode
- * @returns {Object} props
- */
-function getNodeProps(vnode) {
-  var props = extend({}, vnode.attributes);
-  props.children = vnode.children;
-
-  var defaultProps = vnode.nodeName.defaultProps;
-  if (defaultProps !== undefined) {
-    for (var i in defaultProps) {
-      if (props[i] === undefined) {
-        props[i] = defaultProps[i];
-      }
-    }
-  }
-
-  return props;
-}
-
-/** Create an element with the given nodeName.
- *	@param {String} nodeName
- *	@param {Boolean} [isSvg=false]	If `true`, creates an element within the SVG namespace.
- *	@returns {Element} node
- */
-function createNode(nodeName, isSvg) {
-	var node = isSvg ? document.createElementNS('http://www.w3.org/2000/svg', nodeName) : document.createElement(nodeName);
-	node.normalizedNodeName = nodeName;
-	return node;
-}
-
-/** Remove a child node from its parent if attached.
- *	@param {Element} node		The node to remove
- */
-function removeNode(node) {
-	var parentNode = node.parentNode;
-	if (parentNode) parentNode.removeChild(node);
-}
-
-/** Set a named attribute on the given Node, with special behavior for some names and event handlers.
- *	If `value` is `null`, the attribute/handler will be removed.
- *	@param {Element} node	An element to mutate
- *	@param {string} name	The name/key to set, such as an event or attribute name
- *	@param {any} old	The last value that was set for this name/node pair
- *	@param {any} value	An attribute value, such as a function to be used as an event handler
- *	@param {Boolean} isSvg	Are we currently diffing inside an svg?
- *	@private
- */
-function setAccessor(node, name, old, value, isSvg) {
-	if (name === 'className') name = 'class';
-
-	if (name === 'key') {
-		// ignore
-	} else if (name === 'ref') {
-		if (old) old(null);
-		if (value) value(node);
-	} else if (name === 'class' && !isSvg) {
-		node.className = value || '';
-	} else if (name === 'style') {
-		if (!value || typeof value === 'string' || typeof old === 'string') {
-			node.style.cssText = value || '';
-		}
-		if (value && typeof value === 'object') {
-			if (typeof old !== 'string') {
-				for (var i in old) {
-					if (!(i in value)) node.style[i] = '';
-				}
-			}
-			for (var i in value) {
-				node.style[i] = typeof value[i] === 'number' && IS_NON_DIMENSIONAL.test(i) === false ? value[i] + 'px' : value[i];
-			}
-		}
-	} else if (name === 'dangerouslySetInnerHTML') {
-		if (value) node.innerHTML = value.__html || '';
-	} else if (name[0] == 'o' && name[1] == 'n') {
-		var useCapture = name !== (name = name.replace(/Capture$/, ''));
-		name = name.toLowerCase().substring(2);
-		if (value) {
-			if (!old) node.addEventListener(name, eventProxy, useCapture);
-		} else {
-			node.removeEventListener(name, eventProxy, useCapture);
-		}
-		(node._listeners || (node._listeners = {}))[name] = value;
-	} else if (name !== 'list' && name !== 'type' && !isSvg && name in node) {
-		setProperty(node, name, value == null ? '' : value);
-		if (value == null || value === false) node.removeAttribute(name);
-	} else {
-		var ns = isSvg && name !== (name = name.replace(/^xlink:?/, ''));
-		if (value == null || value === false) {
-			if (ns) node.removeAttributeNS('http://www.w3.org/1999/xlink', name.toLowerCase());else node.removeAttribute(name);
-		} else if (typeof value !== 'function') {
-			if (ns) node.setAttributeNS('http://www.w3.org/1999/xlink', name.toLowerCase(), value);else node.setAttribute(name, value);
-		}
-	}
-}
-
-/** Attempt to set a DOM property to the given value.
- *	IE & FF throw for certain property-value combinations.
- */
-function setProperty(node, name, value) {
-	try {
-		node[name] = value;
-	} catch (e) {}
-}
-
-/** Proxy an event to hooked event handlers
- *	@private
- */
-function eventProxy(e) {
-	return this._listeners[e.type](options.event && options.event(e) || e);
-}
-
-/** Queue of components that have been mounted and are awaiting componentDidMount */
-var mounts = [];
-
-/** Diff recursion count, used to track the end of the diff cycle. */
-var diffLevel = 0;
-
-/** Global flag indicating if the diff is currently within an SVG */
-var isSvgMode = false;
-
-/** Global flag indicating if the diff is performing hydration */
-var hydrating = false;
-
-/** Invoke queued componentDidMount lifecycle methods */
-function flushMounts() {
-	var c;
-	while (c = mounts.pop()) {
-		if (options.afterMount) options.afterMount(c);
-		if (c.componentDidMount) c.componentDidMount();
-	}
-}
-
-/** Apply differences in a given vnode (and it's deep children) to a real DOM Node.
- *	@param {Element} [dom=null]		A DOM node to mutate into the shape of the `vnode`
- *	@param {VNode} vnode			A VNode (with descendants forming a tree) representing the desired DOM structure
- *	@returns {Element} dom			The created/mutated element
- *	@private
- */
-function diff(dom, vnode, context, mountAll, parent, componentRoot) {
-	// diffLevel having been 0 here indicates initial entry into the diff (not a subdiff)
-	if (!diffLevel++) {
-		// when first starting the diff, check if we're diffing an SVG or within an SVG
-		isSvgMode = parent != null && parent.ownerSVGElement !== undefined;
-
-		// hydration is indicated by the existing element to be diffed not having a prop cache
-		hydrating = dom != null && !('__preactattr_' in dom);
-	}
-
-	var ret = idiff(dom, vnode, context, mountAll, componentRoot);
-
-	// append the element if its a new parent
-	if (parent && ret.parentNode !== parent) parent.appendChild(ret);
-
-	// diffLevel being reduced to 0 means we're exiting the diff
-	if (! --diffLevel) {
-		hydrating = false;
-		// invoke queued componentDidMount lifecycle methods
-		if (!componentRoot) flushMounts();
-	}
-
-	return ret;
-}
-
-/** Internals of `diff()`, separated to allow bypassing diffLevel / mount flushing. */
-function idiff(dom, vnode, context, mountAll, componentRoot) {
-	var out = dom,
-	    prevSvgMode = isSvgMode;
-
-	// empty values (null, undefined, booleans) render as empty Text nodes
-	if (vnode == null || typeof vnode === 'boolean') vnode = '';
-
-	// Fast case: Strings & Numbers create/update Text nodes.
-	if (typeof vnode === 'string' || typeof vnode === 'number') {
-
-		// update if it's already a Text node:
-		if (dom && dom.splitText !== undefined && dom.parentNode && (!dom._component || componentRoot)) {
-			/* istanbul ignore if */ /* Browser quirk that can't be covered: https://github.com/developit/preact/commit/fd4f21f5c45dfd75151bd27b4c217d8003aa5eb9 */
-			if (dom.nodeValue != vnode) {
-				dom.nodeValue = vnode;
-			}
-		} else {
-			// it wasn't a Text node: replace it with one and recycle the old Element
-			out = document.createTextNode(vnode);
-			if (dom) {
-				if (dom.parentNode) dom.parentNode.replaceChild(out, dom);
-				recollectNodeTree(dom, true);
-			}
-		}
-
-		out['__preactattr_'] = true;
-
-		return out;
-	}
-
-	// If the VNode represents a Component, perform a component diff:
-	var vnodeName = vnode.nodeName;
-	if (typeof vnodeName === 'function') {
-		return buildComponentFromVNode(dom, vnode, context, mountAll);
-	}
-
-	// Tracks entering and exiting SVG namespace when descending through the tree.
-	isSvgMode = vnodeName === 'svg' ? true : vnodeName === 'foreignObject' ? false : isSvgMode;
-
-	// If there's no existing element or it's the wrong type, create a new one:
-	vnodeName = String(vnodeName);
-	if (!dom || !isNamedNode(dom, vnodeName)) {
-		out = createNode(vnodeName, isSvgMode);
-
-		if (dom) {
-			// move children into the replacement node
-			while (dom.firstChild) {
-				out.appendChild(dom.firstChild);
-			} // if the previous Element was mounted into the DOM, replace it inline
-			if (dom.parentNode) dom.parentNode.replaceChild(out, dom);
-
-			// recycle the old element (skips non-Element node types)
-			recollectNodeTree(dom, true);
-		}
-	}
-
-	var fc = out.firstChild,
-	    props = out['__preactattr_'],
-	    vchildren = vnode.children;
-
-	if (props == null) {
-		props = out['__preactattr_'] = {};
-		for (var a = out.attributes, i = a.length; i--;) {
-			props[a[i].name] = a[i].value;
-		}
-	}
-
-	// Optimization: fast-path for elements containing a single TextNode:
-	if (!hydrating && vchildren && vchildren.length === 1 && typeof vchildren[0] === 'string' && fc != null && fc.splitText !== undefined && fc.nextSibling == null) {
-		if (fc.nodeValue != vchildren[0]) {
-			fc.nodeValue = vchildren[0];
-		}
-	}
-	// otherwise, if there are existing or new children, diff them:
-	else if (vchildren && vchildren.length || fc != null) {
-			innerDiffNode(out, vchildren, context, mountAll, hydrating || props.dangerouslySetInnerHTML != null);
-		}
-
-	// Apply attributes/props from VNode to the DOM Element:
-	diffAttributes(out, vnode.attributes, props);
-
-	// restore previous SVG mode: (in case we're exiting an SVG namespace)
-	isSvgMode = prevSvgMode;
-
-	return out;
-}
-
-/** Apply child and attribute changes between a VNode and a DOM Node to the DOM.
- *	@param {Element} dom			Element whose children should be compared & mutated
- *	@param {Array} vchildren		Array of VNodes to compare to `dom.childNodes`
- *	@param {Object} context			Implicitly descendant context object (from most recent `getChildContext()`)
- *	@param {Boolean} mountAll
- *	@param {Boolean} isHydrating	If `true`, consumes externally created elements similar to hydration
- */
-function innerDiffNode(dom, vchildren, context, mountAll, isHydrating) {
-	var originalChildren = dom.childNodes,
-	    children = [],
-	    keyed = {},
-	    keyedLen = 0,
-	    min = 0,
-	    len = originalChildren.length,
-	    childrenLen = 0,
-	    vlen = vchildren ? vchildren.length : 0,
-	    j,
-	    c,
-	    f,
-	    vchild,
-	    child;
-
-	// Build up a map of keyed children and an Array of unkeyed children:
-	if (len !== 0) {
-		for (var i = 0; i < len; i++) {
-			var _child = originalChildren[i],
-			    props = _child['__preactattr_'],
-			    key = vlen && props ? _child._component ? _child._component.__key : props.key : null;
-			if (key != null) {
-				keyedLen++;
-				keyed[key] = _child;
-			} else if (props || (_child.splitText !== undefined ? isHydrating ? _child.nodeValue.trim() : true : isHydrating)) {
-				children[childrenLen++] = _child;
-			}
-		}
-	}
-
-	if (vlen !== 0) {
-		for (var i = 0; i < vlen; i++) {
-			vchild = vchildren[i];
-			child = null;
-
-			// attempt to find a node based on key matching
-			var key = vchild.key;
-			if (key != null) {
-				if (keyedLen && keyed[key] !== undefined) {
-					child = keyed[key];
-					keyed[key] = undefined;
-					keyedLen--;
-				}
-			}
-			// attempt to pluck a node of the same type from the existing children
-			else if (!child && min < childrenLen) {
-					for (j = min; j < childrenLen; j++) {
-						if (children[j] !== undefined && isSameNodeType(c = children[j], vchild, isHydrating)) {
-							child = c;
-							children[j] = undefined;
-							if (j === childrenLen - 1) childrenLen--;
-							if (j === min) min++;
-							break;
-						}
-					}
-				}
-
-			// morph the matched/found/created DOM child to match vchild (deep)
-			child = idiff(child, vchild, context, mountAll);
-
-			f = originalChildren[i];
-			if (child && child !== dom && child !== f) {
-				if (f == null) {
-					dom.appendChild(child);
-				} else if (child === f.nextSibling) {
-					removeNode(f);
-				} else {
-					dom.insertBefore(child, f);
-				}
-			}
-		}
-	}
-
-	// remove unused keyed children:
-	if (keyedLen) {
-		for (var i in keyed) {
-			if (keyed[i] !== undefined) recollectNodeTree(keyed[i], false);
-		}
-	}
-
-	// remove orphaned unkeyed children:
-	while (min <= childrenLen) {
-		if ((child = children[childrenLen--]) !== undefined) recollectNodeTree(child, false);
-	}
-}
-
-/** Recursively recycle (or just unmount) a node and its descendants.
- *	@param {Node} node						DOM node to start unmount/removal from
- *	@param {Boolean} [unmountOnly=false]	If `true`, only triggers unmount lifecycle, skips removal
- */
-function recollectNodeTree(node, unmountOnly) {
-	var component = node._component;
-	if (component) {
-		// if node is owned by a Component, unmount that component (ends up recursing back here)
-		unmountComponent(component);
-	} else {
-		// If the node's VNode had a ref function, invoke it with null here.
-		// (this is part of the React spec, and smart for unsetting references)
-		if (node['__preactattr_'] != null && node['__preactattr_'].ref) node['__preactattr_'].ref(null);
-
-		if (unmountOnly === false || node['__preactattr_'] == null) {
-			removeNode(node);
-		}
-
-		removeChildren(node);
-	}
-}
-
-/** Recollect/unmount all children.
- *	- we use .lastChild here because it causes less reflow than .firstChild
- *	- it's also cheaper than accessing the .childNodes Live NodeList
- */
-function removeChildren(node) {
-	node = node.lastChild;
-	while (node) {
-		var next = node.previousSibling;
-		recollectNodeTree(node, true);
-		node = next;
-	}
-}
-
-/** Apply differences in attributes from a VNode to the given DOM Element.
- *	@param {Element} dom		Element with attributes to diff `attrs` against
- *	@param {Object} attrs		The desired end-state key-value attribute pairs
- *	@param {Object} old			Current/previous attributes (from previous VNode or element's prop cache)
- */
-function diffAttributes(dom, attrs, old) {
-	var name;
-
-	// remove attributes no longer present on the vnode by setting them to undefined
-	for (name in old) {
-		if (!(attrs && attrs[name] != null) && old[name] != null) {
-			setAccessor(dom, name, old[name], old[name] = undefined, isSvgMode);
-		}
-	}
-
-	// add new & update changed attributes
-	for (name in attrs) {
-		if (name !== 'children' && name !== 'innerHTML' && (!(name in old) || attrs[name] !== (name === 'value' || name === 'checked' ? dom[name] : old[name]))) {
-			setAccessor(dom, name, old[name], old[name] = attrs[name], isSvgMode);
-		}
-	}
-}
-
-/** Retains a pool of Components for re-use, keyed on component name.
- *	Note: since component names are not unique or even necessarily available, these are primarily a form of sharding.
- *	@private
- */
-var components = {};
-
-/** Reclaim a component for later re-use by the recycler. */
-function collectComponent(component) {
-	var name = component.constructor.name;
-	(components[name] || (components[name] = [])).push(component);
-}
-
-/** Create a component. Normalizes differences between PFC's and classful Components. */
-function createComponent(Ctor, props, context) {
-	var list = components[Ctor.name],
-	    inst;
-
-	if (Ctor.prototype && Ctor.prototype.render) {
-		inst = new Ctor(props, context);
-		Component.call(inst, props, context);
-	} else {
-		inst = new Component(props, context);
-		inst.constructor = Ctor;
-		inst.render = doRender;
-	}
-
-	if (list) {
-		for (var i = list.length; i--;) {
-			if (list[i].constructor === Ctor) {
-				inst.nextBase = list[i].nextBase;
-				list.splice(i, 1);
-				break;
-			}
-		}
-	}
-	return inst;
-}
-
-/** The `.render()` method for a PFC backing instance. */
-function doRender(props, state, context) {
-	return this.constructor(props, context);
-}
-
-/** Set a component's `props` (generally derived from JSX attributes).
- *	@param {Object} props
- *	@param {Object} [opts]
- *	@param {boolean} [opts.renderSync=false]	If `true` and {@link options.syncComponentUpdates} is `true`, triggers synchronous rendering.
- *	@param {boolean} [opts.render=true]			If `false`, no render will be triggered.
- */
-function setComponentProps(component, props, opts, context, mountAll) {
-	if (component._disable) return;
-	component._disable = true;
-
-	if (component.__ref = props.ref) delete props.ref;
-	if (component.__key = props.key) delete props.key;
-
-	if (!component.base || mountAll) {
-		if (component.componentWillMount) component.componentWillMount();
-	} else if (component.componentWillReceiveProps) {
-		component.componentWillReceiveProps(props, context);
-	}
-
-	if (context && context !== component.context) {
-		if (!component.prevContext) component.prevContext = component.context;
-		component.context = context;
-	}
-
-	if (!component.prevProps) component.prevProps = component.props;
-	component.props = props;
-
-	component._disable = false;
-
-	if (opts !== 0) {
-		if (opts === 1 || options.syncComponentUpdates !== false || !component.base) {
-			renderComponent(component, 1, mountAll);
-		} else {
-			enqueueRender(component);
-		}
-	}
-
-	if (component.__ref) component.__ref(component);
-}
-
-/** Render a Component, triggering necessary lifecycle events and taking High-Order Components into account.
- *	@param {Component} component
- *	@param {Object} [opts]
- *	@param {boolean} [opts.build=false]		If `true`, component will build and store a DOM node if not already associated with one.
- *	@private
- */
-function renderComponent(component, opts, mountAll, isChild) {
-	if (component._disable) return;
-
-	var props = component.props,
-	    state = component.state,
-	    context = component.context,
-	    previousProps = component.prevProps || props,
-	    previousState = component.prevState || state,
-	    previousContext = component.prevContext || context,
-	    isUpdate = component.base,
-	    nextBase = component.nextBase,
-	    initialBase = isUpdate || nextBase,
-	    initialChildComponent = component._component,
-	    skip = false,
-	    rendered,
-	    inst,
-	    cbase;
-
-	// if updating
-	if (isUpdate) {
-		component.props = previousProps;
-		component.state = previousState;
-		component.context = previousContext;
-		if (opts !== 2 && component.shouldComponentUpdate && component.shouldComponentUpdate(props, state, context) === false) {
-			skip = true;
-		} else if (component.componentWillUpdate) {
-			component.componentWillUpdate(props, state, context);
-		}
-		component.props = props;
-		component.state = state;
-		component.context = context;
-	}
-
-	component.prevProps = component.prevState = component.prevContext = component.nextBase = null;
-	component._dirty = false;
-
-	if (!skip) {
-		rendered = component.render(props, state, context);
-
-		// context to pass to the child, can be updated via (grand-)parent component
-		if (component.getChildContext) {
-			context = extend(extend({}, context), component.getChildContext());
-		}
-
-		var childComponent = rendered && rendered.nodeName,
-		    toUnmount,
-		    base;
-
-		if (typeof childComponent === 'function') {
-			// set up high order component link
-
-			var childProps = getNodeProps(rendered);
-			inst = initialChildComponent;
-
-			if (inst && inst.constructor === childComponent && childProps.key == inst.__key) {
-				setComponentProps(inst, childProps, 1, context, false);
-			} else {
-				toUnmount = inst;
-
-				component._component = inst = createComponent(childComponent, childProps, context);
-				inst.nextBase = inst.nextBase || nextBase;
-				inst._parentComponent = component;
-				setComponentProps(inst, childProps, 0, context, false);
-				renderComponent(inst, 1, mountAll, true);
-			}
-
-			base = inst.base;
-		} else {
-			cbase = initialBase;
-
-			// destroy high order component link
-			toUnmount = initialChildComponent;
-			if (toUnmount) {
-				cbase = component._component = null;
-			}
-
-			if (initialBase || opts === 1) {
-				if (cbase) cbase._component = null;
-				base = diff(cbase, rendered, context, mountAll || !isUpdate, initialBase && initialBase.parentNode, true);
-			}
-		}
-
-		if (initialBase && base !== initialBase && inst !== initialChildComponent) {
-			var baseParent = initialBase.parentNode;
-			if (baseParent && base !== baseParent) {
-				baseParent.replaceChild(base, initialBase);
-
-				if (!toUnmount) {
-					initialBase._component = null;
-					recollectNodeTree(initialBase, false);
-				}
-			}
-		}
-
-		if (toUnmount) {
-			unmountComponent(toUnmount);
-		}
-
-		component.base = base;
-		if (base && !isChild) {
-			var componentRef = component,
-			    t = component;
-			while (t = t._parentComponent) {
-				(componentRef = t).base = base;
-			}
-			base._component = componentRef;
-			base._componentConstructor = componentRef.constructor;
-		}
-	}
-
-	if (!isUpdate || mountAll) {
-		mounts.unshift(component);
-	} else if (!skip) {
-		// Ensure that pending componentDidMount() hooks of child components
-		// are called before the componentDidUpdate() hook in the parent.
-		// Note: disabled as it causes duplicate hooks, see https://github.com/developit/preact/issues/750
-		// flushMounts();
-
-		if (component.componentDidUpdate) {
-			component.componentDidUpdate(previousProps, previousState, previousContext);
-		}
-		if (options.afterUpdate) options.afterUpdate(component);
-	}
-
-	if (component._renderCallbacks != null) {
-		while (component._renderCallbacks.length) {
-			component._renderCallbacks.pop().call(component);
-		}
-	}
-
-	if (!diffLevel && !isChild) flushMounts();
-}
-
-/** Apply the Component referenced by a VNode to the DOM.
- *	@param {Element} dom	The DOM node to mutate
- *	@param {VNode} vnode	A Component-referencing VNode
- *	@returns {Element} dom	The created/mutated element
- *	@private
- */
-function buildComponentFromVNode(dom, vnode, context, mountAll) {
-	var c = dom && dom._component,
-	    originalComponent = c,
-	    oldDom = dom,
-	    isDirectOwner = c && dom._componentConstructor === vnode.nodeName,
-	    isOwner = isDirectOwner,
-	    props = getNodeProps(vnode);
-	while (c && !isOwner && (c = c._parentComponent)) {
-		isOwner = c.constructor === vnode.nodeName;
-	}
-
-	if (c && isOwner && (!mountAll || c._component)) {
-		setComponentProps(c, props, 3, context, mountAll);
-		dom = c.base;
-	} else {
-		if (originalComponent && !isDirectOwner) {
-			unmountComponent(originalComponent);
-			dom = oldDom = null;
-		}
-
-		c = createComponent(vnode.nodeName, props, context);
-		if (dom && !c.nextBase) {
-			c.nextBase = dom;
-			// passing dom/oldDom as nextBase will recycle it if unused, so bypass recycling on L229:
-			oldDom = null;
-		}
-		setComponentProps(c, props, 1, context, mountAll);
-		dom = c.base;
-
-		if (oldDom && dom !== oldDom) {
-			oldDom._component = null;
-			recollectNodeTree(oldDom, false);
-		}
-	}
-
-	return dom;
-}
-
-/** Remove a component from the DOM and recycle it.
- *	@param {Component} component	The Component instance to unmount
- *	@private
- */
-function unmountComponent(component) {
-	if (options.beforeUnmount) options.beforeUnmount(component);
-
-	var base = component.base;
-
-	component._disable = true;
-
-	if (component.componentWillUnmount) component.componentWillUnmount();
-
-	component.base = null;
-
-	// recursively tear down & recollect high-order component children:
-	var inner = component._component;
-	if (inner) {
-		unmountComponent(inner);
-	} else if (base) {
-		if (base['__preactattr_'] && base['__preactattr_'].ref) base['__preactattr_'].ref(null);
-
-		component.nextBase = base;
-
-		removeNode(base);
-		collectComponent(component);
-
-		removeChildren(base);
-	}
-
-	if (component.__ref) component.__ref(null);
-}
-
-/** Base Component class.
- *	Provides `setState()` and `forceUpdate()`, which trigger rendering.
- *	@public
- *
- *	@example
- *	class MyFoo extends Component {
- *		render(props, state) {
- *			return <div />;
- *		}
- *	}
- */
-function Component(props, context) {
-	this._dirty = true;
-
-	/** @public
-  *	@type {object}
-  */
-	this.context = context;
-
-	/** @public
-  *	@type {object}
-  */
-	this.props = props;
-
-	/** @public
-  *	@type {object}
-  */
-	this.state = this.state || {};
-}
-
-extend(Component.prototype, {
-
-	/** Returns a `boolean` indicating if the component should re-render when receiving the given `props` and `state`.
-  *	@param {object} nextProps
-  *	@param {object} nextState
-  *	@param {object} nextContext
-  *	@returns {Boolean} should the component re-render
-  *	@name shouldComponentUpdate
-  *	@function
-  */
-
-	/** Update component state by copying properties from `state` to `this.state`.
-  *	@param {object} state		A hash of state properties to update with new values
-  *	@param {function} callback	A function to be called once component state is updated
-  */
-	setState: function setState(state, callback) {
-		var s = this.state;
-		if (!this.prevState) this.prevState = extend({}, s);
-		extend(s, typeof state === 'function' ? state(s, this.props) : state);
-		if (callback) (this._renderCallbacks = this._renderCallbacks || []).push(callback);
-		enqueueRender(this);
-	},
-
-
-	/** Immediately perform a synchronous re-render of the component.
-  *	@param {function} callback		A function to be called after component is re-rendered.
-  *	@private
-  */
-	forceUpdate: function forceUpdate(callback) {
-		if (callback) (this._renderCallbacks = this._renderCallbacks || []).push(callback);
-		renderComponent(this, 2);
-	},
-
-
-	/** Accepts `props` and `state`, and returns a new Virtual DOM tree to build.
-  *	Virtual DOM is generally constructed via [JSX](http://jasonformat.com/wtf-is-jsx).
-  *	@param {object} props		Props (eg: JSX attributes) received from parent element/component
-  *	@param {object} state		The component's current state
-  *	@param {object} context		Context object (if a parent component has provided context)
-  *	@returns VNode
-  */
-	render: function render() {}
-});
-
-/** Render JSX into a `parent` Element.
- *	@param {VNode} vnode		A (JSX) VNode to render
- *	@param {Element} parent		DOM element to render into
- *	@param {Element} [merge]	Attempt to re-use an existing DOM tree rooted at `merge`
- *	@public
- *
- *	@example
- *	// render a div into <body>:
- *	render(<div id="hello">hello!</div>, document.body);
- *
- *	@example
- *	// render a "Thing" component into #foo:
- *	const Thing = ({ name }) => <span>{ name }</span>;
- *	render(<Thing name="one" />, document.querySelector('#foo'));
- */
-function render(vnode, parent, merge) {
-  return diff(merge, vnode, {}, false, parent, false);
-}
-
-var preact = {
-	h: h,
-	createElement: h,
-	cloneElement: cloneElement,
-	Component: Component,
-	render: render,
-	rerender: rerender,
-	options: options
-};
-
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (preact);
-
-//# sourceMappingURL=preact.esm.js.map
-
-
-/***/ }),
-
-/***/ "./node_modules/qs-stringify/index.js":
-/*!********************************************!*\
-  !*** ./node_modules/qs-stringify/index.js ***!
-  \********************************************/
-/***/ ((module) => {
-
-var has = Object.prototype.hasOwnProperty
-
-/**
- * Stringify an object for use in a query string.
- *
- * @param {Object} obj - The object.
- * @param {string} prefix - When nesting, the parent key.
- *     keys in `obj` will be stringified as `prefix[key]`.
- * @returns {string}
- */
-
-module.exports = function queryStringify (obj, prefix) {
-  var pairs = []
-  for (var key in obj) {
-    if (!has.call(obj, key)) {
-      continue
-    }
-
-    var value = obj[key]
-    var enkey = encodeURIComponent(key)
-    var pair
-    if (typeof value === 'object') {
-      pair = queryStringify(value, prefix ? prefix + '[' + enkey + ']' : enkey)
-    } else {
-      pair = (prefix ? prefix + '[' + enkey + ']' : enkey) + '=' + encodeURIComponent(value)
-    }
-    pairs.push(pair)
-  }
-  return pairs.join('&')
-}
+var n,l,u,i,t,o,r,f,e={},c=[],s=/acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|itera/i;function a(n,l){for(var u in l)n[u]=l[u];return n}function h(n){var l=n.parentNode;l&&l.removeChild(n)}function v(l,u,i){var t,o,r,f={};for(r in u)"key"==r?t=u[r]:"ref"==r?o=u[r]:f[r]=u[r];if(arguments.length>2&&(f.children=arguments.length>3?n.call(arguments,2):i),"function"==typeof l&&null!=l.defaultProps)for(r in l.defaultProps)void 0===f[r]&&(f[r]=l.defaultProps[r]);return y(l,f,t,o,null)}function y(n,i,t,o,r){var f={type:n,props:i,key:t,ref:o,__k:null,__:null,__b:0,__e:null,__d:void 0,__c:null,__h:null,constructor:void 0,__v:null==r?++u:r};return null==r&&null!=l.vnode&&l.vnode(f),f}function p(){return{current:null}}function d(n){return n.children}function _(n,l){this.props=n,this.context=l}function k(n,l){if(null==l)return n.__?k(n.__,n.__.__k.indexOf(n)+1):null;for(var u;l<n.__k.length;l++)if(null!=(u=n.__k[l])&&null!=u.__e)return u.__e;return"function"==typeof n.type?k(n):null}function b(n){var l,u;if(null!=(n=n.__)&&null!=n.__c){for(n.__e=n.__c.base=null,l=0;l<n.__k.length;l++)if(null!=(u=n.__k[l])&&null!=u.__e){n.__e=n.__c.base=u.__e;break}return b(n)}}function m(n){(!n.__d&&(n.__d=!0)&&t.push(n)&&!g.__r++||r!==l.debounceRendering)&&((r=l.debounceRendering)||o)(g)}function g(){for(var n;g.__r=t.length;)n=t.sort(function(n,l){return n.__v.__b-l.__v.__b}),t=[],n.some(function(n){var l,u,i,t,o,r;n.__d&&(o=(t=(l=n).__v).__e,(r=l.__P)&&(u=[],(i=a({},t)).__v=t.__v+1,j(r,t,i,l.__n,void 0!==r.ownerSVGElement,null!=t.__h?[o]:null,u,null==o?k(t):o,t.__h),z(u,t),t.__e!=o&&b(t)))})}function w(n,l,u,i,t,o,r,f,s,a){var h,v,p,_,b,m,g,w=i&&i.__k||c,A=w.length;for(u.__k=[],h=0;h<l.length;h++)if(null!=(_=u.__k[h]=null==(_=l[h])||"boolean"==typeof _?null:"string"==typeof _||"number"==typeof _||"bigint"==typeof _?y(null,_,null,null,_):Array.isArray(_)?y(d,{children:_},null,null,null):_.__b>0?y(_.type,_.props,_.key,null,_.__v):_)){if(_.__=u,_.__b=u.__b+1,null===(p=w[h])||p&&_.key==p.key&&_.type===p.type)w[h]=void 0;else for(v=0;v<A;v++){if((p=w[v])&&_.key==p.key&&_.type===p.type){w[v]=void 0;break}p=null}j(n,_,p=p||e,t,o,r,f,s,a),b=_.__e,(v=_.ref)&&p.ref!=v&&(g||(g=[]),p.ref&&g.push(p.ref,null,_),g.push(v,_.__c||b,_)),null!=b?(null==m&&(m=b),"function"==typeof _.type&&_.__k===p.__k?_.__d=s=x(_,s,n):s=P(n,_,p,w,b,s),"function"==typeof u.type&&(u.__d=s)):s&&p.__e==s&&s.parentNode!=n&&(s=k(p))}for(u.__e=m,h=A;h--;)null!=w[h]&&("function"==typeof u.type&&null!=w[h].__e&&w[h].__e==u.__d&&(u.__d=k(i,h+1)),N(w[h],w[h]));if(g)for(h=0;h<g.length;h++)M(g[h],g[++h],g[++h])}function x(n,l,u){for(var i,t=n.__k,o=0;t&&o<t.length;o++)(i=t[o])&&(i.__=n,l="function"==typeof i.type?x(i,l,u):P(u,i,i,t,i.__e,l));return l}function A(n,l){return l=l||[],null==n||"boolean"==typeof n||(Array.isArray(n)?n.some(function(n){A(n,l)}):l.push(n)),l}function P(n,l,u,i,t,o){var r,f,e;if(void 0!==l.__d)r=l.__d,l.__d=void 0;else if(null==u||t!=o||null==t.parentNode)n:if(null==o||o.parentNode!==n)n.appendChild(t),r=null;else{for(f=o,e=0;(f=f.nextSibling)&&e<i.length;e+=2)if(f==t)break n;n.insertBefore(t,o),r=o}return void 0!==r?r:t.nextSibling}function C(n,l,u,i,t){var o;for(o in u)"children"===o||"key"===o||o in l||H(n,o,null,u[o],i);for(o in l)t&&"function"!=typeof l[o]||"children"===o||"key"===o||"value"===o||"checked"===o||u[o]===l[o]||H(n,o,l[o],u[o],i)}function $(n,l,u){"-"===l[0]?n.setProperty(l,u):n[l]=null==u?"":"number"!=typeof u||s.test(l)?u:u+"px"}function H(n,l,u,i,t){var o;n:if("style"===l)if("string"==typeof u)n.style.cssText=u;else{if("string"==typeof i&&(n.style.cssText=i=""),i)for(l in i)u&&l in u||$(n.style,l,"");if(u)for(l in u)i&&u[l]===i[l]||$(n.style,l,u[l])}else if("o"===l[0]&&"n"===l[1])o=l!==(l=l.replace(/Capture$/,"")),l=l.toLowerCase()in n?l.toLowerCase().slice(2):l.slice(2),n.l||(n.l={}),n.l[l+o]=u,u?i||n.addEventListener(l,o?T:I,o):n.removeEventListener(l,o?T:I,o);else if("dangerouslySetInnerHTML"!==l){if(t)l=l.replace(/xlink(H|:h)/,"h").replace(/sName$/,"s");else if("href"!==l&&"list"!==l&&"form"!==l&&"tabIndex"!==l&&"download"!==l&&l in n)try{n[l]=null==u?"":u;break n}catch(n){}"function"==typeof u||(null!=u&&(!1!==u||"a"===l[0]&&"r"===l[1])?n.setAttribute(l,u):n.removeAttribute(l))}}function I(n){this.l[n.type+!1](l.event?l.event(n):n)}function T(n){this.l[n.type+!0](l.event?l.event(n):n)}function j(n,u,i,t,o,r,f,e,c){var s,h,v,y,p,k,b,m,g,x,A,P,C,$=u.type;if(void 0!==u.constructor)return null;null!=i.__h&&(c=i.__h,e=u.__e=i.__e,u.__h=null,r=[e]),(s=l.__b)&&s(u);try{n:if("function"==typeof $){if(m=u.props,g=(s=$.contextType)&&t[s.__c],x=s?g?g.props.value:s.__:t,i.__c?b=(h=u.__c=i.__c).__=h.__E:("prototype"in $&&$.prototype.render?u.__c=h=new $(m,x):(u.__c=h=new _(m,x),h.constructor=$,h.render=O),g&&g.sub(h),h.props=m,h.state||(h.state={}),h.context=x,h.__n=t,v=h.__d=!0,h.__h=[]),null==h.__s&&(h.__s=h.state),null!=$.getDerivedStateFromProps&&(h.__s==h.state&&(h.__s=a({},h.__s)),a(h.__s,$.getDerivedStateFromProps(m,h.__s))),y=h.props,p=h.state,v)null==$.getDerivedStateFromProps&&null!=h.componentWillMount&&h.componentWillMount(),null!=h.componentDidMount&&h.__h.push(h.componentDidMount);else{if(null==$.getDerivedStateFromProps&&m!==y&&null!=h.componentWillReceiveProps&&h.componentWillReceiveProps(m,x),!h.__e&&null!=h.shouldComponentUpdate&&!1===h.shouldComponentUpdate(m,h.__s,x)||u.__v===i.__v){h.props=m,h.state=h.__s,u.__v!==i.__v&&(h.__d=!1),h.__v=u,u.__e=i.__e,u.__k=i.__k,u.__k.forEach(function(n){n&&(n.__=u)}),h.__h.length&&f.push(h);break n}null!=h.componentWillUpdate&&h.componentWillUpdate(m,h.__s,x),null!=h.componentDidUpdate&&h.__h.push(function(){h.componentDidUpdate(y,p,k)})}if(h.context=x,h.props=m,h.__v=u,h.__P=n,A=l.__r,P=0,"prototype"in $&&$.prototype.render)h.state=h.__s,h.__d=!1,A&&A(u),s=h.render(h.props,h.state,h.context);else do{h.__d=!1,A&&A(u),s=h.render(h.props,h.state,h.context),h.state=h.__s}while(h.__d&&++P<25);h.state=h.__s,null!=h.getChildContext&&(t=a(a({},t),h.getChildContext())),v||null==h.getSnapshotBeforeUpdate||(k=h.getSnapshotBeforeUpdate(y,p)),C=null!=s&&s.type===d&&null==s.key?s.props.children:s,w(n,Array.isArray(C)?C:[C],u,i,t,o,r,f,e,c),h.base=u.__e,u.__h=null,h.__h.length&&f.push(h),b&&(h.__E=h.__=null),h.__e=!1}else null==r&&u.__v===i.__v?(u.__k=i.__k,u.__e=i.__e):u.__e=L(i.__e,u,i,t,o,r,f,c);(s=l.diffed)&&s(u)}catch(n){u.__v=null,(c||null!=r)&&(u.__e=e,u.__h=!!c,r[r.indexOf(e)]=null),l.__e(n,u,i)}}function z(n,u){l.__c&&l.__c(u,n),n.some(function(u){try{n=u.__h,u.__h=[],n.some(function(n){n.call(u)})}catch(n){l.__e(n,u.__v)}})}function L(l,u,i,t,o,r,f,c){var s,a,v,y=i.props,p=u.props,d=u.type,_=0;if("svg"===d&&(o=!0),null!=r)for(;_<r.length;_++)if((s=r[_])&&"setAttribute"in s==!!d&&(d?s.localName===d:3===s.nodeType)){l=s,r[_]=null;break}if(null==l){if(null===d)return document.createTextNode(p);l=o?document.createElementNS("http://www.w3.org/2000/svg",d):document.createElement(d,p.is&&p),r=null,c=!1}if(null===d)y===p||c&&l.data===p||(l.data=p);else{if(r=r&&n.call(l.childNodes),a=(y=i.props||e).dangerouslySetInnerHTML,v=p.dangerouslySetInnerHTML,!c){if(null!=r)for(y={},_=0;_<l.attributes.length;_++)y[l.attributes[_].name]=l.attributes[_].value;(v||a)&&(v&&(a&&v.__html==a.__html||v.__html===l.innerHTML)||(l.innerHTML=v&&v.__html||""))}if(C(l,p,y,o,c),v)u.__k=[];else if(_=u.props.children,w(l,Array.isArray(_)?_:[_],u,i,t,o&&"foreignObject"!==d,r,f,r?r[0]:i.__k&&k(i,0),c),null!=r)for(_=r.length;_--;)null!=r[_]&&h(r[_]);c||("value"in p&&void 0!==(_=p.value)&&(_!==l.value||"progress"===d&&!_||"option"===d&&_!==y.value)&&H(l,"value",_,y.value,!1),"checked"in p&&void 0!==(_=p.checked)&&_!==l.checked&&H(l,"checked",_,y.checked,!1))}return l}function M(n,u,i){try{"function"==typeof n?n(u):n.current=u}catch(n){l.__e(n,i)}}function N(n,u,i){var t,o;if(l.unmount&&l.unmount(n),(t=n.ref)&&(t.current&&t.current!==n.__e||M(t,null,u)),null!=(t=n.__c)){if(t.componentWillUnmount)try{t.componentWillUnmount()}catch(n){l.__e(n,u)}t.base=t.__P=null}if(t=n.__k)for(o=0;o<t.length;o++)t[o]&&N(t[o],u,"function"!=typeof n.type);i||null==n.__e||h(n.__e),n.__e=n.__d=void 0}function O(n,l,u){return this.constructor(n,u)}function S(u,i,t){var o,r,f;l.__&&l.__(u,i),r=(o="function"==typeof t)?null:t&&t.__k||i.__k,f=[],j(i,u=(!o&&t||i).__k=v(d,null,[u]),r||e,e,void 0!==i.ownerSVGElement,!o&&t?[t]:r?null:i.firstChild?n.call(i.childNodes):null,f,!o&&t?t:r?r.__e:i.firstChild,o),z(f,u)}function q(n,l){S(n,l,q)}function B(l,u,i){var t,o,r,f=a({},l.props);for(r in u)"key"==r?t=u[r]:"ref"==r?o=u[r]:f[r]=u[r];return arguments.length>2&&(f.children=arguments.length>3?n.call(arguments,2):i),y(l.type,f,t||l.key,o||l.ref,null)}function D(n,l){var u={__c:l="__cC"+f++,__:n,Consumer:function(n,l){return n.children(l)},Provider:function(n){var u,i;return this.getChildContext||(u=[],(i={})[l]=this,this.getChildContext=function(){return i},this.shouldComponentUpdate=function(n){this.props.value!==n.value&&u.some(m)},this.sub=function(n){u.push(n);var l=n.componentWillUnmount;n.componentWillUnmount=function(){u.splice(u.indexOf(n),1),l&&l.call(n)}}),n.children}};return u.Provider.__=u.Consumer.contextType=u}n=c.slice,l={__e:function(n,l,u,i){for(var t,o,r;l=l.__;)if((t=l.__c)&&!t.__)try{if((o=t.constructor)&&null!=o.getDerivedStateFromError&&(t.setState(o.getDerivedStateFromError(n)),r=t.__d),null!=t.componentDidCatch&&(t.componentDidCatch(n,i||{}),r=t.__d),r)return t.__E=t}catch(l){n=l}throw n}},u=0,i=function(n){return null!=n&&void 0===n.constructor},_.prototype.setState=function(n,l){var u;u=null!=this.__s&&this.__s!==this.state?this.__s:this.__s=a({},this.state),"function"==typeof n&&(n=n(a({},u),this.props)),n&&a(u,n),null!=n&&this.__v&&(l&&this.__h.push(l),m(this))},_.prototype.forceUpdate=function(n){this.__v&&(this.__e=!0,n&&this.__h.push(n),m(this))},_.prototype.render=d,t=[],o="function"==typeof Promise?Promise.prototype.then.bind(Promise.resolve()):setTimeout,g.__r=0,f=0;
+//# sourceMappingURL=preact.module.js.map
 
 
 /***/ }),
@@ -7787,6 +1114,2127 @@ module.exports = function required(port, protocol) {
   return port !== 0;
 };
 
+
+/***/ }),
+
+/***/ "./node_modules/tus-js-client/lib.esm/browser/fileReader.js":
+/*!******************************************************************!*\
+  !*** ./node_modules/tus-js-client/lib.esm/browser/fileReader.js ***!
+  \******************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ FileReader)
+/* harmony export */ });
+/* harmony import */ var _isReactNative__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./isReactNative */ "./node_modules/tus-js-client/lib.esm/browser/isReactNative.js");
+/* harmony import */ var _uriToBlob__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./uriToBlob */ "./node_modules/tus-js-client/lib.esm/browser/uriToBlob.js");
+/* harmony import */ var _sources_FileSource__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./sources/FileSource */ "./node_modules/tus-js-client/lib.esm/browser/sources/FileSource.js");
+/* harmony import */ var _sources_StreamSource__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./sources/StreamSource */ "./node_modules/tus-js-client/lib.esm/browser/sources/StreamSource.js");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+
+
+
+var FileReader = /*#__PURE__*/function () {
+  function FileReader() {
+    _classCallCheck(this, FileReader);
+  }
+
+  _createClass(FileReader, [{
+    key: "openFile",
+    value: function openFile(input, chunkSize) {
+      // In React Native, when user selects a file, instead of a File or Blob,
+      // you usually get a file object {} with a uri property that contains
+      // a local path to the file. We use XMLHttpRequest to fetch
+      // the file blob, before uploading with tus.
+      if ((0,_isReactNative__WEBPACK_IMPORTED_MODULE_0__["default"])() && input && typeof input.uri !== 'undefined') {
+        return (0,_uriToBlob__WEBPACK_IMPORTED_MODULE_1__["default"])(input.uri).then(function (blob) {
+          return new _sources_FileSource__WEBPACK_IMPORTED_MODULE_2__["default"](blob);
+        })["catch"](function (err) {
+          throw new Error("tus: cannot fetch `file.uri` as Blob, make sure the uri is correct and accessible. ".concat(err));
+        });
+      } // Since we emulate the Blob type in our tests (not all target browsers
+      // support it), we cannot use `instanceof` for testing whether the input value
+      // can be handled. Instead, we simply check is the slice() function and the
+      // size property are available.
+
+
+      if (typeof input.slice === 'function' && typeof input.size !== 'undefined') {
+        return Promise.resolve(new _sources_FileSource__WEBPACK_IMPORTED_MODULE_2__["default"](input));
+      }
+
+      if (typeof input.read === 'function') {
+        chunkSize = +chunkSize;
+
+        if (!isFinite(chunkSize)) {
+          return Promise.reject(new Error('cannot create source for stream without a finite value for the `chunkSize` option'));
+        }
+
+        return Promise.resolve(new _sources_StreamSource__WEBPACK_IMPORTED_MODULE_3__["default"](input, chunkSize));
+      }
+
+      return Promise.reject(new Error('source object may only be an instance of File, Blob, or Reader in this environment'));
+    }
+  }]);
+
+  return FileReader;
+}();
+
+
+
+/***/ }),
+
+/***/ "./node_modules/tus-js-client/lib.esm/browser/fingerprint.js":
+/*!*******************************************************************!*\
+  !*** ./node_modules/tus-js-client/lib.esm/browser/fingerprint.js ***!
+  \*******************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ fingerprint)
+/* harmony export */ });
+/* harmony import */ var _isReactNative__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./isReactNative */ "./node_modules/tus-js-client/lib.esm/browser/isReactNative.js");
+ // TODO: Differenciate between input types
+
+/**
+ * Generate a fingerprint for a file which will be used the store the endpoint
+ *
+ * @param {File} file
+ * @param {Object} options
+ * @param {Function} callback
+ */
+
+function fingerprint(file, options) {
+  if ((0,_isReactNative__WEBPACK_IMPORTED_MODULE_0__["default"])()) {
+    return Promise.resolve(reactNativeFingerprint(file, options));
+  }
+
+  return Promise.resolve(['tus-br', file.name, file.type, file.size, file.lastModified, options.endpoint].join('-'));
+}
+
+function reactNativeFingerprint(file, options) {
+  var exifHash = file.exif ? hashCode(JSON.stringify(file.exif)) : 'noexif';
+  return ['tus-rn', file.name || 'noname', file.size || 'nosize', exifHash, options.endpoint].join('/');
+}
+
+function hashCode(str) {
+  // from https://stackoverflow.com/a/8831937/151666
+  var hash = 0;
+
+  if (str.length === 0) {
+    return hash;
+  }
+
+  for (var i = 0; i < str.length; i++) {
+    var _char = str.charCodeAt(i);
+
+    hash = (hash << 5) - hash + _char;
+    hash &= hash; // Convert to 32bit integer
+  }
+
+  return hash;
+}
+
+/***/ }),
+
+/***/ "./node_modules/tus-js-client/lib.esm/browser/httpStack.js":
+/*!*****************************************************************!*\
+  !*** ./node_modules/tus-js-client/lib.esm/browser/httpStack.js ***!
+  \*****************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ XHRHttpStack)
+/* harmony export */ });
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+/* eslint-disable max-classes-per-file */
+var XHRHttpStack = /*#__PURE__*/function () {
+  function XHRHttpStack() {
+    _classCallCheck(this, XHRHttpStack);
+  }
+
+  _createClass(XHRHttpStack, [{
+    key: "createRequest",
+    value: function createRequest(method, url) {
+      return new Request(method, url);
+    }
+  }, {
+    key: "getName",
+    value: function getName() {
+      return 'XHRHttpStack';
+    }
+  }]);
+
+  return XHRHttpStack;
+}();
+
+
+
+var Request = /*#__PURE__*/function () {
+  function Request(method, url) {
+    _classCallCheck(this, Request);
+
+    this._xhr = new XMLHttpRequest();
+
+    this._xhr.open(method, url, true);
+
+    this._method = method;
+    this._url = url;
+    this._headers = {};
+  }
+
+  _createClass(Request, [{
+    key: "getMethod",
+    value: function getMethod() {
+      return this._method;
+    }
+  }, {
+    key: "getURL",
+    value: function getURL() {
+      return this._url;
+    }
+  }, {
+    key: "setHeader",
+    value: function setHeader(header, value) {
+      this._xhr.setRequestHeader(header, value);
+
+      this._headers[header] = value;
+    }
+  }, {
+    key: "getHeader",
+    value: function getHeader(header) {
+      return this._headers[header];
+    }
+  }, {
+    key: "setProgressHandler",
+    value: function setProgressHandler(progressHandler) {
+      // Test support for progress events before attaching an event listener
+      if (!('upload' in this._xhr)) {
+        return;
+      }
+
+      this._xhr.upload.onprogress = function (e) {
+        if (!e.lengthComputable) {
+          return;
+        }
+
+        progressHandler(e.loaded);
+      };
+    }
+  }, {
+    key: "send",
+    value: function send() {
+      var _this = this;
+
+      var body = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      return new Promise(function (resolve, reject) {
+        _this._xhr.onload = function () {
+          resolve(new Response(_this._xhr));
+        };
+
+        _this._xhr.onerror = function (err) {
+          reject(err);
+        };
+
+        _this._xhr.send(body);
+      });
+    }
+  }, {
+    key: "abort",
+    value: function abort() {
+      this._xhr.abort();
+
+      return Promise.resolve();
+    }
+  }, {
+    key: "getUnderlyingObject",
+    value: function getUnderlyingObject() {
+      return this._xhr;
+    }
+  }]);
+
+  return Request;
+}();
+
+var Response = /*#__PURE__*/function () {
+  function Response(xhr) {
+    _classCallCheck(this, Response);
+
+    this._xhr = xhr;
+  }
+
+  _createClass(Response, [{
+    key: "getStatus",
+    value: function getStatus() {
+      return this._xhr.status;
+    }
+  }, {
+    key: "getHeader",
+    value: function getHeader(header) {
+      return this._xhr.getResponseHeader(header);
+    }
+  }, {
+    key: "getBody",
+    value: function getBody() {
+      return this._xhr.responseText;
+    }
+  }, {
+    key: "getUnderlyingObject",
+    value: function getUnderlyingObject() {
+      return this._xhr;
+    }
+  }]);
+
+  return Response;
+}();
+
+/***/ }),
+
+/***/ "./node_modules/tus-js-client/lib.esm/browser/index.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/tus-js-client/lib.esm/browser/index.js ***!
+  \*************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "DetailedError": () => (/* reexport safe */ _error__WEBPACK_IMPORTED_MODULE_3__["default"]),
+/* harmony export */   "HttpStack": () => (/* reexport safe */ _httpStack__WEBPACK_IMPORTED_MODULE_5__["default"]),
+/* harmony export */   "Upload": () => (/* binding */ Upload),
+/* harmony export */   "canStoreURLs": () => (/* reexport safe */ _urlStorage__WEBPACK_IMPORTED_MODULE_4__.canStoreURLs),
+/* harmony export */   "defaultOptions": () => (/* binding */ defaultOptions),
+/* harmony export */   "enableDebugLog": () => (/* reexport safe */ _logger__WEBPACK_IMPORTED_MODULE_2__.enableDebugLog),
+/* harmony export */   "isSupported": () => (/* binding */ isSupported)
+/* harmony export */ });
+/* harmony import */ var _upload__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../upload */ "./node_modules/tus-js-client/lib.esm/upload.js");
+/* harmony import */ var _noopUrlStorage__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../noopUrlStorage */ "./node_modules/tus-js-client/lib.esm/noopUrlStorage.js");
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../logger */ "./node_modules/tus-js-client/lib.esm/logger.js");
+/* harmony import */ var _error__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../error */ "./node_modules/tus-js-client/lib.esm/error.js");
+/* harmony import */ var _urlStorage__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./urlStorage */ "./node_modules/tus-js-client/lib.esm/browser/urlStorage.js");
+/* harmony import */ var _httpStack__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./httpStack */ "./node_modules/tus-js-client/lib.esm/browser/httpStack.js");
+/* harmony import */ var _fileReader__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./fileReader */ "./node_modules/tus-js-client/lib.esm/browser/fileReader.js");
+/* harmony import */ var _fingerprint__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./fingerprint */ "./node_modules/tus-js-client/lib.esm/browser/fingerprint.js");
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+
+
+
+
+
+
+
+
+var defaultOptions = _objectSpread(_objectSpread({}, _upload__WEBPACK_IMPORTED_MODULE_0__["default"].defaultOptions), {}, {
+  httpStack: new _httpStack__WEBPACK_IMPORTED_MODULE_5__["default"](),
+  fileReader: new _fileReader__WEBPACK_IMPORTED_MODULE_6__["default"](),
+  urlStorage: _urlStorage__WEBPACK_IMPORTED_MODULE_4__.canStoreURLs ? new _urlStorage__WEBPACK_IMPORTED_MODULE_4__.WebStorageUrlStorage() : new _noopUrlStorage__WEBPACK_IMPORTED_MODULE_1__["default"](),
+  fingerprint: _fingerprint__WEBPACK_IMPORTED_MODULE_7__["default"]
+});
+
+var Upload = /*#__PURE__*/function (_BaseUpload) {
+  _inherits(Upload, _BaseUpload);
+
+  var _super = _createSuper(Upload);
+
+  function Upload() {
+    var file = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    _classCallCheck(this, Upload);
+
+    options = _objectSpread(_objectSpread({}, defaultOptions), options);
+    return _super.call(this, file, options);
+  }
+
+  _createClass(Upload, null, [{
+    key: "terminate",
+    value: function terminate(url, options, cb) {
+      options = _objectSpread(_objectSpread({}, defaultOptions), options);
+      return _upload__WEBPACK_IMPORTED_MODULE_0__["default"].terminate(url, options, cb);
+    }
+  }]);
+
+  return Upload;
+}(_upload__WEBPACK_IMPORTED_MODULE_0__["default"]);
+
+var _window = window,
+    XMLHttpRequest = _window.XMLHttpRequest,
+    Blob = _window.Blob;
+var isSupported = XMLHttpRequest && Blob && typeof Blob.prototype.slice === 'function';
+
+
+/***/ }),
+
+/***/ "./node_modules/tus-js-client/lib.esm/browser/isReactNative.js":
+/*!*********************************************************************!*\
+  !*** ./node_modules/tus-js-client/lib.esm/browser/isReactNative.js ***!
+  \*********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+var isReactNative = function isReactNative() {
+  return typeof navigator !== 'undefined' && typeof navigator.product === 'string' && navigator.product.toLowerCase() === 'reactnative';
+};
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (isReactNative);
+
+/***/ }),
+
+/***/ "./node_modules/tus-js-client/lib.esm/browser/sources/FileSource.js":
+/*!**************************************************************************!*\
+  !*** ./node_modules/tus-js-client/lib.esm/browser/sources/FileSource.js ***!
+  \**************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ FileSource)
+/* harmony export */ });
+/* harmony import */ var _isCordova__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./isCordova */ "./node_modules/tus-js-client/lib.esm/browser/sources/isCordova.js");
+/* harmony import */ var _readAsByteArray__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./readAsByteArray */ "./node_modules/tus-js-client/lib.esm/browser/sources/readAsByteArray.js");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+
+var FileSource = /*#__PURE__*/function () {
+  // Make this.size a method
+  function FileSource(file) {
+    _classCallCheck(this, FileSource);
+
+    this._file = file;
+    this.size = file.size;
+  }
+
+  _createClass(FileSource, [{
+    key: "slice",
+    value: function slice(start, end) {
+      // In Apache Cordova applications, a File must be resolved using
+      // FileReader instances, see
+      // https://cordova.apache.org/docs/en/8.x/reference/cordova-plugin-file/index.html#read-a-file
+      if ((0,_isCordova__WEBPACK_IMPORTED_MODULE_0__["default"])()) {
+        return (0,_readAsByteArray__WEBPACK_IMPORTED_MODULE_1__["default"])(this._file.slice(start, end));
+      }
+
+      var value = this._file.slice(start, end);
+
+      return Promise.resolve({
+        value: value
+      });
+    }
+  }, {
+    key: "close",
+    value: function close() {// Nothing to do here since we don't need to release any resources.
+    }
+  }]);
+
+  return FileSource;
+}();
+
+
+
+/***/ }),
+
+/***/ "./node_modules/tus-js-client/lib.esm/browser/sources/StreamSource.js":
+/*!****************************************************************************!*\
+  !*** ./node_modules/tus-js-client/lib.esm/browser/sources/StreamSource.js ***!
+  \****************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ StreamSource)
+/* harmony export */ });
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function len(blobOrArray) {
+  if (blobOrArray === undefined) return 0;
+  if (blobOrArray.size !== undefined) return blobOrArray.size;
+  return blobOrArray.length;
+}
+/*
+  Typed arrays and blobs don't have a concat method.
+  This function helps StreamSource accumulate data to reach chunkSize.
+*/
+
+
+function concat(a, b) {
+  if (a.concat) {
+    // Is `a` an Array?
+    return a.concat(b);
+  }
+
+  if (a instanceof Blob) {
+    return new Blob([a, b], {
+      type: a.type
+    });
+  }
+
+  if (a.set) {
+    // Is `a` a typed array?
+    var c = new a.constructor(a.length + b.length);
+    c.set(a);
+    c.set(b, a.length);
+    return c;
+  }
+
+  throw new Error('Unknown data type');
+}
+
+var StreamSource = /*#__PURE__*/function () {
+  function StreamSource(reader, chunkSize) {
+    _classCallCheck(this, StreamSource);
+
+    this._chunkSize = chunkSize;
+    this._buffer = undefined;
+    this._bufferOffset = 0;
+    this._reader = reader;
+    this._done = false;
+  }
+
+  _createClass(StreamSource, [{
+    key: "slice",
+    value: function slice(start, end) {
+      if (start < this._bufferOffset) {
+        return Promise.reject(new Error("Requested data is before the reader's current offset"));
+      }
+
+      return this._readUntilEnoughDataOrDone(start, end);
+    }
+  }, {
+    key: "_readUntilEnoughDataOrDone",
+    value: function _readUntilEnoughDataOrDone(start, end) {
+      var _this = this;
+
+      var hasEnoughData = end <= this._bufferOffset + len(this._buffer);
+
+      if (this._done || hasEnoughData) {
+        var value = this._getDataFromBuffer(start, end);
+
+        var done = value == null ? this._done : false;
+        return Promise.resolve({
+          value: value,
+          done: done
+        });
+      }
+
+      return this._reader.read().then(function (_ref) {
+        var value = _ref.value,
+            done = _ref.done;
+
+        if (done) {
+          _this._done = true;
+        } else if (_this._buffer === undefined) {
+          _this._buffer = value;
+        } else {
+          _this._buffer = concat(_this._buffer, value);
+        }
+
+        return _this._readUntilEnoughDataOrDone(start, end);
+      });
+    }
+  }, {
+    key: "_getDataFromBuffer",
+    value: function _getDataFromBuffer(start, end) {
+      // Remove data from buffer before `start`.
+      // Data might be reread from the buffer if an upload fails, so we can only
+      // safely delete data when it comes *before* what is currently being read.
+      if (start > this._bufferOffset) {
+        this._buffer = this._buffer.slice(start - this._bufferOffset);
+        this._bufferOffset = start;
+      } // If the buffer is empty after removing old data, all data has been read.
+
+
+      var hasAllDataBeenRead = len(this._buffer) === 0;
+
+      if (this._done && hasAllDataBeenRead) {
+        return null;
+      } // We already removed data before `start`, so we just return the first
+      // chunk from the buffer.
+
+
+      return this._buffer.slice(0, end - start);
+    }
+  }, {
+    key: "close",
+    value: function close() {
+      if (this._reader.cancel) {
+        this._reader.cancel();
+      }
+    }
+  }]);
+
+  return StreamSource;
+}();
+
+
+
+/***/ }),
+
+/***/ "./node_modules/tus-js-client/lib.esm/browser/sources/isCordova.js":
+/*!*************************************************************************!*\
+  !*** ./node_modules/tus-js-client/lib.esm/browser/sources/isCordova.js ***!
+  \*************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+var isCordova = function isCordova() {
+  return typeof window != 'undefined' && (typeof window.PhoneGap != 'undefined' || typeof window.Cordova != 'undefined' || typeof window.cordova != 'undefined');
+};
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (isCordova);
+
+/***/ }),
+
+/***/ "./node_modules/tus-js-client/lib.esm/browser/sources/readAsByteArray.js":
+/*!*******************************************************************************!*\
+  !*** ./node_modules/tus-js-client/lib.esm/browser/sources/readAsByteArray.js ***!
+  \*******************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ readAsByteArray)
+/* harmony export */ });
+/**
+ * readAsByteArray converts a File object to a Uint8Array.
+ * This function is only used on the Apache Cordova platform.
+ * See https://cordova.apache.org/docs/en/latest/reference/cordova-plugin-file/index.html#read-a-file
+ */
+function readAsByteArray(chunk) {
+  return new Promise(function (resolve, reject) {
+    var reader = new FileReader();
+
+    reader.onload = function () {
+      var value = new Uint8Array(reader.result);
+      resolve({
+        value: value
+      });
+    };
+
+    reader.onerror = function (err) {
+      reject(err);
+    };
+
+    reader.readAsArrayBuffer(chunk);
+  });
+}
+
+/***/ }),
+
+/***/ "./node_modules/tus-js-client/lib.esm/browser/uriToBlob.js":
+/*!*****************************************************************!*\
+  !*** ./node_modules/tus-js-client/lib.esm/browser/uriToBlob.js ***!
+  \*****************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ uriToBlob)
+/* harmony export */ });
+/**
+ * uriToBlob resolves a URI to a Blob object. This is used for
+ * React Native to retrieve a file (identified by a file://
+ * URI) as a blob.
+ */
+function uriToBlob(uri) {
+  return new Promise(function (resolve, reject) {
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = 'blob';
+
+    xhr.onload = function () {
+      var blob = xhr.response;
+      resolve(blob);
+    };
+
+    xhr.onerror = function (err) {
+      reject(err);
+    };
+
+    xhr.open('GET', uri);
+    xhr.send();
+  });
+}
+
+/***/ }),
+
+/***/ "./node_modules/tus-js-client/lib.esm/browser/urlStorage.js":
+/*!******************************************************************!*\
+  !*** ./node_modules/tus-js-client/lib.esm/browser/urlStorage.js ***!
+  \******************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "WebStorageUrlStorage": () => (/* binding */ WebStorageUrlStorage),
+/* harmony export */   "canStoreURLs": () => (/* binding */ canStoreURLs)
+/* harmony export */ });
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+/* global window, localStorage */
+var hasStorage = false;
+
+try {
+  hasStorage = 'localStorage' in window; // Attempt to store and read entries from the local storage to detect Private
+  // Mode on Safari on iOS (see #49)
+
+  var key = 'tusSupport';
+  localStorage.setItem(key, localStorage.getItem(key));
+} catch (e) {
+  // If we try to access localStorage inside a sandboxed iframe, a SecurityError
+  // is thrown. When in private mode on iOS Safari, a QuotaExceededError is
+  // thrown (see #49)
+  if (e.code === e.SECURITY_ERR || e.code === e.QUOTA_EXCEEDED_ERR) {
+    hasStorage = false;
+  } else {
+    throw e;
+  }
+}
+
+var canStoreURLs = hasStorage;
+var WebStorageUrlStorage = /*#__PURE__*/function () {
+  function WebStorageUrlStorage() {
+    _classCallCheck(this, WebStorageUrlStorage);
+  }
+
+  _createClass(WebStorageUrlStorage, [{
+    key: "findAllUploads",
+    value: function findAllUploads() {
+      var results = this._findEntries('tus::');
+
+      return Promise.resolve(results);
+    }
+  }, {
+    key: "findUploadsByFingerprint",
+    value: function findUploadsByFingerprint(fingerprint) {
+      var results = this._findEntries("tus::".concat(fingerprint, "::"));
+
+      return Promise.resolve(results);
+    }
+  }, {
+    key: "removeUpload",
+    value: function removeUpload(urlStorageKey) {
+      localStorage.removeItem(urlStorageKey);
+      return Promise.resolve();
+    }
+  }, {
+    key: "addUpload",
+    value: function addUpload(fingerprint, upload) {
+      var id = Math.round(Math.random() * 1e12);
+      var key = "tus::".concat(fingerprint, "::").concat(id);
+      localStorage.setItem(key, JSON.stringify(upload));
+      return Promise.resolve(key);
+    }
+  }, {
+    key: "_findEntries",
+    value: function _findEntries(prefix) {
+      var results = [];
+
+      for (var i = 0; i < localStorage.length; i++) {
+        var _key = localStorage.key(i);
+
+        if (_key.indexOf(prefix) !== 0) continue;
+
+        try {
+          var upload = JSON.parse(localStorage.getItem(_key));
+          upload.urlStorageKey = _key;
+          results.push(upload);
+        } catch (e) {// The JSON parse error is intentionally ignored here, so a malformed
+          // entry in the storage cannot prevent an upload.
+        }
+      }
+
+      return results;
+    }
+  }]);
+
+  return WebStorageUrlStorage;
+}();
+
+/***/ }),
+
+/***/ "./node_modules/tus-js-client/lib.esm/error.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/tus-js-client/lib.esm/error.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _wrapNativeSuper(Class) { var _cache = typeof Map === "function" ? new Map() : undefined; _wrapNativeSuper = function _wrapNativeSuper(Class) { if (Class === null || !_isNativeFunction(Class)) return Class; if (typeof Class !== "function") { throw new TypeError("Super expression must either be null or a function"); } if (typeof _cache !== "undefined") { if (_cache.has(Class)) return _cache.get(Class); _cache.set(Class, Wrapper); } function Wrapper() { return _construct(Class, arguments, _getPrototypeOf(this).constructor); } Wrapper.prototype = Object.create(Class.prototype, { constructor: { value: Wrapper, enumerable: false, writable: true, configurable: true } }); return _setPrototypeOf(Wrapper, Class); }; return _wrapNativeSuper(Class); }
+
+function _construct(Parent, args, Class) { if (_isNativeReflectConstruct()) { _construct = Reflect.construct; } else { _construct = function _construct(Parent, args, Class) { var a = [null]; a.push.apply(a, args); var Constructor = Function.bind.apply(Parent, a); var instance = new Constructor(); if (Class) _setPrototypeOf(instance, Class.prototype); return instance; }; } return _construct.apply(null, arguments); }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
+function _isNativeFunction(fn) { return Function.toString.call(fn).indexOf("[native code]") !== -1; }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+var DetailedError = /*#__PURE__*/function (_Error) {
+  _inherits(DetailedError, _Error);
+
+  var _super = _createSuper(DetailedError);
+
+  function DetailedError(message) {
+    var _this;
+
+    var causingErr = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    var req = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+    var res = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+
+    _classCallCheck(this, DetailedError);
+
+    _this = _super.call(this, message);
+    _this.originalRequest = req;
+    _this.originalResponse = res;
+    _this.causingError = causingErr;
+
+    if (causingErr != null) {
+      message += ", caused by ".concat(causingErr.toString());
+    }
+
+    if (req != null) {
+      var requestId = req.getHeader('X-Request-ID') || 'n/a';
+      var method = req.getMethod();
+      var url = req.getURL();
+      var status = res ? res.getStatus() : 'n/a';
+      var body = res ? res.getBody() || '' : 'n/a';
+      message += ", originated from request (method: ".concat(method, ", url: ").concat(url, ", response code: ").concat(status, ", response text: ").concat(body, ", request id: ").concat(requestId, ")");
+    }
+
+    _this.message = message;
+    return _this;
+  }
+
+  return _createClass(DetailedError);
+}( /*#__PURE__*/_wrapNativeSuper(Error));
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (DetailedError);
+
+/***/ }),
+
+/***/ "./node_modules/tus-js-client/lib.esm/logger.js":
+/*!******************************************************!*\
+  !*** ./node_modules/tus-js-client/lib.esm/logger.js ***!
+  \******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "enableDebugLog": () => (/* binding */ enableDebugLog),
+/* harmony export */   "log": () => (/* binding */ log)
+/* harmony export */ });
+/* eslint no-console: "off" */
+var isEnabled = false;
+function enableDebugLog() {
+  isEnabled = true;
+}
+function log(msg) {
+  if (!isEnabled) return;
+  console.log(msg);
+}
+
+/***/ }),
+
+/***/ "./node_modules/tus-js-client/lib.esm/noopUrlStorage.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/tus-js-client/lib.esm/noopUrlStorage.js ***!
+  \**************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ NoopUrlStorage)
+/* harmony export */ });
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+/* eslint no-unused-vars: "off" */
+var NoopUrlStorage = /*#__PURE__*/function () {
+  function NoopUrlStorage() {
+    _classCallCheck(this, NoopUrlStorage);
+  }
+
+  _createClass(NoopUrlStorage, [{
+    key: "listAllUploads",
+    value: function listAllUploads() {
+      return Promise.resolve([]);
+    }
+  }, {
+    key: "findUploadsByFingerprint",
+    value: function findUploadsByFingerprint(fingerprint) {
+      return Promise.resolve([]);
+    }
+  }, {
+    key: "removeUpload",
+    value: function removeUpload(urlStorageKey) {
+      return Promise.resolve();
+    }
+  }, {
+    key: "addUpload",
+    value: function addUpload(fingerprint, upload) {
+      return Promise.resolve(null);
+    }
+  }]);
+
+  return NoopUrlStorage;
+}();
+
+
+
+/***/ }),
+
+/***/ "./node_modules/tus-js-client/lib.esm/upload.js":
+/*!******************************************************!*\
+  !*** ./node_modules/tus-js-client/lib.esm/upload.js ***!
+  \******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var js_base64__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! js-base64 */ "./node_modules/js-base64/base64.js");
+/* harmony import */ var js_base64__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(js_base64__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var url_parse__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! url-parse */ "./node_modules/url-parse/index.js");
+/* harmony import */ var url_parse__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(url_parse__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _error__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./error */ "./node_modules/tus-js-client/lib.esm/error.js");
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./logger */ "./node_modules/tus-js-client/lib.esm/logger.js");
+/* harmony import */ var _uuid__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./uuid */ "./node_modules/tus-js-client/lib.esm/uuid.js");
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+/* global window */
+
+
+
+
+
+var defaultOptions = {
+  endpoint: null,
+  uploadUrl: null,
+  metadata: {},
+  fingerprint: null,
+  uploadSize: null,
+  onProgress: null,
+  onChunkComplete: null,
+  onSuccess: null,
+  onError: null,
+  _onUploadUrlAvailable: null,
+  overridePatchMethod: false,
+  headers: {},
+  addRequestId: false,
+  onBeforeRequest: null,
+  onAfterResponse: null,
+  onShouldRetry: null,
+  chunkSize: Infinity,
+  retryDelays: [0, 1000, 3000, 5000],
+  parallelUploads: 1,
+  storeFingerprintForResuming: true,
+  removeFingerprintOnSuccess: false,
+  uploadLengthDeferred: false,
+  uploadDataDuringCreation: false,
+  urlStorage: null,
+  fileReader: null,
+  httpStack: null
+};
+
+var BaseUpload = /*#__PURE__*/function () {
+  function BaseUpload(file, options) {
+    _classCallCheck(this, BaseUpload);
+
+    // Warn about removed options from previous versions
+    if ('resume' in options) {
+      console.log('tus: The `resume` option has been removed in tus-js-client v2. Please use the URL storage API instead.'); // eslint-disable-line no-console
+    } // The default options will already be added from the wrapper classes.
+
+
+    this.options = options; // Cast chunkSize to integer
+
+    this.options.chunkSize = +this.options.chunkSize; // The storage module used to store URLs
+
+    this._urlStorage = this.options.urlStorage; // The underlying File/Blob object
+
+    this.file = file; // The URL against which the file will be uploaded
+
+    this.url = null; // The underlying request object for the current PATCH request
+
+    this._req = null; // The fingerpinrt for the current file (set after start())
+
+    this._fingerprint = null; // The key that the URL storage returned when saving an URL with a fingerprint,
+
+    this._urlStorageKey = null; // The offset used in the current PATCH request
+
+    this._offset = null; // True if the current PATCH request has been aborted
+
+    this._aborted = false; // The file's size in bytes
+
+    this._size = null; // The Source object which will wrap around the given file and provides us
+    // with a unified interface for getting its size and slice chunks from its
+    // content allowing us to easily handle Files, Blobs, Buffers and Streams.
+
+    this._source = null; // The current count of attempts which have been made. Zero indicates none.
+
+    this._retryAttempt = 0; // The timeout's ID which is used to delay the next retry
+
+    this._retryTimeout = null; // The offset of the remote upload before the latest attempt was started.
+
+    this._offsetBeforeRetry = 0; // An array of BaseUpload instances which are used for uploading the different
+    // parts, if the parallelUploads option is used.
+
+    this._parallelUploads = null; // An array of upload URLs which are used for uploading the different
+    // parts, if the parallelUploads option is used.
+
+    this._parallelUploadUrls = null;
+  }
+  /**
+   * Use the Termination extension to delete an upload from the server by sending a DELETE
+   * request to the specified upload URL. This is only possible if the server supports the
+   * Termination extension. If the `options.retryDelays` property is set, the method will
+   * also retry if an error ocurrs.
+   *
+   * @param {String} url The upload's URL which will be terminated.
+   * @param {object} options Optional options for influencing HTTP requests.
+   * @return {Promise} The Promise will be resolved/rejected when the requests finish.
+   */
+
+
+  _createClass(BaseUpload, [{
+    key: "findPreviousUploads",
+    value: function findPreviousUploads() {
+      var _this = this;
+
+      return this.options.fingerprint(this.file, this.options).then(function (fingerprint) {
+        return _this._urlStorage.findUploadsByFingerprint(fingerprint);
+      });
+    }
+  }, {
+    key: "resumeFromPreviousUpload",
+    value: function resumeFromPreviousUpload(previousUpload) {
+      this.url = previousUpload.uploadUrl || null;
+      this._parallelUploadUrls = previousUpload.parallelUploadUrls || null;
+      this._urlStorageKey = previousUpload.urlStorageKey;
+    }
+  }, {
+    key: "start",
+    value: function start() {
+      var _this2 = this;
+
+      var file = this.file;
+
+      if (!file) {
+        this._emitError(new Error('tus: no file or stream to upload provided'));
+
+        return;
+      }
+
+      if (!this.options.endpoint && !this.options.uploadUrl) {
+        this._emitError(new Error('tus: neither an endpoint or an upload URL is provided'));
+
+        return;
+      }
+
+      var retryDelays = this.options.retryDelays;
+
+      if (retryDelays != null && Object.prototype.toString.call(retryDelays) !== '[object Array]') {
+        this._emitError(new Error('tus: the `retryDelays` option must either be an array or null'));
+
+        return;
+      }
+
+      if (this.options.parallelUploads > 1) {
+        // Test which options are incompatible with parallel uploads.
+        ['uploadUrl', 'uploadSize', 'uploadLengthDeferred'].forEach(function (optionName) {
+          if (_this2.options[optionName]) {
+            _this2._emitError(new Error("tus: cannot use the ".concat(optionName, " option when parallelUploads is enabled")));
+          }
+        });
+      }
+
+      this.options.fingerprint(file, this.options).then(function (fingerprint) {
+        if (fingerprint == null) {
+          (0,_logger__WEBPACK_IMPORTED_MODULE_3__.log)('No fingerprint was calculated meaning that the upload cannot be stored in the URL storage.');
+        } else {
+          (0,_logger__WEBPACK_IMPORTED_MODULE_3__.log)("Calculated fingerprint: ".concat(fingerprint));
+        }
+
+        _this2._fingerprint = fingerprint;
+
+        if (_this2._source) {
+          return _this2._source;
+        }
+
+        return _this2.options.fileReader.openFile(file, _this2.options.chunkSize);
+      }).then(function (source) {
+        _this2._source = source; // If the upload was configured to use multiple requests or if we resume from
+        // an upload which used multiple requests, we start a parallel upload.
+
+        if (_this2.options.parallelUploads > 1 || _this2._parallelUploadUrls != null) {
+          _this2._startParallelUpload();
+        } else {
+          _this2._startSingleUpload();
+        }
+      })["catch"](function (err) {
+        _this2._emitError(err);
+      });
+    }
+    /**
+     * Initiate the uploading procedure for a parallelized upload, where one file is split into
+     * multiple request which are run in parallel.
+     *
+     * @api private
+     */
+
+  }, {
+    key: "_startParallelUpload",
+    value: function _startParallelUpload() {
+      var _this3 = this;
+
+      var totalSize = this._size = this._source.size;
+      var totalProgress = 0;
+      this._parallelUploads = [];
+      var partCount = this._parallelUploadUrls != null ? this._parallelUploadUrls.length : this.options.parallelUploads; // The input file will be split into multiple slices which are uploaded in separate
+      // requests. Here we generate the start and end position for the slices.
+
+      var parts = splitSizeIntoParts(this._source.size, partCount, this._parallelUploadUrls); // Create an empty list for storing the upload URLs
+
+      this._parallelUploadUrls = new Array(parts.length); // Generate a promise for each slice that will be resolve if the respective
+      // upload is completed.
+
+      var uploads = parts.map(function (part, index) {
+        var lastPartProgress = 0;
+        return _this3._source.slice(part.start, part.end).then(function (_ref) {
+          var value = _ref.value;
+          return new Promise(function (resolve, reject) {
+            // Merge with the user supplied options but overwrite some values.
+            var options = _objectSpread(_objectSpread({}, _this3.options), {}, {
+              // If available, the partial upload should be resumed from a previous URL.
+              uploadUrl: part.uploadUrl || null,
+              // We take manually care of resuming for partial uploads, so they should
+              // not be stored in the URL storage.
+              storeFingerprintForResuming: false,
+              removeFingerprintOnSuccess: false,
+              // Reset the parallelUploads option to not cause recursion.
+              parallelUploads: 1,
+              metadata: {},
+              // Add the header to indicate the this is a partial upload.
+              headers: _objectSpread(_objectSpread({}, _this3.options.headers), {}, {
+                'Upload-Concat': 'partial'
+              }),
+              // Reject or resolve the promise if the upload errors or completes.
+              onSuccess: resolve,
+              onError: reject,
+              // Based in the progress for this partial upload, calculate the progress
+              // for the entire final upload.
+              onProgress: function onProgress(newPartProgress) {
+                totalProgress = totalProgress - lastPartProgress + newPartProgress;
+                lastPartProgress = newPartProgress;
+
+                _this3._emitProgress(totalProgress, totalSize);
+              },
+              // Wait until every partial upload has an upload URL, so we can add
+              // them to the URL storage.
+              _onUploadUrlAvailable: function _onUploadUrlAvailable() {
+                _this3._parallelUploadUrls[index] = upload.url; // Test if all uploads have received an URL
+
+                if (_this3._parallelUploadUrls.filter(function (u) {
+                  return !!u;
+                }).length === parts.length) {
+                  _this3._saveUploadInUrlStorage();
+                }
+              }
+            });
+
+            var upload = new BaseUpload(value, options);
+            upload.start(); // Store the upload in an array, so we can later abort them if necessary.
+
+            _this3._parallelUploads.push(upload);
+          });
+        });
+      });
+      var req; // Wait until all partial uploads are finished and we can send the POST request for
+      // creating the final upload.
+
+      Promise.all(uploads).then(function () {
+        req = _this3._openRequest('POST', _this3.options.endpoint);
+        req.setHeader('Upload-Concat', "final;".concat(_this3._parallelUploadUrls.join(' '))); // Add metadata if values have been added
+
+        var metadata = encodeMetadata(_this3.options.metadata);
+
+        if (metadata !== '') {
+          req.setHeader('Upload-Metadata', metadata);
+        }
+
+        return _this3._sendRequest(req, null);
+      }).then(function (res) {
+        if (!inStatusCategory(res.getStatus(), 200)) {
+          _this3._emitHttpError(req, res, 'tus: unexpected response while creating upload');
+
+          return;
+        }
+
+        var location = res.getHeader('Location');
+
+        if (location == null) {
+          _this3._emitHttpError(req, res, 'tus: invalid or missing Location header');
+
+          return;
+        }
+
+        _this3.url = resolveUrl(_this3.options.endpoint, location);
+        (0,_logger__WEBPACK_IMPORTED_MODULE_3__.log)("Created upload at ".concat(_this3.url));
+
+        _this3._emitSuccess();
+      })["catch"](function (err) {
+        _this3._emitError(err);
+      });
+    }
+    /**
+     * Initiate the uploading procedure for a non-parallel upload. Here the entire file is
+     * uploaded in a sequential matter.
+     *
+     * @api private
+     */
+
+  }, {
+    key: "_startSingleUpload",
+    value: function _startSingleUpload() {
+      // First, we look at the uploadLengthDeferred option.
+      // Next, we check if the caller has supplied a manual upload size.
+      // Finally, we try to use the calculated size from the source object.
+      if (this.options.uploadLengthDeferred) {
+        this._size = null;
+      } else if (this.options.uploadSize != null) {
+        this._size = +this.options.uploadSize;
+
+        if (isNaN(this._size)) {
+          this._emitError(new Error('tus: cannot convert `uploadSize` option into a number'));
+
+          return;
+        }
+      } else {
+        this._size = this._source.size;
+
+        if (this._size == null) {
+          this._emitError(new Error("tus: cannot automatically derive upload's size from input. Specify it manually using the `uploadSize` option or use the `uploadLengthDeferred` option"));
+
+          return;
+        }
+      } // Reset the aborted flag when the upload is started or else the
+      // _performUpload will stop before sending a request if the upload has been
+      // aborted previously.
+
+
+      this._aborted = false; // The upload had been started previously and we should reuse this URL.
+
+      if (this.url != null) {
+        (0,_logger__WEBPACK_IMPORTED_MODULE_3__.log)("Resuming upload from previous URL: ".concat(this.url));
+
+        this._resumeUpload();
+
+        return;
+      } // A URL has manually been specified, so we try to resume
+
+
+      if (this.options.uploadUrl != null) {
+        (0,_logger__WEBPACK_IMPORTED_MODULE_3__.log)("Resuming upload from provided URL: ".concat(this.options.uploadUrl));
+        this.url = this.options.uploadUrl;
+
+        this._resumeUpload();
+
+        return;
+      } // An upload has not started for the file yet, so we start a new one
+
+
+      (0,_logger__WEBPACK_IMPORTED_MODULE_3__.log)('Creating a new upload');
+
+      this._createUpload();
+    }
+    /**
+     * Abort any running request and stop the current upload. After abort is called, no event
+     * handler will be invoked anymore. You can use the `start` method to resume the upload
+     * again.
+     * If `shouldTerminate` is true, the `terminate` function will be called to remove the
+     * current upload from the server.
+     *
+     * @param {boolean} shouldTerminate True if the upload should be deleted from the server.
+     * @return {Promise} The Promise will be resolved/rejected when the requests finish.
+     */
+
+  }, {
+    key: "abort",
+    value: function abort(shouldTerminate) {
+      var _this4 = this;
+
+      // Count the number of arguments to see if a callback is being provided in the old style required by tus-js-client 1.x, then throw an error if it is.
+      // `arguments` is a JavaScript built-in variable that contains all of the function's arguments.
+      if (arguments.length > 1 && typeof arguments[1] === 'function') {
+        throw new Error('tus: the abort function does not accept a callback since v2 anymore; please use the returned Promise instead');
+      } // Stop any parallel partial uploads, that have been started in _startParallelUploads.
+
+
+      if (this._parallelUploads != null) {
+        this._parallelUploads.forEach(function (upload) {
+          upload.abort(shouldTerminate);
+        });
+      } // Stop any current running request.
+
+
+      if (this._req !== null) {
+        this._req.abort();
+
+        this._source.close();
+      }
+
+      this._aborted = true; // Stop any timeout used for initiating a retry.
+
+      if (this._retryTimeout != null) {
+        clearTimeout(this._retryTimeout);
+        this._retryTimeout = null;
+      }
+
+      if (!shouldTerminate || this.url == null) {
+        return Promise.resolve();
+      }
+
+      return BaseUpload.terminate(this.url, this.options) // Remove entry from the URL storage since the upload URL is no longer valid.
+      .then(function () {
+        return _this4._removeFromUrlStorage();
+      });
+    }
+  }, {
+    key: "_emitHttpError",
+    value: function _emitHttpError(req, res, message, causingErr) {
+      this._emitError(new _error__WEBPACK_IMPORTED_MODULE_2__["default"](message, causingErr, req, res));
+    }
+  }, {
+    key: "_emitError",
+    value: function _emitError(err) {
+      var _this5 = this;
+
+      // Do not emit errors, e.g. from aborted HTTP requests, if the upload has been stopped.
+      if (this._aborted) return; // Check if we should retry, when enabled, before sending the error to the user.
+
+      if (this.options.retryDelays != null) {
+        // We will reset the attempt counter if
+        // - we were already able to connect to the server (offset != null) and
+        // - we were able to upload a small chunk of data to the server
+        var shouldResetDelays = this._offset != null && this._offset > this._offsetBeforeRetry;
+
+        if (shouldResetDelays) {
+          this._retryAttempt = 0;
+        }
+
+        if (shouldRetry(err, this._retryAttempt, this.options)) {
+          var delay = this.options.retryDelays[this._retryAttempt++];
+          this._offsetBeforeRetry = this._offset;
+          this._retryTimeout = setTimeout(function () {
+            _this5.start();
+          }, delay);
+          return;
+        }
+      }
+
+      if (typeof this.options.onError === 'function') {
+        this.options.onError(err);
+      } else {
+        throw err;
+      }
+    }
+    /**
+     * Publishes notification if the upload has been successfully completed.
+     *
+     * @api private
+     */
+
+  }, {
+    key: "_emitSuccess",
+    value: function _emitSuccess() {
+      if (this.options.removeFingerprintOnSuccess) {
+        // Remove stored fingerprint and corresponding endpoint. This causes
+        // new uploads of the same file to be treated as a different file.
+        this._removeFromUrlStorage();
+      }
+
+      if (typeof this.options.onSuccess === 'function') {
+        this.options.onSuccess();
+      }
+    }
+    /**
+     * Publishes notification when data has been sent to the server. This
+     * data may not have been accepted by the server yet.
+     *
+     * @param {number} bytesSent  Number of bytes sent to the server.
+     * @param {number} bytesTotal Total number of bytes to be sent to the server.
+     * @api private
+     */
+
+  }, {
+    key: "_emitProgress",
+    value: function _emitProgress(bytesSent, bytesTotal) {
+      if (typeof this.options.onProgress === 'function') {
+        this.options.onProgress(bytesSent, bytesTotal);
+      }
+    }
+    /**
+     * Publishes notification when a chunk of data has been sent to the server
+     * and accepted by the server.
+     * @param {number} chunkSize  Size of the chunk that was accepted by the server.
+     * @param {number} bytesAccepted Total number of bytes that have been
+     *                                accepted by the server.
+     * @param {number} bytesTotal Total number of bytes to be sent to the server.
+     * @api private
+     */
+
+  }, {
+    key: "_emitChunkComplete",
+    value: function _emitChunkComplete(chunkSize, bytesAccepted, bytesTotal) {
+      if (typeof this.options.onChunkComplete === 'function') {
+        this.options.onChunkComplete(chunkSize, bytesAccepted, bytesTotal);
+      }
+    }
+    /**
+     * Create a new upload using the creation extension by sending a POST
+     * request to the endpoint. After successful creation the file will be
+     * uploaded
+     *
+     * @api private
+     */
+
+  }, {
+    key: "_createUpload",
+    value: function _createUpload() {
+      var _this6 = this;
+
+      if (!this.options.endpoint) {
+        this._emitError(new Error('tus: unable to create upload because no endpoint is provided'));
+
+        return;
+      }
+
+      var req = this._openRequest('POST', this.options.endpoint);
+
+      if (this.options.uploadLengthDeferred) {
+        req.setHeader('Upload-Defer-Length', 1);
+      } else {
+        req.setHeader('Upload-Length', this._size);
+      } // Add metadata if values have been added
+
+
+      var metadata = encodeMetadata(this.options.metadata);
+
+      if (metadata !== '') {
+        req.setHeader('Upload-Metadata', metadata);
+      }
+
+      var promise;
+
+      if (this.options.uploadDataDuringCreation && !this.options.uploadLengthDeferred) {
+        this._offset = 0;
+        promise = this._addChunkToRequest(req);
+      } else {
+        promise = this._sendRequest(req, null);
+      }
+
+      promise.then(function (res) {
+        if (!inStatusCategory(res.getStatus(), 200)) {
+          _this6._emitHttpError(req, res, 'tus: unexpected response while creating upload');
+
+          return;
+        }
+
+        var location = res.getHeader('Location');
+
+        if (location == null) {
+          _this6._emitHttpError(req, res, 'tus: invalid or missing Location header');
+
+          return;
+        }
+
+        _this6.url = resolveUrl(_this6.options.endpoint, location);
+        (0,_logger__WEBPACK_IMPORTED_MODULE_3__.log)("Created upload at ".concat(_this6.url));
+
+        if (typeof _this6.options._onUploadUrlAvailable === 'function') {
+          _this6.options._onUploadUrlAvailable();
+        }
+
+        if (_this6._size === 0) {
+          // Nothing to upload and file was successfully created
+          _this6._emitSuccess();
+
+          _this6._source.close();
+
+          return;
+        }
+
+        _this6._saveUploadInUrlStorage();
+
+        if (_this6.options.uploadDataDuringCreation) {
+          _this6._handleUploadResponse(req, res);
+        } else {
+          _this6._offset = 0;
+
+          _this6._performUpload();
+        }
+      })["catch"](function (err) {
+        _this6._emitHttpError(req, null, 'tus: failed to create upload', err);
+      });
+    }
+    /*
+     * Try to resume an existing upload. First a HEAD request will be sent
+     * to retrieve the offset. If the request fails a new upload will be
+     * created. In the case of a successful response the file will be uploaded.
+     *
+     * @api private
+     */
+
+  }, {
+    key: "_resumeUpload",
+    value: function _resumeUpload() {
+      var _this7 = this;
+
+      var req = this._openRequest('HEAD', this.url);
+
+      var promise = this._sendRequest(req, null);
+
+      promise.then(function (res) {
+        var status = res.getStatus();
+
+        if (!inStatusCategory(status, 200)) {
+          if (inStatusCategory(status, 400)) {
+            // Remove stored fingerprint and corresponding endpoint,
+            // on client errors since the file can not be found
+            _this7._removeFromUrlStorage();
+          } // If the upload is locked (indicated by the 423 Locked status code), we
+          // emit an error instead of directly starting a new upload. This way the
+          // retry logic can catch the error and will retry the upload. An upload
+          // is usually locked for a short period of time and will be available
+          // afterwards.
+
+
+          if (status === 423) {
+            _this7._emitHttpError(req, res, 'tus: upload is currently locked; retry later');
+
+            return;
+          }
+
+          if (!_this7.options.endpoint) {
+            // Don't attempt to create a new upload if no endpoint is provided.
+            _this7._emitHttpError(req, res, 'tus: unable to resume upload (new upload cannot be created without an endpoint)');
+
+            return;
+          } // Try to create a new upload
+
+
+          _this7.url = null;
+
+          _this7._createUpload();
+
+          return;
+        }
+
+        var offset = parseInt(res.getHeader('Upload-Offset'), 10);
+
+        if (isNaN(offset)) {
+          _this7._emitHttpError(req, res, 'tus: invalid or missing offset value');
+
+          return;
+        }
+
+        var length = parseInt(res.getHeader('Upload-Length'), 10);
+
+        if (isNaN(length) && !_this7.options.uploadLengthDeferred) {
+          _this7._emitHttpError(req, res, 'tus: invalid or missing length value');
+
+          return;
+        }
+
+        if (typeof _this7.options._onUploadUrlAvailable === 'function') {
+          _this7.options._onUploadUrlAvailable();
+        } // Upload has already been completed and we do not need to send additional
+        // data to the server
+
+
+        if (offset === length) {
+          _this7._emitProgress(length, length);
+
+          _this7._emitSuccess();
+
+          return;
+        }
+
+        _this7._offset = offset;
+
+        _this7._performUpload();
+      })["catch"](function (err) {
+        _this7._emitHttpError(req, null, 'tus: failed to resume upload', err);
+      });
+    }
+    /**
+     * Start uploading the file using PATCH requests. The file will be divided
+     * into chunks as specified in the chunkSize option. During the upload
+     * the onProgress event handler may be invoked multiple times.
+     *
+     * @api private
+     */
+
+  }, {
+    key: "_performUpload",
+    value: function _performUpload() {
+      var _this8 = this;
+
+      // If the upload has been aborted, we will not send the next PATCH request.
+      // This is important if the abort method was called during a callback, such
+      // as onChunkComplete or onProgress.
+      if (this._aborted) {
+        return;
+      }
+
+      var req; // Some browser and servers may not support the PATCH method. For those
+      // cases, you can tell tus-js-client to use a POST request with the
+      // X-HTTP-Method-Override header for simulating a PATCH request.
+
+      if (this.options.overridePatchMethod) {
+        req = this._openRequest('POST', this.url);
+        req.setHeader('X-HTTP-Method-Override', 'PATCH');
+      } else {
+        req = this._openRequest('PATCH', this.url);
+      }
+
+      req.setHeader('Upload-Offset', this._offset);
+
+      var promise = this._addChunkToRequest(req);
+
+      promise.then(function (res) {
+        if (!inStatusCategory(res.getStatus(), 200)) {
+          _this8._emitHttpError(req, res, 'tus: unexpected response while uploading chunk');
+
+          return;
+        }
+
+        _this8._handleUploadResponse(req, res);
+      })["catch"](function (err) {
+        // Don't emit an error if the upload was aborted manually
+        if (_this8._aborted) {
+          return;
+        }
+
+        _this8._emitHttpError(req, null, "tus: failed to upload chunk at offset ".concat(_this8._offset), err);
+      });
+    }
+    /**
+     * _addChunktoRequest reads a chunk from the source and sends it using the
+     * supplied request object. It will not handle the response.
+     *
+     * @api private
+     */
+
+  }, {
+    key: "_addChunkToRequest",
+    value: function _addChunkToRequest(req) {
+      var _this9 = this;
+
+      var start = this._offset;
+      var end = this._offset + this.options.chunkSize;
+      req.setProgressHandler(function (bytesSent) {
+        _this9._emitProgress(start + bytesSent, _this9._size);
+      });
+      req.setHeader('Content-Type', 'application/offset+octet-stream'); // The specified chunkSize may be Infinity or the calcluated end position
+      // may exceed the file's size. In both cases, we limit the end position to
+      // the input's total size for simpler calculations and correctness.
+
+      if ((end === Infinity || end > this._size) && !this.options.uploadLengthDeferred) {
+        end = this._size;
+      }
+
+      return this._source.slice(start, end).then(function (_ref2) {
+        var value = _ref2.value,
+            done = _ref2.done;
+
+        // If the upload length is deferred, the upload size was not specified during
+        // upload creation. So, if the file reader is done reading, we know the total
+        // upload size and can tell the tus server.
+        if (_this9.options.uploadLengthDeferred && done) {
+          _this9._size = _this9._offset + (value && value.size ? value.size : 0);
+          req.setHeader('Upload-Length', _this9._size);
+        }
+
+        if (value === null) {
+          return _this9._sendRequest(req);
+        }
+
+        _this9._emitProgress(_this9._offset, _this9._size);
+
+        return _this9._sendRequest(req, value);
+      });
+    }
+    /**
+     * _handleUploadResponse is used by requests that haven been sent using _addChunkToRequest
+     * and already have received a response.
+     *
+     * @api private
+     */
+
+  }, {
+    key: "_handleUploadResponse",
+    value: function _handleUploadResponse(req, res) {
+      var offset = parseInt(res.getHeader('Upload-Offset'), 10);
+
+      if (isNaN(offset)) {
+        this._emitHttpError(req, res, 'tus: invalid or missing offset value');
+
+        return;
+      }
+
+      this._emitProgress(offset, this._size);
+
+      this._emitChunkComplete(offset - this._offset, offset, this._size);
+
+      this._offset = offset;
+
+      if (offset == this._size) {
+        // Yay, finally done :)
+        this._emitSuccess();
+
+        this._source.close();
+
+        return;
+      }
+
+      this._performUpload();
+    }
+    /**
+     * Create a new HTTP request object with the given method and URL.
+     *
+     * @api private
+     */
+
+  }, {
+    key: "_openRequest",
+    value: function _openRequest(method, url) {
+      var req = openRequest(method, url, this.options);
+      this._req = req;
+      return req;
+    }
+    /**
+     * Remove the entry in the URL storage, if it has been saved before.
+     *
+     * @api private
+     */
+
+  }, {
+    key: "_removeFromUrlStorage",
+    value: function _removeFromUrlStorage() {
+      var _this10 = this;
+
+      if (!this._urlStorageKey) return;
+
+      this._urlStorage.removeUpload(this._urlStorageKey)["catch"](function (err) {
+        _this10._emitError(err);
+      });
+
+      this._urlStorageKey = null;
+    }
+    /**
+     * Add the upload URL to the URL storage, if possible.
+     *
+     * @api private
+     */
+
+  }, {
+    key: "_saveUploadInUrlStorage",
+    value: function _saveUploadInUrlStorage() {
+      var _this11 = this;
+
+      // Only if a fingerprint was calculated for the input (i.e. not a stream), we can store the upload URL.
+      if (!this.options.storeFingerprintForResuming || !this._fingerprint) {
+        return;
+      }
+
+      var storedUpload = {
+        size: this._size,
+        metadata: this.options.metadata,
+        creationTime: new Date().toString()
+      };
+
+      if (this._parallelUploads) {
+        // Save multiple URLs if the parallelUploads option is used ...
+        storedUpload.parallelUploadUrls = this._parallelUploadUrls;
+      } else {
+        // ... otherwise we just save the one available URL.
+        storedUpload.uploadUrl = this.url;
+      }
+
+      this._urlStorage.addUpload(this._fingerprint, storedUpload).then(function (urlStorageKey) {
+        return _this11._urlStorageKey = urlStorageKey;
+      })["catch"](function (err) {
+        _this11._emitError(err);
+      });
+    }
+    /**
+     * Send a request with the provided body.
+     *
+     * @api private
+     */
+
+  }, {
+    key: "_sendRequest",
+    value: function _sendRequest(req) {
+      var body = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      return sendRequest(req, body, this.options);
+    }
+  }], [{
+    key: "terminate",
+    value: function terminate(url, options) {
+      // Count the number of arguments to see if a callback is being provided as the last
+      // argument in the old style required by tus-js-client 1.x, then throw an error if it is.
+      // `arguments` is a JavaScript built-in variable that contains all of the function's arguments.
+      if (arguments.length > 1 && typeof arguments[arguments.length - 1] === 'function') {
+        throw new Error('tus: the terminate function does not accept a callback since v2 anymore; please use the returned Promise instead');
+      } // Note that in order for the trick above to work, a default value cannot be set for `options`,
+      // so the check below replaces the old default `{}`.
+
+
+      if (options === undefined) {
+        options = {};
+      }
+
+      var req = openRequest('DELETE', url, options);
+      return sendRequest(req, null, options).then(function (res) {
+        // A 204 response indicates a successfull request
+        if (res.getStatus() === 204) {
+          return;
+        }
+
+        throw new _error__WEBPACK_IMPORTED_MODULE_2__["default"]('tus: unexpected response while terminating upload', null, req, res);
+      })["catch"](function (err) {
+        if (!(err instanceof _error__WEBPACK_IMPORTED_MODULE_2__["default"])) {
+          err = new _error__WEBPACK_IMPORTED_MODULE_2__["default"]('tus: failed to terminate upload', err, req, null);
+        }
+
+        if (!shouldRetry(err, 0, options)) {
+          throw err;
+        } // Instead of keeping track of the retry attempts, we remove the first element from the delays
+        // array. If the array is empty, all retry attempts are used up and we will bubble up the error.
+        // We recursively call the terminate function will removing elements from the retryDelays array.
+
+
+        var delay = options.retryDelays[0];
+        var remainingDelays = options.retryDelays.slice(1);
+
+        var newOptions = _objectSpread(_objectSpread({}, options), {}, {
+          retryDelays: remainingDelays
+        });
+
+        return new Promise(function (resolve) {
+          return setTimeout(resolve, delay);
+        }).then(function () {
+          return BaseUpload.terminate(url, newOptions);
+        });
+      });
+    }
+  }]);
+
+  return BaseUpload;
+}();
+
+function encodeMetadata(metadata) {
+  var encoded = [];
+
+  for (var key in metadata) {
+    encoded.push("".concat(key, " ").concat(js_base64__WEBPACK_IMPORTED_MODULE_0__.Base64.encode(metadata[key])));
+  }
+
+  return encoded.join(',');
+}
+/**
+ * Checks whether a given status is in the range of the expected category.
+ * For example, only a status between 200 and 299 will satisfy the category 200.
+ *
+ * @api private
+ */
+
+
+function inStatusCategory(status, category) {
+  return status >= category && status < category + 100;
+}
+/**
+ * Create a new HTTP request with the specified method and URL.
+ * The necessary headers that are included in every request
+ * will be added, including the request ID.
+ *
+ * @api private
+ */
+
+
+function openRequest(method, url, options) {
+  var req = options.httpStack.createRequest(method, url);
+  req.setHeader('Tus-Resumable', '1.0.0');
+  var headers = options.headers || {};
+
+  for (var name in headers) {
+    req.setHeader(name, headers[name]);
+  }
+
+  if (options.addRequestId) {
+    var requestId = (0,_uuid__WEBPACK_IMPORTED_MODULE_4__["default"])();
+    req.setHeader('X-Request-ID', requestId);
+  }
+
+  return req;
+}
+/**
+ * Send a request with the provided body while invoking the onBeforeRequest
+ * and onAfterResponse callbacks.
+ *
+ * @api private
+ */
+
+
+function sendRequest(req, body, options) {
+  var onBeforeRequestPromise = typeof options.onBeforeRequest === 'function' ? Promise.resolve(options.onBeforeRequest(req)) : Promise.resolve();
+  return onBeforeRequestPromise.then(function () {
+    return req.send(body).then(function (res) {
+      var onAfterResponsePromise = typeof options.onAfterResponse === 'function' ? Promise.resolve(options.onAfterResponse(req, res)) : Promise.resolve();
+      return onAfterResponsePromise.then(function () {
+        return res;
+      });
+    });
+  });
+}
+/**
+ * Checks whether the browser running this code has internet access.
+ * This function will always return true in the node.js environment
+ *
+ * @api private
+ */
+
+
+function isOnline() {
+  var online = true;
+
+  if (typeof window !== 'undefined' && 'navigator' in window && window.navigator.onLine === false) {
+    online = false;
+  }
+
+  return online;
+}
+/**
+ * Checks whether or not it is ok to retry a request.
+ * @param {Error} err the error returned from the last request
+ * @param {number} retryAttempt the number of times the request has already been retried
+ * @param {object} options tus Upload options
+ *
+ * @api private
+ */
+
+
+function shouldRetry(err, retryAttempt, options) {
+  // We only attempt a retry if
+  // - retryDelays option is set
+  // - we didn't exceed the maxium number of retries, yet, and
+  // - this error was caused by a request or it's response and
+  // - the error is server error (i.e. not a status 4xx except a 409 or 423) or
+  // a onShouldRetry is specified and returns true
+  // - the browser does not indicate that we are offline
+  if (options.retryDelays == null || retryAttempt >= options.retryDelays.length || err.originalRequest == null) {
+    return false;
+  }
+
+  if (options && typeof options.onShouldRetry === 'function') {
+    return options.onShouldRetry(err, retryAttempt, options);
+  }
+
+  var status = err.originalResponse ? err.originalResponse.getStatus() : 0;
+  return (!inStatusCategory(status, 400) || status === 409 || status === 423) && isOnline();
+}
+/**
+ * Resolve a relative link given the origin as source. For example,
+ * if a HTTP request to http://example.com/files/ returns a Location
+ * header with the value /upload/abc, the resolved URL will be:
+ * http://example.com/upload/abc
+ */
+
+
+function resolveUrl(origin, link) {
+  return new (url_parse__WEBPACK_IMPORTED_MODULE_1___default())(link, origin).toString();
+}
+/**
+ * Calculate the start and end positions for the parts if an upload
+ * is split into multiple parallel requests.
+ *
+ * @param {number} totalSize The byte size of the upload, which will be split.
+ * @param {number} partCount The number in how many parts the upload will be split.
+ * @param {string[]} previousUrls The upload URLs for previous parts.
+ * @return {object[]}
+ * @api private
+ */
+
+
+function splitSizeIntoParts(totalSize, partCount, previousUrls) {
+  var partSize = Math.floor(totalSize / partCount);
+  var parts = [];
+
+  for (var i = 0; i < partCount; i++) {
+    parts.push({
+      start: partSize * i,
+      end: partSize * (i + 1)
+    });
+  }
+
+  parts[partCount - 1].end = totalSize; // Attach URLs from previous uploads, if available.
+
+  if (previousUrls) {
+    parts.forEach(function (part, index) {
+      part.uploadUrl = previousUrls[index] || null;
+    });
+  }
+
+  return parts;
+}
+
+BaseUpload.defaultOptions = defaultOptions;
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (BaseUpload);
+
+/***/ }),
+
+/***/ "./node_modules/tus-js-client/lib.esm/uuid.js":
+/*!****************************************************!*\
+  !*** ./node_modules/tus-js-client/lib.esm/uuid.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ uuid)
+/* harmony export */ });
+/**
+ * Generate a UUID v4 based on random numbers. We intentioanlly use the less
+ * secure Math.random function here since the more secure crypto.getRandomNumbers
+ * is not available on all platforms.
+ * This is not a problem for us since we use the UUID only for generating a
+ * request ID, so we can correlate server logs to client errors.
+ *
+ * This function is taken from following site:
+ * https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
+ *
+ * @return {string} The generate UUID
+ */
+function uuid() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var r = Math.random() * 16 | 0;
+    var v = c == 'x' ? r : r & 0x3 | 0x8;
+    return v.toString(16);
+  });
+}
 
 /***/ }),
 
@@ -8492,6 +3940,7072 @@ module.exports = function(text, test, separator) {
 };
 
 
+/***/ }),
+
+/***/ "./node_modules/@uppy/aws-s3-multipart/lib/MultipartUploader.js":
+/*!**********************************************************************!*\
+  !*** ./node_modules/@uppy/aws-s3-multipart/lib/MultipartUploader.js ***!
+  \**********************************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var _AbortController = __webpack_require__(/*! @uppy/utils/lib/AbortController */ "./node_modules/@uppy/utils/lib/AbortController.js");
+
+function _classPrivateFieldLooseBase(receiver, privateKey) { if (!Object.prototype.hasOwnProperty.call(receiver, privateKey)) { throw new TypeError("attempted to use private field on non-instance"); } return receiver; }
+
+var id = 0;
+
+function _classPrivateFieldLooseKey(name) { return "__private_" + id++ + "_" + name; }
+
+const delay = __webpack_require__(/*! @uppy/utils/lib/delay */ "./node_modules/@uppy/utils/lib/delay.js");
+
+const MB = 1024 * 1024;
+const defaultOptions = {
+  limit: 1,
+  retryDelays: [0, 1000, 3000, 5000],
+
+  getChunkSize(file) {
+    return Math.ceil(file.size / 10000);
+  },
+
+  onStart() {},
+
+  onProgress() {},
+
+  onPartComplete() {},
+
+  onSuccess() {},
+
+  onError(err) {
+    throw err;
+  }
+
+};
+
+function ensureInt(value) {
+  if (typeof value === 'string') {
+    return parseInt(value, 10);
+  }
+
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  throw new TypeError('Expected a number');
+}
+
+var _aborted = /*#__PURE__*/_classPrivateFieldLooseKey("aborted");
+
+var _initChunks = /*#__PURE__*/_classPrivateFieldLooseKey("initChunks");
+
+var _createUpload = /*#__PURE__*/_classPrivateFieldLooseKey("createUpload");
+
+var _resumeUpload = /*#__PURE__*/_classPrivateFieldLooseKey("resumeUpload");
+
+var _uploadParts = /*#__PURE__*/_classPrivateFieldLooseKey("uploadParts");
+
+var _retryable = /*#__PURE__*/_classPrivateFieldLooseKey("retryable");
+
+var _prepareUploadParts = /*#__PURE__*/_classPrivateFieldLooseKey("prepareUploadParts");
+
+var _uploadPartRetryable = /*#__PURE__*/_classPrivateFieldLooseKey("uploadPartRetryable");
+
+var _uploadPart = /*#__PURE__*/_classPrivateFieldLooseKey("uploadPart");
+
+var _onPartProgress = /*#__PURE__*/_classPrivateFieldLooseKey("onPartProgress");
+
+var _onPartComplete = /*#__PURE__*/_classPrivateFieldLooseKey("onPartComplete");
+
+var _uploadPartBytes = /*#__PURE__*/_classPrivateFieldLooseKey("uploadPartBytes");
+
+var _completeUpload = /*#__PURE__*/_classPrivateFieldLooseKey("completeUpload");
+
+var _abortUpload = /*#__PURE__*/_classPrivateFieldLooseKey("abortUpload");
+
+var _onError = /*#__PURE__*/_classPrivateFieldLooseKey("onError");
+
+class MultipartUploader {
+  constructor(file, options) {
+    Object.defineProperty(this, _onError, {
+      value: _onError2
+    });
+    Object.defineProperty(this, _abortUpload, {
+      value: _abortUpload2
+    });
+    Object.defineProperty(this, _completeUpload, {
+      value: _completeUpload2
+    });
+    Object.defineProperty(this, _uploadPartBytes, {
+      value: _uploadPartBytes2
+    });
+    Object.defineProperty(this, _onPartComplete, {
+      value: _onPartComplete2
+    });
+    Object.defineProperty(this, _onPartProgress, {
+      value: _onPartProgress2
+    });
+    Object.defineProperty(this, _uploadPart, {
+      value: _uploadPart2
+    });
+    Object.defineProperty(this, _uploadPartRetryable, {
+      value: _uploadPartRetryable2
+    });
+    Object.defineProperty(this, _prepareUploadParts, {
+      value: _prepareUploadParts2
+    });
+    Object.defineProperty(this, _retryable, {
+      value: _retryable2
+    });
+    Object.defineProperty(this, _uploadParts, {
+      value: _uploadParts2
+    });
+    Object.defineProperty(this, _resumeUpload, {
+      value: _resumeUpload2
+    });
+    Object.defineProperty(this, _createUpload, {
+      value: _createUpload2
+    });
+    Object.defineProperty(this, _initChunks, {
+      value: _initChunks2
+    });
+    Object.defineProperty(this, _aborted, {
+      value: _aborted2
+    });
+    this.options = { ...defaultOptions,
+      ...options
+    }; // Use default `getChunkSize` if it was null or something
+
+    if (!this.options.getChunkSize) {
+      this.options.getChunkSize = defaultOptions.getChunkSize;
+    }
+
+    this.file = file;
+    this.abortController = new _AbortController.AbortController();
+    this.key = this.options.key || null;
+    this.uploadId = this.options.uploadId || null;
+    this.parts = []; // Do `this.createdPromise.then(OP)` to execute an operation `OP` _only_ if the
+    // upload was created already. That also ensures that the sequencing is right
+    // (so the `OP` definitely happens if the upload is created).
+    //
+    // This mostly exists to make `#abortUpload` work well: only sending the abort request if
+    // the upload was already created, and if the createMultipartUpload request is still in flight,
+    // aborting it immediately after it finishes.
+
+    this.createdPromise = Promise.reject(); // eslint-disable-line prefer-promise-reject-errors
+
+    this.isPaused = false;
+    this.partsInProgress = 0;
+    this.chunks = null;
+    this.chunkState = null;
+
+    _classPrivateFieldLooseBase(this, _initChunks)[_initChunks]();
+
+    this.createdPromise.catch(() => {}); // silence uncaught rejection warning
+  }
+  /**
+   * Was this upload aborted?
+   *
+   * If yes, we may need to throw an AbortError.
+   *
+   * @returns {boolean}
+   */
+
+
+  start() {
+    this.isPaused = false;
+
+    if (this.uploadId) {
+      _classPrivateFieldLooseBase(this, _resumeUpload)[_resumeUpload]();
+    } else {
+      _classPrivateFieldLooseBase(this, _createUpload)[_createUpload]();
+    }
+  }
+
+  pause() {
+    this.abortController.abort(); // Swap it out for a new controller, because this instance may be resumed later.
+
+    this.abortController = new _AbortController.AbortController();
+    this.isPaused = true;
+  }
+
+  abort(opts) {
+    var _opts;
+
+    if (opts === void 0) {
+      opts = undefined;
+    }
+
+    if ((_opts = opts) != null && _opts.really) _classPrivateFieldLooseBase(this, _abortUpload)[_abortUpload]();else this.pause();
+  }
+
+}
+
+function _aborted2() {
+  return this.abortController.signal.aborted;
+}
+
+function _initChunks2() {
+  const chunks = [];
+  const desiredChunkSize = this.options.getChunkSize(this.file); // at least 5MB per request, at most 10k requests
+
+  const minChunkSize = Math.max(5 * MB, Math.ceil(this.file.size / 10000));
+  const chunkSize = Math.max(desiredChunkSize, minChunkSize); // Upload zero-sized files in one zero-sized chunk
+
+  if (this.file.size === 0) {
+    chunks.push(this.file);
+  } else {
+    for (let i = 0; i < this.file.size; i += chunkSize) {
+      const end = Math.min(this.file.size, i + chunkSize);
+      chunks.push(this.file.slice(i, end));
+    }
+  }
+
+  this.chunks = chunks;
+  this.chunkState = chunks.map(() => ({
+    uploaded: 0,
+    busy: false,
+    done: false
+  }));
+}
+
+function _createUpload2() {
+  this.createdPromise = Promise.resolve().then(() => this.options.createMultipartUpload());
+  return this.createdPromise.then(result => {
+    if (_classPrivateFieldLooseBase(this, _aborted)[_aborted]()) throw (0, _AbortController.createAbortError)();
+    const valid = typeof result === 'object' && result && typeof result.uploadId === 'string' && typeof result.key === 'string';
+
+    if (!valid) {
+      throw new TypeError('AwsS3/Multipart: Got incorrect result from `createMultipartUpload()`, expected an object `{ uploadId, key }`.');
+    }
+
+    this.key = result.key;
+    this.uploadId = result.uploadId;
+    this.options.onStart(result);
+
+    _classPrivateFieldLooseBase(this, _uploadParts)[_uploadParts]();
+  }).catch(err => {
+    _classPrivateFieldLooseBase(this, _onError)[_onError](err);
+  });
+}
+
+async function _resumeUpload2() {
+  try {
+    const parts = await this.options.listParts({
+      uploadId: this.uploadId,
+      key: this.key
+    });
+    if (_classPrivateFieldLooseBase(this, _aborted)[_aborted]()) throw (0, _AbortController.createAbortError)();
+    parts.forEach(part => {
+      const i = part.PartNumber - 1;
+      this.chunkState[i] = {
+        uploaded: ensureInt(part.Size),
+        etag: part.ETag,
+        done: true
+      }; // Only add if we did not yet know about this part.
+
+      if (!this.parts.some(p => p.PartNumber === part.PartNumber)) {
+        this.parts.push({
+          PartNumber: part.PartNumber,
+          ETag: part.ETag
+        });
+      }
+    });
+
+    _classPrivateFieldLooseBase(this, _uploadParts)[_uploadParts]();
+  } catch (err) {
+    _classPrivateFieldLooseBase(this, _onError)[_onError](err);
+  }
+}
+
+function _uploadParts2() {
+  if (this.isPaused) return; // All parts are uploaded.
+
+  if (this.chunkState.every(state => state.done)) {
+    _classPrivateFieldLooseBase(this, _completeUpload)[_completeUpload]();
+
+    return;
+  } // For a 100MB file, with the default min chunk size of 5MB and a limit of 10:
+  //
+  // Total 20 parts
+  // ---------
+  // Need 1 is 10
+  // Need 2 is 5
+  // Need 3 is 5
+
+
+  const need = this.options.limit - this.partsInProgress;
+  const completeChunks = this.chunkState.filter(state => state.done).length;
+  const remainingChunks = this.chunks.length - completeChunks;
+  let minNeeded = Math.ceil(this.options.limit / 2);
+
+  if (minNeeded > remainingChunks) {
+    minNeeded = remainingChunks;
+  }
+
+  if (need < minNeeded) return;
+  const candidates = [];
+
+  for (let i = 0; i < this.chunkState.length; i++) {
+    const state = this.chunkState[i]; // eslint-disable-next-line no-continue
+
+    if (state.done || state.busy) continue;
+    candidates.push(i);
+
+    if (candidates.length >= need) {
+      break;
+    }
+  }
+
+  if (candidates.length === 0) return;
+
+  _classPrivateFieldLooseBase(this, _prepareUploadParts)[_prepareUploadParts](candidates).then(result => {
+    candidates.forEach(index => {
+      const partNumber = index + 1;
+      const prePreparedPart = {
+        url: result.presignedUrls[partNumber],
+        headers: result.headers
+      };
+
+      _classPrivateFieldLooseBase(this, _uploadPartRetryable)[_uploadPartRetryable](index, prePreparedPart).then(() => {
+        _classPrivateFieldLooseBase(this, _uploadParts)[_uploadParts]();
+      }, err => {
+        _classPrivateFieldLooseBase(this, _onError)[_onError](err);
+      });
+    });
+  });
+}
+
+function _retryable2(_ref) {
+  let {
+    before,
+    attempt,
+    after
+  } = _ref;
+  const {
+    retryDelays
+  } = this.options;
+  const {
+    signal
+  } = this.abortController;
+  if (before) before();
+
+  function shouldRetry(err) {
+    if (err.source && typeof err.source.status === 'number') {
+      const {
+        status
+      } = err.source; // 0 probably indicates network failure
+
+      return status === 0 || status === 409 || status === 423 || status >= 500 && status < 600;
+    }
+
+    return false;
+  }
+
+  const doAttempt = retryAttempt => attempt().catch(err => {
+    if (_classPrivateFieldLooseBase(this, _aborted)[_aborted]()) throw (0, _AbortController.createAbortError)();
+
+    if (shouldRetry(err) && retryAttempt < retryDelays.length) {
+      return delay(retryDelays[retryAttempt], {
+        signal
+      }).then(() => doAttempt(retryAttempt + 1));
+    }
+
+    throw err;
+  });
+
+  return doAttempt(0).then(result => {
+    if (after) after();
+    return result;
+  }, err => {
+    if (after) after();
+    throw err;
+  });
+}
+
+async function _prepareUploadParts2(candidates) {
+  candidates.forEach(i => {
+    this.chunkState[i].busy = true;
+  });
+  const result = await _classPrivateFieldLooseBase(this, _retryable)[_retryable]({
+    attempt: () => this.options.prepareUploadParts({
+      key: this.key,
+      uploadId: this.uploadId,
+      partNumbers: candidates.map(index => index + 1),
+      chunks: candidates.reduce((chunks, candidate) => ({ ...chunks,
+        // Use the part number as the index
+        [candidate + 1]: this.chunks[candidate]
+      }), {})
+    })
+  });
+
+  if (typeof (result == null ? void 0 : result.presignedUrls) !== 'object') {
+    throw new TypeError('AwsS3/Multipart: Got incorrect result from `prepareUploadParts()`, expected an object `{ presignedUrls }`.');
+  }
+
+  return result;
+}
+
+function _uploadPartRetryable2(index, prePreparedPart) {
+  return _classPrivateFieldLooseBase(this, _retryable)[_retryable]({
+    before: () => {
+      this.partsInProgress += 1;
+    },
+    attempt: () => _classPrivateFieldLooseBase(this, _uploadPart)[_uploadPart](index, prePreparedPart),
+    after: () => {
+      this.partsInProgress -= 1;
+    }
+  });
+}
+
+function _uploadPart2(index, prePreparedPart) {
+  this.chunkState[index].busy = true;
+  const valid = typeof (prePreparedPart == null ? void 0 : prePreparedPart.url) === 'string';
+
+  if (!valid) {
+    throw new TypeError('AwsS3/Multipart: Got incorrect result for `prePreparedPart`, expected an object `{ url }`.');
+  }
+
+  const {
+    url,
+    headers
+  } = prePreparedPart;
+
+  if (_classPrivateFieldLooseBase(this, _aborted)[_aborted]()) {
+    this.chunkState[index].busy = false;
+    throw (0, _AbortController.createAbortError)();
+  }
+
+  return _classPrivateFieldLooseBase(this, _uploadPartBytes)[_uploadPartBytes](index, url, headers);
+}
+
+function _onPartProgress2(index, sent) {
+  this.chunkState[index].uploaded = ensureInt(sent);
+  const totalUploaded = this.chunkState.reduce((n, c) => n + c.uploaded, 0);
+  this.options.onProgress(totalUploaded, this.file.size);
+}
+
+function _onPartComplete2(index, etag) {
+  this.chunkState[index].etag = etag;
+  this.chunkState[index].done = true;
+  const part = {
+    PartNumber: index + 1,
+    ETag: etag
+  };
+  this.parts.push(part);
+  this.options.onPartComplete(part);
+}
+
+function _uploadPartBytes2(index, url, headers) {
+  const body = this.chunks[index];
+  const {
+    signal
+  } = this.abortController;
+  let defer;
+  const promise = new Promise((resolve, reject) => {
+    defer = {
+      resolve,
+      reject
+    };
+  });
+  const xhr = new XMLHttpRequest();
+  xhr.open('PUT', url, true);
+
+  if (headers) {
+    Object.keys(headers).forEach(key => {
+      xhr.setRequestHeader(key, headers[key]);
+    });
+  }
+
+  xhr.responseType = 'text';
+
+  function cleanup() {
+    // eslint-disable-next-line no-use-before-define
+    signal.removeEventListener('abort', onabort);
+  }
+
+  function onabort() {
+    xhr.abort();
+  }
+
+  signal.addEventListener('abort', onabort);
+  xhr.upload.addEventListener('progress', ev => {
+    if (!ev.lengthComputable) return;
+
+    _classPrivateFieldLooseBase(this, _onPartProgress)[_onPartProgress](index, ev.loaded, ev.total);
+  });
+  xhr.addEventListener('abort', () => {
+    cleanup();
+    this.chunkState[index].busy = false;
+    defer.reject((0, _AbortController.createAbortError)());
+  });
+  xhr.addEventListener('load', ev => {
+    cleanup();
+    this.chunkState[index].busy = false;
+
+    if (ev.target.status < 200 || ev.target.status >= 300) {
+      const error = new Error('Non 2xx');
+      error.source = ev.target;
+      defer.reject(error);
+      return;
+    } // This avoids the net::ERR_OUT_OF_MEMORY in Chromium Browsers.
+
+
+    this.chunks[index] = null;
+
+    _classPrivateFieldLooseBase(this, _onPartProgress)[_onPartProgress](index, body.size, body.size); // NOTE This must be allowed by CORS.
+
+
+    const etag = ev.target.getResponseHeader('ETag');
+
+    if (etag === null) {
+      defer.reject(new Error('AwsS3/Multipart: Could not read the ETag header. This likely means CORS is not configured correctly on the S3 Bucket. See https://uppy.io/docs/aws-s3-multipart#S3-Bucket-Configuration for instructions.'));
+      return;
+    }
+
+    _classPrivateFieldLooseBase(this, _onPartComplete)[_onPartComplete](index, etag);
+
+    defer.resolve();
+  });
+  xhr.addEventListener('error', ev => {
+    cleanup();
+    this.chunkState[index].busy = false;
+    const error = new Error('Unknown error');
+    error.source = ev.target;
+    defer.reject(error);
+  });
+  xhr.send(body);
+  return promise;
+}
+
+async function _completeUpload2() {
+  // Parts may not have completed uploading in sorted order, if limit > 1.
+  this.parts.sort((a, b) => a.PartNumber - b.PartNumber);
+
+  try {
+    const result = await this.options.completeMultipartUpload({
+      key: this.key,
+      uploadId: this.uploadId,
+      parts: this.parts
+    });
+    this.options.onSuccess(result);
+  } catch (err) {
+    _classPrivateFieldLooseBase(this, _onError)[_onError](err);
+  }
+}
+
+function _abortUpload2() {
+  this.abortController.abort();
+  this.createdPromise.then(() => {
+    this.options.abortMultipartUpload({
+      key: this.key,
+      uploadId: this.uploadId
+    });
+  }, () => {// if the creation failed we do not need to abort
+  });
+}
+
+function _onError2(err) {
+  if (err && err.name === 'AbortError') {
+    return;
+  }
+
+  this.options.onError(err);
+}
+
+module.exports = MultipartUploader;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/aws-s3-multipart/lib/index.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/@uppy/aws-s3-multipart/lib/index.js ***!
+  \**********************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var _companionClient = __webpack_require__(/*! @uppy/companion-client */ "./node_modules/@uppy/companion-client/lib/index.js");
+
+var _RateLimitedQueue = __webpack_require__(/*! @uppy/utils/lib/RateLimitedQueue */ "./node_modules/@uppy/utils/lib/RateLimitedQueue.js");
+
+let _Symbol$for;
+
+function _classPrivateFieldLooseBase(receiver, privateKey) { if (!Object.prototype.hasOwnProperty.call(receiver, privateKey)) { throw new TypeError("attempted to use private field on non-instance"); } return receiver; }
+
+var id = 0;
+
+function _classPrivateFieldLooseKey(name) { return "__private_" + id++ + "_" + name; }
+
+const BasePlugin = __webpack_require__(/*! @uppy/core/lib/BasePlugin */ "./node_modules/@uppy/core/lib/BasePlugin.js");
+
+const EventTracker = __webpack_require__(/*! @uppy/utils/lib/EventTracker */ "./node_modules/@uppy/utils/lib/EventTracker.js");
+
+const emitSocketProgress = __webpack_require__(/*! @uppy/utils/lib/emitSocketProgress */ "./node_modules/@uppy/utils/lib/emitSocketProgress.js");
+
+const getSocketHost = __webpack_require__(/*! @uppy/utils/lib/getSocketHost */ "./node_modules/@uppy/utils/lib/getSocketHost.js");
+
+const packageJson = {
+  "version": "2.4.1"
+};
+
+const MultipartUploader = __webpack_require__(/*! ./MultipartUploader.js */ "./node_modules/@uppy/aws-s3-multipart/lib/MultipartUploader.js");
+
+function assertServerError(res) {
+  if (res && res.error) {
+    const error = new Error(res.message);
+    Object.assign(error, res.error);
+    throw error;
+  }
+
+  return res;
+}
+
+var _queueRequestSocketToken = /*#__PURE__*/_classPrivateFieldLooseKey("queueRequestSocketToken");
+
+var _client = /*#__PURE__*/_classPrivateFieldLooseKey("client");
+
+var _requestSocketToken = /*#__PURE__*/_classPrivateFieldLooseKey("requestSocketToken");
+
+var _setCompanionHeaders = /*#__PURE__*/_classPrivateFieldLooseKey("setCompanionHeaders");
+
+_Symbol$for = Symbol.for('uppy test: getClient');
+
+class AwsS3Multipart extends BasePlugin {
+  constructor(uppy, _opts) {
+    super(uppy, _opts);
+    Object.defineProperty(this, _queueRequestSocketToken, {
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, _client, {
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, _requestSocketToken, {
+      writable: true,
+      value: async file => {
+        const Client = file.remote.providerOptions.provider ? _companionClient.Provider : _companionClient.RequestClient;
+        const client = new Client(this.uppy, file.remote.providerOptions);
+        const opts = { ...this.opts
+        };
+
+        if (file.tus) {
+          // Install file-specific upload overrides.
+          Object.assign(opts, file.tus);
+        }
+
+        const res = await client.post(file.remote.url, { ...file.remote.body,
+          protocol: 's3-multipart',
+          size: file.data.size,
+          metadata: file.meta
+        });
+        return res.token;
+      }
+    });
+    Object.defineProperty(this, _setCompanionHeaders, {
+      writable: true,
+      value: () => {
+        _classPrivateFieldLooseBase(this, _client)[_client].setCompanionHeaders(this.opts.companionHeaders);
+
+        return Promise.resolve();
+      }
+    });
+    this.type = 'uploader';
+    this.id = this.opts.id || 'AwsS3Multipart';
+    this.title = 'AWS S3 Multipart';
+    _classPrivateFieldLooseBase(this, _client)[_client] = new _companionClient.RequestClient(uppy, _opts);
+    const defaultOptions = {
+      timeout: 30 * 1000,
+      limit: 0,
+      retryDelays: [0, 1000, 3000, 5000],
+      createMultipartUpload: this.createMultipartUpload.bind(this),
+      listParts: this.listParts.bind(this),
+      prepareUploadParts: this.prepareUploadParts.bind(this),
+      abortMultipartUpload: this.abortMultipartUpload.bind(this),
+      completeMultipartUpload: this.completeMultipartUpload.bind(this),
+      companionHeaders: {}
+    };
+    this.opts = { ...defaultOptions,
+      ..._opts
+    };
+    this.upload = this.upload.bind(this);
+    this.requests = new _RateLimitedQueue.RateLimitedQueue(this.opts.limit);
+    this.uploaders = Object.create(null);
+    this.uploaderEvents = Object.create(null);
+    this.uploaderSockets = Object.create(null);
+    _classPrivateFieldLooseBase(this, _queueRequestSocketToken)[_queueRequestSocketToken] = this.requests.wrapPromiseFunction(_classPrivateFieldLooseBase(this, _requestSocketToken)[_requestSocketToken]);
+  }
+
+  [_Symbol$for]() {
+    return _classPrivateFieldLooseBase(this, _client)[_client];
+  } // TODO: remove getter and setter for #client on the next major release
+
+
+  get client() {
+    return _classPrivateFieldLooseBase(this, _client)[_client];
+  }
+
+  set client(client) {
+    _classPrivateFieldLooseBase(this, _client)[_client] = client;
+  }
+  /**
+   * Clean up all references for a file's upload: the MultipartUploader instance,
+   * any events related to the file, and the Companion WebSocket connection.
+   *
+   * Set `opts.abort` to tell S3 that the multipart upload is cancelled and must be removed.
+   * This should be done when the user cancels the upload, not when the upload is completed or errored.
+   */
+
+
+  resetUploaderReferences(fileID, opts) {
+    if (opts === void 0) {
+      opts = {};
+    }
+
+    if (this.uploaders[fileID]) {
+      this.uploaders[fileID].abort({
+        really: opts.abort || false
+      });
+      this.uploaders[fileID] = null;
+    }
+
+    if (this.uploaderEvents[fileID]) {
+      this.uploaderEvents[fileID].remove();
+      this.uploaderEvents[fileID] = null;
+    }
+
+    if (this.uploaderSockets[fileID]) {
+      this.uploaderSockets[fileID].close();
+      this.uploaderSockets[fileID] = null;
+    }
+  }
+
+  assertHost(method) {
+    if (!this.opts.companionUrl) {
+      throw new Error(`Expected a \`companionUrl\` option containing a Companion address, or if you are not using Companion, a custom \`${method}\` implementation.`);
+    }
+  }
+
+  createMultipartUpload(file) {
+    this.assertHost('createMultipartUpload');
+    const metadata = {};
+    Object.keys(file.meta).forEach(key => {
+      if (file.meta[key] != null) {
+        metadata[key] = file.meta[key].toString();
+      }
+    });
+    return _classPrivateFieldLooseBase(this, _client)[_client].post('s3/multipart', {
+      filename: file.name,
+      type: file.type,
+      metadata
+    }).then(assertServerError);
+  }
+
+  listParts(file, _ref) {
+    let {
+      key,
+      uploadId
+    } = _ref;
+    this.assertHost('listParts');
+    const filename = encodeURIComponent(key);
+    return _classPrivateFieldLooseBase(this, _client)[_client].get(`s3/multipart/${uploadId}?key=${filename}`).then(assertServerError);
+  }
+
+  prepareUploadParts(file, _ref2) {
+    let {
+      key,
+      uploadId,
+      partNumbers
+    } = _ref2;
+    this.assertHost('prepareUploadParts');
+    const filename = encodeURIComponent(key);
+    return _classPrivateFieldLooseBase(this, _client)[_client].get(`s3/multipart/${uploadId}/batch?key=${filename}&partNumbers=${partNumbers.join(',')}`).then(assertServerError);
+  }
+
+  completeMultipartUpload(file, _ref3) {
+    let {
+      key,
+      uploadId,
+      parts
+    } = _ref3;
+    this.assertHost('completeMultipartUpload');
+    const filename = encodeURIComponent(key);
+    const uploadIdEnc = encodeURIComponent(uploadId);
+    return _classPrivateFieldLooseBase(this, _client)[_client].post(`s3/multipart/${uploadIdEnc}/complete?key=${filename}`, {
+      parts
+    }).then(assertServerError);
+  }
+
+  abortMultipartUpload(file, _ref4) {
+    let {
+      key,
+      uploadId
+    } = _ref4;
+    this.assertHost('abortMultipartUpload');
+    const filename = encodeURIComponent(key);
+    const uploadIdEnc = encodeURIComponent(uploadId);
+    return _classPrivateFieldLooseBase(this, _client)[_client].delete(`s3/multipart/${uploadIdEnc}?key=${filename}`).then(assertServerError);
+  }
+
+  uploadFile(file) {
+    var _this = this;
+
+    return new Promise((resolve, reject) => {
+      let queuedRequest;
+
+      const onStart = data => {
+        const cFile = this.uppy.getFile(file.id);
+        this.uppy.setFileState(file.id, {
+          s3Multipart: { ...cFile.s3Multipart,
+            key: data.key,
+            uploadId: data.uploadId
+          }
+        });
+      };
+
+      const onProgress = (bytesUploaded, bytesTotal) => {
+        this.uppy.emit('upload-progress', file, {
+          uploader: this,
+          bytesUploaded,
+          bytesTotal
+        });
+      };
+
+      const onError = err => {
+        this.uppy.log(err);
+        this.uppy.emit('upload-error', file, err);
+        queuedRequest.done();
+        this.resetUploaderReferences(file.id);
+        reject(err);
+      };
+
+      const onSuccess = result => {
+        const uploadObject = upload; // eslint-disable-line no-use-before-define
+
+        const uploadResp = {
+          body: { ...result
+          },
+          uploadURL: result.location
+        };
+        queuedRequest.done();
+        this.resetUploaderReferences(file.id);
+        const cFile = this.uppy.getFile(file.id);
+        this.uppy.emit('upload-success', cFile || file, uploadResp);
+
+        if (result.location) {
+          this.uppy.log(`Download ${uploadObject.file.name} from ${result.location}`);
+        }
+
+        resolve(uploadObject);
+      };
+
+      const onPartComplete = part => {
+        const cFile = this.uppy.getFile(file.id);
+
+        if (!cFile) {
+          return;
+        }
+
+        this.uppy.emit('s3-multipart:part-uploaded', cFile, part);
+      };
+
+      const upload = new MultipartUploader(file.data, {
+        // .bind to pass the file object to each handler.
+        createMultipartUpload: this.opts.createMultipartUpload.bind(this, file),
+        listParts: this.opts.listParts.bind(this, file),
+        prepareUploadParts: this.opts.prepareUploadParts.bind(this, file),
+        completeMultipartUpload: this.opts.completeMultipartUpload.bind(this, file),
+        abortMultipartUpload: this.opts.abortMultipartUpload.bind(this, file),
+        getChunkSize: this.opts.getChunkSize ? this.opts.getChunkSize.bind(this) : null,
+        onStart,
+        onProgress,
+        onError,
+        onSuccess,
+        onPartComplete,
+        limit: this.opts.limit || 5,
+        retryDelays: this.opts.retryDelays || [],
+        ...file.s3Multipart
+      });
+      this.uploaders[file.id] = upload;
+      this.uploaderEvents[file.id] = new EventTracker(this.uppy);
+      queuedRequest = this.requests.run(() => {
+        if (!file.isPaused) {
+          upload.start();
+        } // Don't do anything here, the caller will take care of cancelling the upload itself
+        // using resetUploaderReferences(). This is because resetUploaderReferences() has to be
+        // called when this request is still in the queue, and has not been started yet, too. At
+        // that point this cancellation function is not going to be called.
+
+
+        return () => {};
+      });
+      this.onFileRemove(file.id, removed => {
+        queuedRequest.abort();
+        this.resetUploaderReferences(file.id, {
+          abort: true
+        });
+        resolve(`upload ${removed.id} was removed`);
+      });
+      this.onCancelAll(file.id, function (_temp) {
+        let {
+          reason
+        } = _temp === void 0 ? {} : _temp;
+
+        if (reason === 'user') {
+          queuedRequest.abort();
+
+          _this.resetUploaderReferences(file.id, {
+            abort: true
+          });
+        }
+
+        resolve(`upload ${file.id} was canceled`);
+      });
+      this.onFilePause(file.id, isPaused => {
+        if (isPaused) {
+          // Remove this file from the queue so another file can start in its place.
+          queuedRequest.abort();
+          upload.pause();
+        } else {
+          // Resuming an upload should be queued, else you could pause and then
+          // resume a queued upload to make it skip the queue.
+          queuedRequest.abort();
+          queuedRequest = this.requests.run(() => {
+            upload.start();
+            return () => {};
+          });
+        }
+      });
+      this.onPauseAll(file.id, () => {
+        queuedRequest.abort();
+        upload.pause();
+      });
+      this.onResumeAll(file.id, () => {
+        queuedRequest.abort();
+
+        if (file.error) {
+          upload.abort();
+        }
+
+        queuedRequest = this.requests.run(() => {
+          upload.start();
+          return () => {};
+        });
+      }); // Don't double-emit upload-started for Golden Retriever-restored files that were already started
+
+      if (!file.progress.uploadStarted || !file.isRestored) {
+        this.uppy.emit('upload-started', file);
+      }
+    });
+  }
+
+  async uploadRemote(file) {
+    this.resetUploaderReferences(file.id); // Don't double-emit upload-started for Golden Retriever-restored files that were already started
+
+    if (!file.progress.uploadStarted || !file.isRestored) {
+      this.uppy.emit('upload-started', file);
+    }
+
+    try {
+      if (file.serverToken) {
+        return this.connectToServerSocket(file);
+      }
+
+      const serverToken = await _classPrivateFieldLooseBase(this, _queueRequestSocketToken)[_queueRequestSocketToken](file);
+      this.uppy.setFileState(file.id, {
+        serverToken
+      });
+      return this.connectToServerSocket(this.uppy.getFile(file.id));
+    } catch (err) {
+      this.uppy.emit('upload-error', file, err);
+      throw err;
+    }
+  }
+
+  connectToServerSocket(file) {
+    var _this2 = this;
+
+    return new Promise((resolve, reject) => {
+      let queuedRequest;
+      const token = file.serverToken;
+      const host = getSocketHost(file.remote.companionUrl);
+      const socket = new _companionClient.Socket({
+        target: `${host}/api/${token}`
+      });
+      this.uploaderSockets[file.id] = socket;
+      this.uploaderEvents[file.id] = new EventTracker(this.uppy);
+      this.onFileRemove(file.id, () => {
+        queuedRequest.abort();
+        socket.send('cancel', {});
+        this.resetUploaderReferences(file.id, {
+          abort: true
+        });
+        resolve(`upload ${file.id} was removed`);
+      });
+      this.onFilePause(file.id, isPaused => {
+        if (isPaused) {
+          // Remove this file from the queue so another file can start in its place.
+          queuedRequest.abort();
+          socket.send('pause', {});
+        } else {
+          // Resuming an upload should be queued, else you could pause and then
+          // resume a queued upload to make it skip the queue.
+          queuedRequest.abort();
+          queuedRequest = this.requests.run(() => {
+            socket.send('resume', {});
+            return () => {};
+          });
+        }
+      });
+      this.onPauseAll(file.id, () => {
+        queuedRequest.abort();
+        socket.send('pause', {});
+      });
+      this.onCancelAll(file.id, function (_temp2) {
+        let {
+          reason
+        } = _temp2 === void 0 ? {} : _temp2;
+
+        if (reason === 'user') {
+          queuedRequest.abort();
+          socket.send('cancel', {});
+
+          _this2.resetUploaderReferences(file.id);
+        }
+
+        resolve(`upload ${file.id} was canceled`);
+      });
+      this.onResumeAll(file.id, () => {
+        queuedRequest.abort();
+
+        if (file.error) {
+          socket.send('pause', {});
+        }
+
+        queuedRequest = this.requests.run(() => {
+          socket.send('resume', {});
+        });
+      });
+      this.onRetry(file.id, () => {
+        // Only do the retry if the upload is actually in progress;
+        // else we could try to send these messages when the upload is still queued.
+        // We may need a better check for this since the socket may also be closed
+        // for other reasons, like network failures.
+        if (socket.isOpen) {
+          socket.send('pause', {});
+          socket.send('resume', {});
+        }
+      });
+      this.onRetryAll(file.id, () => {
+        if (socket.isOpen) {
+          socket.send('pause', {});
+          socket.send('resume', {});
+        }
+      });
+      socket.on('progress', progressData => emitSocketProgress(this, progressData, file));
+      socket.on('error', errData => {
+        this.uppy.emit('upload-error', file, new Error(errData.error));
+        this.resetUploaderReferences(file.id);
+        queuedRequest.done();
+        reject(new Error(errData.error));
+      });
+      socket.on('success', data => {
+        const uploadResp = {
+          uploadURL: data.url
+        };
+        this.uppy.emit('upload-success', file, uploadResp);
+        this.resetUploaderReferences(file.id);
+        queuedRequest.done();
+        resolve();
+      });
+      queuedRequest = this.requests.run(() => {
+        if (file.isPaused) {
+          socket.send('pause', {});
+        }
+
+        return () => {};
+      });
+    });
+  }
+
+  upload(fileIDs) {
+    if (fileIDs.length === 0) return Promise.resolve();
+    const promises = fileIDs.map(id => {
+      const file = this.uppy.getFile(id);
+
+      if (file.isRemote) {
+        return this.uploadRemote(file);
+      }
+
+      return this.uploadFile(file);
+    });
+    return Promise.all(promises);
+  }
+
+  onFileRemove(fileID, cb) {
+    this.uploaderEvents[fileID].on('file-removed', file => {
+      if (fileID === file.id) cb(file.id);
+    });
+  }
+
+  onFilePause(fileID, cb) {
+    this.uploaderEvents[fileID].on('upload-pause', (targetFileID, isPaused) => {
+      if (fileID === targetFileID) {
+        // const isPaused = this.uppy.pauseResume(fileID)
+        cb(isPaused);
+      }
+    });
+  }
+
+  onRetry(fileID, cb) {
+    this.uploaderEvents[fileID].on('upload-retry', targetFileID => {
+      if (fileID === targetFileID) {
+        cb();
+      }
+    });
+  }
+
+  onRetryAll(fileID, cb) {
+    this.uploaderEvents[fileID].on('retry-all', () => {
+      if (!this.uppy.getFile(fileID)) return;
+      cb();
+    });
+  }
+
+  onPauseAll(fileID, cb) {
+    this.uploaderEvents[fileID].on('pause-all', () => {
+      if (!this.uppy.getFile(fileID)) return;
+      cb();
+    });
+  }
+
+  onCancelAll(fileID, eventHandler) {
+    var _this3 = this;
+
+    this.uploaderEvents[fileID].on('cancel-all', function () {
+      if (!_this3.uppy.getFile(fileID)) return;
+      eventHandler(...arguments);
+    });
+  }
+
+  onResumeAll(fileID, cb) {
+    this.uploaderEvents[fileID].on('resume-all', () => {
+      if (!this.uppy.getFile(fileID)) return;
+      cb();
+    });
+  }
+
+  install() {
+    const {
+      capabilities
+    } = this.uppy.getState();
+    this.uppy.setState({
+      capabilities: { ...capabilities,
+        resumableUploads: true
+      }
+    });
+    this.uppy.addPreProcessor(_classPrivateFieldLooseBase(this, _setCompanionHeaders)[_setCompanionHeaders]);
+    this.uppy.addUploader(this.upload);
+  }
+
+  uninstall() {
+    const {
+      capabilities
+    } = this.uppy.getState();
+    this.uppy.setState({
+      capabilities: { ...capabilities,
+        resumableUploads: false
+      }
+    });
+    this.uppy.removePreProcessor(_classPrivateFieldLooseBase(this, _setCompanionHeaders)[_setCompanionHeaders]);
+    this.uppy.removeUploader(this.upload);
+  }
+
+}
+
+AwsS3Multipart.VERSION = packageJson.version;
+module.exports = AwsS3Multipart;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/companion-client/lib/AuthError.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/@uppy/companion-client/lib/AuthError.js ***!
+  \**************************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+class AuthError extends Error {
+  constructor() {
+    super('Authorization required');
+    this.name = 'AuthError';
+    this.isAuthError = true;
+  }
+
+}
+
+module.exports = AuthError;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/companion-client/lib/Provider.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/@uppy/companion-client/lib/Provider.js ***!
+  \*************************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var tokenStorage = __webpack_require__(/*! ./tokenStorage.js */ "./node_modules/@uppy/companion-client/lib/tokenStorage.js");
+
+const RequestClient = __webpack_require__(/*! ./RequestClient.js */ "./node_modules/@uppy/companion-client/lib/RequestClient.js");
+
+const getName = id => {
+  return id.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
+};
+
+class Provider extends RequestClient {
+  constructor(uppy, opts) {
+    super(uppy, opts);
+    this.provider = opts.provider;
+    this.id = this.provider;
+    this.name = this.opts.name || getName(this.id);
+    this.pluginId = this.opts.pluginId;
+    this.tokenKey = `companion-${this.pluginId}-auth-token`;
+    this.companionKeysParams = this.opts.companionKeysParams;
+    this.preAuthToken = null;
+  }
+
+  headers() {
+    return Promise.all([super.headers(), this.getAuthToken()]).then(_ref => {
+      let [headers, token] = _ref;
+      const authHeaders = {};
+
+      if (token) {
+        authHeaders['uppy-auth-token'] = token;
+      }
+
+      if (this.companionKeysParams) {
+        authHeaders['uppy-credentials-params'] = btoa(JSON.stringify({
+          params: this.companionKeysParams
+        }));
+      }
+
+      return { ...headers,
+        ...authHeaders
+      };
+    });
+  }
+
+  onReceiveResponse(response) {
+    response = super.onReceiveResponse(response); // eslint-disable-line no-param-reassign
+
+    const plugin = this.uppy.getPlugin(this.pluginId);
+    const oldAuthenticated = plugin.getPluginState().authenticated;
+    const authenticated = oldAuthenticated ? response.status !== 401 : response.status < 400;
+    plugin.setPluginState({
+      authenticated
+    });
+    return response;
+  }
+
+  setAuthToken(token) {
+    return this.uppy.getPlugin(this.pluginId).storage.setItem(this.tokenKey, token);
+  }
+
+  getAuthToken() {
+    return this.uppy.getPlugin(this.pluginId).storage.getItem(this.tokenKey);
+  }
+  /**
+   * Ensure we have a preauth token if necessary. Attempts to fetch one if we don't,
+   * or rejects if loading one fails.
+   */
+
+
+  async ensurePreAuth() {
+    if (this.companionKeysParams && !this.preAuthToken) {
+      await this.fetchPreAuthToken();
+
+      if (!this.preAuthToken) {
+        throw new Error('Could not load authentication data required for third-party login. Please try again later.');
+      }
+    }
+  }
+
+  authUrl(queries) {
+    if (queries === void 0) {
+      queries = {};
+    }
+
+    const params = new URLSearchParams(queries);
+
+    if (this.preAuthToken) {
+      params.set('uppyPreAuthToken', this.preAuthToken);
+    }
+
+    return `${this.hostname}/${this.id}/connect?${params}`;
+  }
+
+  fileUrl(id) {
+    return `${this.hostname}/${this.id}/get/${id}`;
+  }
+
+  async fetchPreAuthToken() {
+    if (!this.companionKeysParams) {
+      return;
+    }
+
+    try {
+      const res = await this.post(`${this.id}/preauth/`, {
+        params: this.companionKeysParams
+      });
+      this.preAuthToken = res.token;
+    } catch (err) {
+      this.uppy.log(`[CompanionClient] unable to fetch preAuthToken ${err}`, 'warning');
+    }
+  }
+
+  list(directory) {
+    return this.get(`${this.id}/list/${directory || ''}`);
+  }
+
+  logout() {
+    return this.get(`${this.id}/logout`).then(response => Promise.all([response, this.uppy.getPlugin(this.pluginId).storage.removeItem(this.tokenKey)])).then(_ref2 => {
+      let [response] = _ref2;
+      return response;
+    });
+  }
+
+  static initPlugin(plugin, opts, defaultOpts) {
+    /* eslint-disable no-param-reassign */
+    plugin.type = 'acquirer';
+    plugin.files = [];
+
+    if (defaultOpts) {
+      plugin.opts = { ...defaultOpts,
+        ...opts
+      };
+    }
+
+    if (opts.serverUrl || opts.serverPattern) {
+      throw new Error('`serverUrl` and `serverPattern` have been renamed to `companionUrl` and `companionAllowedHosts` respectively in the 0.30.5 release. Please consult the docs (for example, https://uppy.io/docs/instagram/ for the Instagram plugin) and use the updated options.`');
+    }
+
+    if (opts.companionAllowedHosts) {
+      const pattern = opts.companionAllowedHosts; // validate companionAllowedHosts param
+
+      if (typeof pattern !== 'string' && !Array.isArray(pattern) && !(pattern instanceof RegExp)) {
+        throw new TypeError(`${plugin.id}: the option "companionAllowedHosts" must be one of string, Array, RegExp`);
+      }
+
+      plugin.opts.companionAllowedHosts = pattern;
+    } else if (/^(?!https?:\/\/).*$/i.test(opts.companionUrl)) {
+      // does not start with https://
+      plugin.opts.companionAllowedHosts = `https://${opts.companionUrl.replace(/^\/\//, '')}`;
+    } else {
+      plugin.opts.companionAllowedHosts = new URL(opts.companionUrl).origin;
+    }
+
+    plugin.storage = plugin.opts.storage || tokenStorage;
+    /* eslint-enable no-param-reassign */
+  }
+
+}
+
+module.exports = Provider;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/companion-client/lib/RequestClient.js":
+/*!******************************************************************!*\
+  !*** ./node_modules/@uppy/companion-client/lib/RequestClient.js ***!
+  \******************************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+let _Symbol$for;
+
+function _classPrivateFieldLooseBase(receiver, privateKey) { if (!Object.prototype.hasOwnProperty.call(receiver, privateKey)) { throw new TypeError("attempted to use private field on non-instance"); } return receiver; }
+
+var id = 0;
+
+function _classPrivateFieldLooseKey(name) { return "__private_" + id++ + "_" + name; }
+
+const fetchWithNetworkError = __webpack_require__(/*! @uppy/utils/lib/fetchWithNetworkError */ "./node_modules/@uppy/utils/lib/fetchWithNetworkError.js");
+
+const ErrorWithCause = __webpack_require__(/*! @uppy/utils/lib/ErrorWithCause */ "./node_modules/@uppy/utils/lib/ErrorWithCause.js");
+
+const AuthError = __webpack_require__(/*! ./AuthError.js */ "./node_modules/@uppy/companion-client/lib/AuthError.js");
+
+const packageJson = {
+  "version": "2.2.1"
+}; // Remove the trailing slash so we can always safely append /xyz.
+
+function stripSlash(url) {
+  return url.replace(/\/$/, '');
+}
+
+async function handleJSONResponse(res) {
+  if (res.status === 401) {
+    throw new AuthError();
+  }
+
+  const jsonPromise = res.json();
+
+  if (res.status < 200 || res.status > 300) {
+    let errMsg = `Failed request with status: ${res.status}. ${res.statusText}`;
+
+    try {
+      const errData = await jsonPromise;
+      errMsg = errData.message ? `${errMsg} message: ${errData.message}` : errMsg;
+      errMsg = errData.requestId ? `${errMsg} request-Id: ${errData.requestId}` : errMsg;
+    } finally {
+      // eslint-disable-next-line no-unsafe-finally
+      throw new Error(errMsg);
+    }
+  }
+
+  return jsonPromise;
+}
+
+var _companionHeaders = /*#__PURE__*/_classPrivateFieldLooseKey("companionHeaders");
+
+var _getPostResponseFunc = /*#__PURE__*/_classPrivateFieldLooseKey("getPostResponseFunc");
+
+var _getUrl = /*#__PURE__*/_classPrivateFieldLooseKey("getUrl");
+
+var _errorHandler = /*#__PURE__*/_classPrivateFieldLooseKey("errorHandler");
+
+_Symbol$for = Symbol.for('uppy test: getCompanionHeaders');
+
+class RequestClient {
+  constructor(uppy, opts) {
+    Object.defineProperty(this, _errorHandler, {
+      value: _errorHandler2
+    });
+    Object.defineProperty(this, _getUrl, {
+      value: _getUrl2
+    });
+    Object.defineProperty(this, _companionHeaders, {
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, _getPostResponseFunc, {
+      writable: true,
+      value: skip => response => skip ? response : this.onReceiveResponse(response)
+    });
+    this.uppy = uppy;
+    this.opts = opts;
+    this.onReceiveResponse = this.onReceiveResponse.bind(this);
+    this.allowedHeaders = ['accept', 'content-type', 'uppy-auth-token'];
+    this.preflightDone = false;
+    _classPrivateFieldLooseBase(this, _companionHeaders)[_companionHeaders] = opts == null ? void 0 : opts.companionHeaders;
+  }
+
+  setCompanionHeaders(headers) {
+    _classPrivateFieldLooseBase(this, _companionHeaders)[_companionHeaders] = headers;
+  }
+
+  [_Symbol$for]() {
+    return _classPrivateFieldLooseBase(this, _companionHeaders)[_companionHeaders];
+  }
+
+  get hostname() {
+    const {
+      companion
+    } = this.uppy.getState();
+    const host = this.opts.companionUrl;
+    return stripSlash(companion && companion[host] ? companion[host] : host);
+  }
+
+  headers() {
+    return Promise.resolve({ ...RequestClient.defaultHeaders,
+      ..._classPrivateFieldLooseBase(this, _companionHeaders)[_companionHeaders]
+    });
+  }
+
+  onReceiveResponse(response) {
+    const state = this.uppy.getState();
+    const companion = state.companion || {};
+    const host = this.opts.companionUrl;
+    const {
+      headers
+    } = response; // Store the self-identified domain name for the Companion instance we just hit.
+
+    if (headers.has('i-am') && headers.get('i-am') !== companion[host]) {
+      this.uppy.setState({
+        companion: { ...companion,
+          [host]: headers.get('i-am')
+        }
+      });
+    }
+
+    return response;
+  }
+
+  preflight(path) {
+    if (this.preflightDone) {
+      return Promise.resolve(this.allowedHeaders.slice());
+    }
+
+    return fetch(_classPrivateFieldLooseBase(this, _getUrl)[_getUrl](path), {
+      method: 'OPTIONS'
+    }).then(response => {
+      if (response.headers.has('access-control-allow-headers')) {
+        this.allowedHeaders = response.headers.get('access-control-allow-headers').split(',').map(headerName => headerName.trim().toLowerCase());
+      }
+
+      this.preflightDone = true;
+      return this.allowedHeaders.slice();
+    }).catch(err => {
+      this.uppy.log(`[CompanionClient] unable to make preflight request ${err}`, 'warning');
+      this.preflightDone = true;
+      return this.allowedHeaders.slice();
+    });
+  }
+
+  preflightAndHeaders(path) {
+    return Promise.all([this.preflight(path), this.headers()]).then(_ref => {
+      let [allowedHeaders, headers] = _ref;
+      // filter to keep only allowed Headers
+      Object.keys(headers).forEach(header => {
+        if (!allowedHeaders.includes(header.toLowerCase())) {
+          this.uppy.log(`[CompanionClient] excluding disallowed header ${header}`);
+          delete headers[header]; // eslint-disable-line no-param-reassign
+        }
+      });
+      return headers;
+    });
+  }
+
+  get(path, skipPostResponse) {
+    const method = 'get';
+    return this.preflightAndHeaders(path).then(headers => fetchWithNetworkError(_classPrivateFieldLooseBase(this, _getUrl)[_getUrl](path), {
+      method,
+      headers,
+      credentials: this.opts.companionCookiesRule || 'same-origin'
+    })).then(_classPrivateFieldLooseBase(this, _getPostResponseFunc)[_getPostResponseFunc](skipPostResponse)).then(handleJSONResponse).catch(_classPrivateFieldLooseBase(this, _errorHandler)[_errorHandler](method, path));
+  }
+
+  post(path, data, skipPostResponse) {
+    const method = 'post';
+    return this.preflightAndHeaders(path).then(headers => fetchWithNetworkError(_classPrivateFieldLooseBase(this, _getUrl)[_getUrl](path), {
+      method,
+      headers,
+      credentials: this.opts.companionCookiesRule || 'same-origin',
+      body: JSON.stringify(data)
+    })).then(_classPrivateFieldLooseBase(this, _getPostResponseFunc)[_getPostResponseFunc](skipPostResponse)).then(handleJSONResponse).catch(_classPrivateFieldLooseBase(this, _errorHandler)[_errorHandler](method, path));
+  }
+
+  delete(path, data, skipPostResponse) {
+    const method = 'delete';
+    return this.preflightAndHeaders(path).then(headers => fetchWithNetworkError(`${this.hostname}/${path}`, {
+      method,
+      headers,
+      credentials: this.opts.companionCookiesRule || 'same-origin',
+      body: data ? JSON.stringify(data) : null
+    })).then(_classPrivateFieldLooseBase(this, _getPostResponseFunc)[_getPostResponseFunc](skipPostResponse)).then(handleJSONResponse).catch(_classPrivateFieldLooseBase(this, _errorHandler)[_errorHandler](method, path));
+  }
+
+}
+
+function _getUrl2(url) {
+  if (/^(https?:|)\/\//.test(url)) {
+    return url;
+  }
+
+  return `${this.hostname}/${url}`;
+}
+
+function _errorHandler2(method, path) {
+  return err => {
+    var _err;
+
+    if (!((_err = err) != null && _err.isAuthError)) {
+      // eslint-disable-next-line no-param-reassign
+      err = new ErrorWithCause(`Could not ${method} ${_classPrivateFieldLooseBase(this, _getUrl)[_getUrl](path)}`, {
+        cause: err
+      });
+    }
+
+    return Promise.reject(err);
+  };
+}
+
+RequestClient.VERSION = packageJson.version;
+RequestClient.defaultHeaders = {
+  Accept: 'application/json',
+  'Content-Type': 'application/json',
+  'Uppy-Versions': `@uppy/companion-client=${RequestClient.VERSION}`
+};
+module.exports = RequestClient;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/companion-client/lib/SearchProvider.js":
+/*!*******************************************************************!*\
+  !*** ./node_modules/@uppy/companion-client/lib/SearchProvider.js ***!
+  \*******************************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+const RequestClient = __webpack_require__(/*! ./RequestClient.js */ "./node_modules/@uppy/companion-client/lib/RequestClient.js");
+
+const getName = id => {
+  return id.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
+};
+
+class SearchProvider extends RequestClient {
+  constructor(uppy, opts) {
+    super(uppy, opts);
+    this.provider = opts.provider;
+    this.id = this.provider;
+    this.name = this.opts.name || getName(this.id);
+    this.pluginId = this.opts.pluginId;
+  }
+
+  fileUrl(id) {
+    return `${this.hostname}/search/${this.id}/get/${id}`;
+  }
+
+  search(text, queries) {
+    return this.get(`search/${this.id}/list?q=${encodeURIComponent(text)}${queries ? `&${queries}` : ''}`);
+  }
+
+}
+
+module.exports = SearchProvider;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/companion-client/lib/Socket.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/@uppy/companion-client/lib/Socket.js ***!
+  \***********************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+let _Symbol$for, _Symbol$for2;
+
+function _classPrivateFieldLooseBase(receiver, privateKey) { if (!Object.prototype.hasOwnProperty.call(receiver, privateKey)) { throw new TypeError("attempted to use private field on non-instance"); } return receiver; }
+
+var id = 0;
+
+function _classPrivateFieldLooseKey(name) { return "__private_" + id++ + "_" + name; }
+
+const ee = __webpack_require__(/*! namespace-emitter */ "./node_modules/namespace-emitter/index.js");
+
+var _queued = /*#__PURE__*/_classPrivateFieldLooseKey("queued");
+
+var _emitter = /*#__PURE__*/_classPrivateFieldLooseKey("emitter");
+
+var _isOpen = /*#__PURE__*/_classPrivateFieldLooseKey("isOpen");
+
+var _socket = /*#__PURE__*/_classPrivateFieldLooseKey("socket");
+
+var _handleMessage = /*#__PURE__*/_classPrivateFieldLooseKey("handleMessage");
+
+_Symbol$for = Symbol.for('uppy test: getSocket');
+_Symbol$for2 = Symbol.for('uppy test: getQueued');
+
+class UppySocket {
+  constructor(opts) {
+    Object.defineProperty(this, _queued, {
+      writable: true,
+      value: []
+    });
+    Object.defineProperty(this, _emitter, {
+      writable: true,
+      value: ee()
+    });
+    Object.defineProperty(this, _isOpen, {
+      writable: true,
+      value: false
+    });
+    Object.defineProperty(this, _socket, {
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, _handleMessage, {
+      writable: true,
+      value: e => {
+        try {
+          const message = JSON.parse(e.data);
+          this.emit(message.action, message.payload);
+        } catch (err) {
+          // TODO: use a more robust error handler.
+          console.log(err); // eslint-disable-line no-console
+        }
+      }
+    });
+    this.opts = opts;
+
+    if (!opts || opts.autoOpen !== false) {
+      this.open();
+    }
+  }
+
+  get isOpen() {
+    return _classPrivateFieldLooseBase(this, _isOpen)[_isOpen];
+  }
+
+  [_Symbol$for]() {
+    return _classPrivateFieldLooseBase(this, _socket)[_socket];
+  }
+
+  [_Symbol$for2]() {
+    return _classPrivateFieldLooseBase(this, _queued)[_queued];
+  }
+
+  open() {
+    _classPrivateFieldLooseBase(this, _socket)[_socket] = new WebSocket(this.opts.target);
+
+    _classPrivateFieldLooseBase(this, _socket)[_socket].onopen = () => {
+      _classPrivateFieldLooseBase(this, _isOpen)[_isOpen] = true;
+
+      while (_classPrivateFieldLooseBase(this, _queued)[_queued].length > 0 && _classPrivateFieldLooseBase(this, _isOpen)[_isOpen]) {
+        const first = _classPrivateFieldLooseBase(this, _queued)[_queued].shift();
+
+        this.send(first.action, first.payload);
+      }
+    };
+
+    _classPrivateFieldLooseBase(this, _socket)[_socket].onclose = () => {
+      _classPrivateFieldLooseBase(this, _isOpen)[_isOpen] = false;
+    };
+
+    _classPrivateFieldLooseBase(this, _socket)[_socket].onmessage = _classPrivateFieldLooseBase(this, _handleMessage)[_handleMessage];
+  }
+
+  close() {
+    var _classPrivateFieldLoo;
+
+    (_classPrivateFieldLoo = _classPrivateFieldLooseBase(this, _socket)[_socket]) == null ? void 0 : _classPrivateFieldLoo.close();
+  }
+
+  send(action, payload) {
+    // attach uuid
+    if (!_classPrivateFieldLooseBase(this, _isOpen)[_isOpen]) {
+      _classPrivateFieldLooseBase(this, _queued)[_queued].push({
+        action,
+        payload
+      });
+
+      return;
+    }
+
+    _classPrivateFieldLooseBase(this, _socket)[_socket].send(JSON.stringify({
+      action,
+      payload
+    }));
+  }
+
+  on(action, handler) {
+    _classPrivateFieldLooseBase(this, _emitter)[_emitter].on(action, handler);
+  }
+
+  emit(action, payload) {
+    _classPrivateFieldLooseBase(this, _emitter)[_emitter].emit(action, payload);
+  }
+
+  once(action, handler) {
+    _classPrivateFieldLooseBase(this, _emitter)[_emitter].once(action, handler);
+  }
+
+}
+
+module.exports = UppySocket;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/companion-client/lib/index.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/@uppy/companion-client/lib/index.js ***!
+  \**********************************************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+/**
+ * Manages communications with Companion
+ */
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports.Socket = exports.SearchProvider = exports.RequestClient = exports.Provider = void 0;
+
+const _0 = __webpack_require__(/*! ./RequestClient.js */ "./node_modules/@uppy/companion-client/lib/RequestClient.js");
+
+exports.RequestClient = _0;
+
+const _1 = __webpack_require__(/*! ./Provider.js */ "./node_modules/@uppy/companion-client/lib/Provider.js");
+
+exports.Provider = _1;
+
+const _2 = __webpack_require__(/*! ./SearchProvider.js */ "./node_modules/@uppy/companion-client/lib/SearchProvider.js");
+
+exports.SearchProvider = _2;
+
+const _3 = __webpack_require__(/*! ./Socket.js */ "./node_modules/@uppy/companion-client/lib/Socket.js");
+
+exports.Socket = _3;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/companion-client/lib/tokenStorage.js":
+/*!*****************************************************************!*\
+  !*** ./node_modules/@uppy/companion-client/lib/tokenStorage.js ***!
+  \*****************************************************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+/**
+ * This module serves as an Async wrapper for LocalStorage
+ */
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports.getItem = getItem;
+exports.removeItem = removeItem;
+exports.setItem = setItem;
+
+function setItem(key, value) {
+  return new Promise(resolve => {
+    localStorage.setItem(key, value);
+    resolve();
+  });
+}
+
+function getItem(key) {
+  return Promise.resolve(localStorage.getItem(key));
+}
+
+function removeItem(key) {
+  return new Promise(resolve => {
+    localStorage.removeItem(key);
+    resolve();
+  });
+}
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/core/lib/BasePlugin.js":
+/*!***************************************************!*\
+  !*** ./node_modules/@uppy/core/lib/BasePlugin.js ***!
+  \***************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+/**
+ * Core plugin logic that all plugins share.
+ *
+ * BasePlugin does not contain DOM rendering so it can be used for plugins
+ * without a user interface.
+ *
+ * See `Plugin` for the extended version with Preact rendering for interfaces.
+ */
+const Translator = __webpack_require__(/*! @uppy/utils/lib/Translator */ "./node_modules/@uppy/utils/lib/Translator.js");
+
+class BasePlugin {
+  constructor(uppy, opts) {
+    if (opts === void 0) {
+      opts = {};
+    }
+
+    this.uppy = uppy;
+    this.opts = opts;
+  }
+
+  getPluginState() {
+    const {
+      plugins
+    } = this.uppy.getState();
+    return plugins[this.id] || {};
+  }
+
+  setPluginState(update) {
+    const {
+      plugins
+    } = this.uppy.getState();
+    this.uppy.setState({
+      plugins: { ...plugins,
+        [this.id]: { ...plugins[this.id],
+          ...update
+        }
+      }
+    });
+  }
+
+  setOptions(newOpts) {
+    this.opts = { ...this.opts,
+      ...newOpts
+    };
+    this.setPluginState(); // so that UI re-renders with new options
+
+    this.i18nInit();
+  }
+
+  i18nInit() {
+    const translator = new Translator([this.defaultLocale, this.uppy.locale, this.opts.locale]);
+    this.i18n = translator.translate.bind(translator);
+    this.i18nArray = translator.translateArray.bind(translator);
+    this.setPluginState(); // so that UI re-renders and we see the updated locale
+  }
+  /**
+   * Extendable methods
+   * ==================
+   * These methods are here to serve as an overview of the extendable methods as well as
+   * making them not conditional in use, such as `if (this.afterUpdate)`.
+   */
+  // eslint-disable-next-line class-methods-use-this
+
+
+  addTarget() {
+    throw new Error('Extend the addTarget method to add your plugin to another plugin\'s target');
+  } // eslint-disable-next-line class-methods-use-this
+
+
+  install() {} // eslint-disable-next-line class-methods-use-this
+
+
+  uninstall() {}
+  /**
+   * Called when plugin is mounted, whether in DOM or into another plugin.
+   * Needed because sometimes plugins are mounted separately/after `install`,
+   * so this.el and this.parent might not be available in `install`.
+   * This is the case with @uppy/react plugins, for example.
+   */
+
+
+  render() {
+    throw new Error('Extend the render method to add your plugin to a DOM element');
+  } // TODO: remove in the next major version. It's not feasible to
+  // try to use plugins with other frameworks.
+  // eslint-disable-next-line class-methods-use-this
+
+
+  update() {} // Called after every state update, after everything's mounted. Debounced.
+  // eslint-disable-next-line class-methods-use-this
+
+
+  afterUpdate() {}
+
+}
+
+module.exports = BasePlugin;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/core/lib/Restricter.js":
+/*!***************************************************!*\
+  !*** ./node_modules/@uppy/core/lib/Restricter.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports.defaultOptions = exports.RestrictionError = exports.Restricter = void 0;
+
+/* eslint-disable max-classes-per-file, class-methods-use-this */
+
+/* global AggregateError */
+const prettierBytes = __webpack_require__(/*! @transloadit/prettier-bytes */ "./node_modules/@transloadit/prettier-bytes/prettierBytes.js");
+
+const match = __webpack_require__(/*! mime-match */ "./node_modules/mime-match/index.js");
+
+const defaultOptions = {
+  maxFileSize: null,
+  minFileSize: null,
+  maxTotalFileSize: null,
+  maxNumberOfFiles: null,
+  minNumberOfFiles: null,
+  allowedFileTypes: null,
+  requiredMetaFields: []
+};
+exports.defaultOptions = defaultOptions;
+
+class RestrictionError extends Error {
+  constructor() {
+    super(...arguments);
+    this.isRestriction = true;
+  }
+
+}
+
+exports.RestrictionError = RestrictionError;
+
+if (typeof AggregateError === 'undefined') {
+  // eslint-disable-next-line no-global-assign
+  // TODO: remove this "polyfill" in the next major.
+  globalThis.AggregateError = class AggregateError extends Error {
+    constructor(errors, message) {
+      super(message);
+      this.errors = errors;
+    }
+
+  };
+}
+
+class Restricter {
+  constructor(getOpts, i18n) {
+    this.i18n = i18n;
+
+    this.getOpts = () => {
+      const opts = getOpts();
+
+      if (opts.restrictions.allowedFileTypes != null && !Array.isArray(opts.restrictions.allowedFileTypes)) {
+        throw new TypeError('`restrictions.allowedFileTypes` must be an array');
+      }
+
+      return opts;
+    };
+  }
+
+  validate(file, files) {
+    const {
+      maxFileSize,
+      minFileSize,
+      maxTotalFileSize,
+      maxNumberOfFiles,
+      allowedFileTypes
+    } = this.getOpts().restrictions;
+
+    if (maxNumberOfFiles && files.length + 1 > maxNumberOfFiles) {
+      throw new RestrictionError(`${this.i18n('youCanOnlyUploadX', {
+        smart_count: maxNumberOfFiles
+      })}`);
+    }
+
+    if (allowedFileTypes) {
+      const isCorrectFileType = allowedFileTypes.some(type => {
+        // check if this is a mime-type
+        if (type.includes('/')) {
+          if (!file.type) return false;
+          return match(file.type.replace(/;.*?$/, ''), type);
+        } // otherwise this is likely an extension
+
+
+        if (type[0] === '.' && file.extension) {
+          return file.extension.toLowerCase() === type.slice(1).toLowerCase();
+        }
+
+        return false;
+      });
+
+      if (!isCorrectFileType) {
+        const allowedFileTypesString = allowedFileTypes.join(', ');
+        throw new RestrictionError(this.i18n('youCanOnlyUploadFileTypes', {
+          types: allowedFileTypesString
+        }));
+      }
+    } // We can't check maxTotalFileSize if the size is unknown.
+
+
+    if (maxTotalFileSize && file.size != null) {
+      const totalFilesSize = files.reduce((total, f) => total + f.size, file.size);
+
+      if (totalFilesSize > maxTotalFileSize) {
+        throw new RestrictionError(this.i18n('exceedsSize', {
+          size: prettierBytes(maxTotalFileSize),
+          file: file.name
+        }));
+      }
+    } // We can't check maxFileSize if the size is unknown.
+
+
+    if (maxFileSize && file.size != null && file.size > maxFileSize) {
+      throw new RestrictionError(this.i18n('exceedsSize', {
+        size: prettierBytes(maxFileSize),
+        file: file.name
+      }));
+    } // We can't check minFileSize if the size is unknown.
+
+
+    if (minFileSize && file.size != null && file.size < minFileSize) {
+      throw new RestrictionError(this.i18n('inferiorSize', {
+        size: prettierBytes(minFileSize)
+      }));
+    }
+  }
+
+  validateMinNumberOfFiles(files) {
+    const {
+      minNumberOfFiles
+    } = this.getOpts().restrictions;
+
+    if (Object.keys(files).length < minNumberOfFiles) {
+      throw new RestrictionError(this.i18n('youHaveToAtLeastSelectX', {
+        smart_count: minNumberOfFiles
+      }));
+    }
+  }
+
+  getMissingRequiredMetaFields(file) {
+    const error = new RestrictionError(this.i18n('missingRequiredMetaFieldOnFile', {
+      fileName: file.name
+    }));
+    const {
+      requiredMetaFields
+    } = this.getOpts().restrictions; // TODO: migrate to Object.hasOwn in the next major.
+
+    const own = Object.prototype.hasOwnProperty;
+    const missingFields = [];
+
+    for (const field of requiredMetaFields) {
+      if (!own.call(file.meta, field) || file.meta[field] === '') {
+        missingFields.push(field);
+      }
+    }
+
+    return {
+      missingFields,
+      error
+    };
+  }
+
+}
+
+exports.Restricter = Restricter;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/core/lib/UIPlugin.js":
+/*!*************************************************!*\
+  !*** ./node_modules/@uppy/core/lib/UIPlugin.js ***!
+  \*************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var _preact = __webpack_require__(/*! preact */ "./node_modules/preact/dist/preact.module.js");
+
+function _classPrivateFieldLooseBase(receiver, privateKey) { if (!Object.prototype.hasOwnProperty.call(receiver, privateKey)) { throw new TypeError("attempted to use private field on non-instance"); } return receiver; }
+
+var id = 0;
+
+function _classPrivateFieldLooseKey(name) { return "__private_" + id++ + "_" + name; }
+
+const findDOMElement = __webpack_require__(/*! @uppy/utils/lib/findDOMElement */ "./node_modules/@uppy/utils/lib/findDOMElement.js");
+
+const getTextDirection = __webpack_require__(/*! @uppy/utils/lib/getTextDirection */ "./node_modules/@uppy/utils/lib/getTextDirection.js");
+
+const BasePlugin = __webpack_require__(/*! ./BasePlugin.js */ "./node_modules/@uppy/core/lib/BasePlugin.js");
+/**
+ * Defer a frequent call to the microtask queue.
+ *
+ * @param {() => T} fn
+ * @returns {Promise<T>}
+ */
+
+
+function debounce(fn) {
+  let calling = null;
+  let latestArgs = null;
+  return function () {
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    latestArgs = args;
+
+    if (!calling) {
+      calling = Promise.resolve().then(() => {
+        calling = null; // At this point `args` may be different from the most
+        // recent state, if multiple calls happened since this task
+        // was queued. So we use the `latestArgs`, which definitely
+        // is the most recent call.
+
+        return fn(...latestArgs);
+      });
+    }
+
+    return calling;
+  };
+}
+/**
+ * UIPlugin is the extended version of BasePlugin to incorporate rendering with Preact.
+ * Use this for plugins that need a user interface.
+ *
+ * For plugins without an user interface, see BasePlugin.
+ */
+
+
+var _updateUI = /*#__PURE__*/_classPrivateFieldLooseKey("updateUI");
+
+class UIPlugin extends BasePlugin {
+  constructor() {
+    super(...arguments);
+    Object.defineProperty(this, _updateUI, {
+      writable: true,
+      value: void 0
+    });
+  }
+
+  /**
+   * Check if supplied `target` is a DOM element or an `object`.
+   * If it’s an object — target is a plugin, and we search `plugins`
+   * for a plugin with same name and return its target.
+   */
+  mount(target, plugin) {
+    const callerPluginName = plugin.id;
+    const targetElement = findDOMElement(target);
+
+    if (targetElement) {
+      this.isTargetDOMEl = true; // When target is <body> with a single <div> element,
+      // Preact thinks it’s the Uppy root element in there when doing a diff,
+      // and destroys it. So we are creating a fragment (could be empty div)
+
+      const uppyRootElement = document.createElement('div');
+      uppyRootElement.classList.add('uppy-Root'); // API for plugins that require a synchronous rerender.
+
+      _classPrivateFieldLooseBase(this, _updateUI)[_updateUI] = debounce(state => {
+        // plugin could be removed, but this.rerender is debounced below,
+        // so it could still be called even after uppy.removePlugin or uppy.close
+        // hence the check
+        if (!this.uppy.getPlugin(this.id)) return;
+        (0, _preact.render)(this.render(state), uppyRootElement);
+        this.afterUpdate();
+      });
+      this.uppy.log(`Installing ${callerPluginName} to a DOM element '${target}'`);
+
+      if (this.opts.replaceTargetContent) {
+        // Doing render(h(null), targetElement), which should have been
+        // a better way, since because the component might need to do additional cleanup when it is removed,
+        // stopped working — Preact just adds null into target, not replacing
+        targetElement.innerHTML = '';
+      }
+
+      (0, _preact.render)(this.render(this.uppy.getState()), uppyRootElement);
+      this.el = uppyRootElement;
+      targetElement.appendChild(uppyRootElement); // Set the text direction if the page has not defined one.
+
+      uppyRootElement.dir = this.opts.direction || getTextDirection(uppyRootElement) || 'ltr';
+      this.onMount();
+      return this.el;
+    }
+
+    let targetPlugin;
+
+    if (typeof target === 'object' && target instanceof UIPlugin) {
+      // Targeting a plugin *instance*
+      targetPlugin = target;
+    } else if (typeof target === 'function') {
+      // Targeting a plugin type
+      const Target = target; // Find the target plugin instance.
+
+      this.uppy.iteratePlugins(p => {
+        if (p instanceof Target) {
+          targetPlugin = p;
+        }
+      });
+    }
+
+    if (targetPlugin) {
+      this.uppy.log(`Installing ${callerPluginName} to ${targetPlugin.id}`);
+      this.parent = targetPlugin;
+      this.el = targetPlugin.addTarget(plugin);
+      this.onMount();
+      return this.el;
+    }
+
+    this.uppy.log(`Not installing ${callerPluginName}`);
+    let message = `Invalid target option given to ${callerPluginName}.`;
+
+    if (typeof target === 'function') {
+      message += ' The given target is not a Plugin class. ' + 'Please check that you\'re not specifying a React Component instead of a plugin. ' + 'If you are using @uppy/* packages directly, make sure you have only 1 version of @uppy/core installed: ' + 'run `npm ls @uppy/core` on the command line and verify that all the versions match and are deduped correctly.';
+    } else {
+      message += 'If you meant to target an HTML element, please make sure that the element exists. ' + 'Check that the <script> tag initializing Uppy is right before the closing </body> tag at the end of the page. ' + '(see https://github.com/transloadit/uppy/issues/1042)\n\n' + 'If you meant to target a plugin, please confirm that your `import` statements or `require` calls are correct.';
+    }
+
+    throw new Error(message);
+  }
+
+  update(state) {
+    if (this.el != null) {
+      var _classPrivateFieldLoo, _classPrivateFieldLoo2;
+
+      (_classPrivateFieldLoo = (_classPrivateFieldLoo2 = _classPrivateFieldLooseBase(this, _updateUI))[_updateUI]) == null ? void 0 : _classPrivateFieldLoo.call(_classPrivateFieldLoo2, state);
+    }
+  }
+
+  unmount() {
+    if (this.isTargetDOMEl) {
+      var _this$el;
+
+      (_this$el = this.el) == null ? void 0 : _this$el.remove();
+    }
+
+    this.onUnmount();
+  } // eslint-disable-next-line class-methods-use-this
+
+
+  onMount() {} // eslint-disable-next-line class-methods-use-this
+
+
+  onUnmount() {}
+
+}
+
+module.exports = UIPlugin;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/core/lib/Uppy.js":
+/*!*********************************************!*\
+  !*** ./node_modules/@uppy/core/lib/Uppy.js ***!
+  \*********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var _nonSecure = __webpack_require__(/*! nanoid/non-secure */ "./node_modules/nanoid/non-secure/index.cjs");
+
+var _loggers = __webpack_require__(/*! ./loggers.js */ "./node_modules/@uppy/core/lib/loggers.js");
+
+var _Restricter = __webpack_require__(/*! ./Restricter.js */ "./node_modules/@uppy/core/lib/Restricter.js");
+
+let _Symbol$for, _Symbol$for2;
+
+function _classPrivateFieldLooseBase(receiver, privateKey) { if (!Object.prototype.hasOwnProperty.call(receiver, privateKey)) { throw new TypeError("attempted to use private field on non-instance"); } return receiver; }
+
+var id = 0;
+
+function _classPrivateFieldLooseKey(name) { return "__private_" + id++ + "_" + name; }
+
+/* eslint-disable max-classes-per-file */
+
+/* global AggregateError */
+const Translator = __webpack_require__(/*! @uppy/utils/lib/Translator */ "./node_modules/@uppy/utils/lib/Translator.js");
+
+const ee = __webpack_require__(/*! namespace-emitter */ "./node_modules/namespace-emitter/index.js");
+
+const throttle = __webpack_require__(/*! lodash.throttle */ "./node_modules/lodash.throttle/index.js");
+
+const DefaultStore = __webpack_require__(/*! @uppy/store-default */ "./node_modules/@uppy/store-default/lib/index.js");
+
+const getFileType = __webpack_require__(/*! @uppy/utils/lib/getFileType */ "./node_modules/@uppy/utils/lib/getFileType.js");
+
+const getFileNameAndExtension = __webpack_require__(/*! @uppy/utils/lib/getFileNameAndExtension */ "./node_modules/@uppy/utils/lib/getFileNameAndExtension.js");
+
+const generateFileID = __webpack_require__(/*! @uppy/utils/lib/generateFileID */ "./node_modules/@uppy/utils/lib/generateFileID.js");
+
+const supportsUploadProgress = __webpack_require__(/*! ./supportsUploadProgress.js */ "./node_modules/@uppy/core/lib/supportsUploadProgress.js");
+
+const getFileName = __webpack_require__(/*! ./getFileName.js */ "./node_modules/@uppy/core/lib/getFileName.js");
+
+const packageJson = {
+  "version": "2.3.1"
+};
+
+const locale = __webpack_require__(/*! ./locale.js */ "./node_modules/@uppy/core/lib/locale.js");
+/**
+ * Uppy Core module.
+ * Manages plugins, state updates, acts as an event bus,
+ * adds/removes files and metadata.
+ */
+
+
+var _plugins = /*#__PURE__*/_classPrivateFieldLooseKey("plugins");
+
+var _restricter = /*#__PURE__*/_classPrivateFieldLooseKey("restricter");
+
+var _storeUnsubscribe = /*#__PURE__*/_classPrivateFieldLooseKey("storeUnsubscribe");
+
+var _emitter = /*#__PURE__*/_classPrivateFieldLooseKey("emitter");
+
+var _preProcessors = /*#__PURE__*/_classPrivateFieldLooseKey("preProcessors");
+
+var _uploaders = /*#__PURE__*/_classPrivateFieldLooseKey("uploaders");
+
+var _postProcessors = /*#__PURE__*/_classPrivateFieldLooseKey("postProcessors");
+
+var _informAndEmit = /*#__PURE__*/_classPrivateFieldLooseKey("informAndEmit");
+
+var _checkRequiredMetaFieldsOnFile = /*#__PURE__*/_classPrivateFieldLooseKey("checkRequiredMetaFieldsOnFile");
+
+var _checkRequiredMetaFields = /*#__PURE__*/_classPrivateFieldLooseKey("checkRequiredMetaFields");
+
+var _assertNewUploadAllowed = /*#__PURE__*/_classPrivateFieldLooseKey("assertNewUploadAllowed");
+
+var _checkAndCreateFileStateObject = /*#__PURE__*/_classPrivateFieldLooseKey("checkAndCreateFileStateObject");
+
+var _startIfAutoProceed = /*#__PURE__*/_classPrivateFieldLooseKey("startIfAutoProceed");
+
+var _addListeners = /*#__PURE__*/_classPrivateFieldLooseKey("addListeners");
+
+var _updateOnlineStatus = /*#__PURE__*/_classPrivateFieldLooseKey("updateOnlineStatus");
+
+var _createUpload = /*#__PURE__*/_classPrivateFieldLooseKey("createUpload");
+
+var _getUpload = /*#__PURE__*/_classPrivateFieldLooseKey("getUpload");
+
+var _removeUpload = /*#__PURE__*/_classPrivateFieldLooseKey("removeUpload");
+
+var _runUpload = /*#__PURE__*/_classPrivateFieldLooseKey("runUpload");
+
+_Symbol$for = Symbol.for('uppy test: getPlugins');
+_Symbol$for2 = Symbol.for('uppy test: createUpload');
+
+class Uppy {
+  /** @type {Record<string, BasePlugin[]>} */
+
+  /**
+   * Instantiate Uppy
+   *
+   * @param {object} opts — Uppy options
+   */
+  constructor(_opts) {
+    Object.defineProperty(this, _runUpload, {
+      value: _runUpload2
+    });
+    Object.defineProperty(this, _removeUpload, {
+      value: _removeUpload2
+    });
+    Object.defineProperty(this, _getUpload, {
+      value: _getUpload2
+    });
+    Object.defineProperty(this, _createUpload, {
+      value: _createUpload2
+    });
+    Object.defineProperty(this, _addListeners, {
+      value: _addListeners2
+    });
+    Object.defineProperty(this, _startIfAutoProceed, {
+      value: _startIfAutoProceed2
+    });
+    Object.defineProperty(this, _checkAndCreateFileStateObject, {
+      value: _checkAndCreateFileStateObject2
+    });
+    Object.defineProperty(this, _assertNewUploadAllowed, {
+      value: _assertNewUploadAllowed2
+    });
+    Object.defineProperty(this, _checkRequiredMetaFields, {
+      value: _checkRequiredMetaFields2
+    });
+    Object.defineProperty(this, _checkRequiredMetaFieldsOnFile, {
+      value: _checkRequiredMetaFieldsOnFile2
+    });
+    Object.defineProperty(this, _informAndEmit, {
+      value: _informAndEmit2
+    });
+    Object.defineProperty(this, _plugins, {
+      writable: true,
+      value: Object.create(null)
+    });
+    Object.defineProperty(this, _restricter, {
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, _storeUnsubscribe, {
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, _emitter, {
+      writable: true,
+      value: ee()
+    });
+    Object.defineProperty(this, _preProcessors, {
+      writable: true,
+      value: new Set()
+    });
+    Object.defineProperty(this, _uploaders, {
+      writable: true,
+      value: new Set()
+    });
+    Object.defineProperty(this, _postProcessors, {
+      writable: true,
+      value: new Set()
+    });
+    Object.defineProperty(this, _updateOnlineStatus, {
+      writable: true,
+      value: this.updateOnlineStatus.bind(this)
+    });
+    this.defaultLocale = locale;
+    const defaultOptions = {
+      id: 'uppy',
+      autoProceed: false,
+
+      /**
+       * @deprecated The method should not be used
+       */
+      allowMultipleUploads: true,
+      allowMultipleUploadBatches: true,
+      debug: false,
+      restrictions: _Restricter.defaultOptions,
+      meta: {},
+      onBeforeFileAdded: currentFile => currentFile,
+      onBeforeUpload: files => files,
+      store: DefaultStore(),
+      logger: _loggers.justErrorsLogger,
+      infoTimeout: 5000
+    }; // Merge default options with the ones set by user,
+    // making sure to merge restrictions too
+
+    this.opts = { ...defaultOptions,
+      ..._opts,
+      restrictions: { ...defaultOptions.restrictions,
+        ...(_opts && _opts.restrictions)
+      }
+    }; // Support debug: true for backwards-compatability, unless logger is set in opts
+    // opts instead of this.opts to avoid comparing objects — we set logger: justErrorsLogger in defaultOptions
+
+    if (_opts && _opts.logger && _opts.debug) {
+      this.log('You are using a custom `logger`, but also set `debug: true`, which uses built-in logger to output logs to console. Ignoring `debug: true` and using your custom `logger`.', 'warning');
+    } else if (_opts && _opts.debug) {
+      this.opts.logger = _loggers.debugLogger;
+    }
+
+    this.log(`Using Core v${this.constructor.VERSION}`);
+    this.i18nInit(); // ___Why throttle at 500ms?
+    //    - We must throttle at >250ms for superfocus in Dashboard to work well
+    //    (because animation takes 0.25s, and we want to wait for all animations to be over before refocusing).
+    //    [Practical Check]: if thottle is at 100ms, then if you are uploading a file,
+    //    and click 'ADD MORE FILES', - focus won't activate in Firefox.
+    //    - We must throttle at around >500ms to avoid performance lags.
+    //    [Practical Check] Firefox, try to upload a big file for a prolonged period of time. Laptop will start to heat up.
+
+    this.calculateProgress = throttle(this.calculateProgress.bind(this), 500, {
+      leading: true,
+      trailing: true
+    });
+    this.store = this.opts.store;
+    this.setState({
+      plugins: {},
+      files: {},
+      currentUploads: {},
+      allowNewUpload: true,
+      capabilities: {
+        uploadProgress: supportsUploadProgress(),
+        individualCancellation: true,
+        resumableUploads: false
+      },
+      totalProgress: 0,
+      meta: { ...this.opts.meta
+      },
+      info: [],
+      recoveredState: null
+    });
+    _classPrivateFieldLooseBase(this, _restricter)[_restricter] = new _Restricter.Restricter(() => this.opts, this.i18n);
+    _classPrivateFieldLooseBase(this, _storeUnsubscribe)[_storeUnsubscribe] = this.store.subscribe((prevState, nextState, patch) => {
+      this.emit('state-update', prevState, nextState, patch);
+      this.updateAll(nextState);
+    }); // Exposing uppy object on window for debugging and testing
+
+    if (this.opts.debug && typeof window !== 'undefined') {
+      window[this.opts.id] = this;
+    }
+
+    _classPrivateFieldLooseBase(this, _addListeners)[_addListeners]();
+  }
+
+  emit(event) {
+    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+
+    _classPrivateFieldLooseBase(this, _emitter)[_emitter].emit(event, ...args);
+  }
+
+  on(event, callback) {
+    _classPrivateFieldLooseBase(this, _emitter)[_emitter].on(event, callback);
+
+    return this;
+  }
+
+  once(event, callback) {
+    _classPrivateFieldLooseBase(this, _emitter)[_emitter].once(event, callback);
+
+    return this;
+  }
+
+  off(event, callback) {
+    _classPrivateFieldLooseBase(this, _emitter)[_emitter].off(event, callback);
+
+    return this;
+  }
+  /**
+   * Iterate on all plugins and run `update` on them.
+   * Called each time state changes.
+   *
+   */
+
+
+  updateAll(state) {
+    this.iteratePlugins(plugin => {
+      plugin.update(state);
+    });
+  }
+  /**
+   * Updates state with a patch
+   *
+   * @param {object} patch {foo: 'bar'}
+   */
+
+
+  setState(patch) {
+    this.store.setState(patch);
+  }
+  /**
+   * Returns current state.
+   *
+   * @returns {object}
+   */
+
+
+  getState() {
+    return this.store.getState();
+  }
+  /**
+   * Back compat for when uppy.state is used instead of uppy.getState().
+   *
+   * @deprecated
+   */
+
+
+  get state() {
+    // Here, state is a non-enumerable property.
+    return this.getState();
+  }
+  /**
+   * Shorthand to set state for a specific file.
+   */
+
+
+  setFileState(fileID, state) {
+    if (!this.getState().files[fileID]) {
+      throw new Error(`Can’t set state for ${fileID} (the file could have been removed)`);
+    }
+
+    this.setState({
+      files: { ...this.getState().files,
+        [fileID]: { ...this.getState().files[fileID],
+          ...state
+        }
+      }
+    });
+  }
+
+  i18nInit() {
+    const translator = new Translator([this.defaultLocale, this.opts.locale]);
+    this.i18n = translator.translate.bind(translator);
+    this.i18nArray = translator.translateArray.bind(translator);
+    this.locale = translator.locale;
+  }
+
+  setOptions(newOpts) {
+    this.opts = { ...this.opts,
+      ...newOpts,
+      restrictions: { ...this.opts.restrictions,
+        ...(newOpts && newOpts.restrictions)
+      }
+    };
+
+    if (newOpts.meta) {
+      this.setMeta(newOpts.meta);
+    }
+
+    this.i18nInit();
+
+    if (newOpts.locale) {
+      this.iteratePlugins(plugin => {
+        plugin.setOptions();
+      });
+    } // Note: this is not the preact `setState`, it's an internal function that has the same name.
+
+
+    this.setState(); // so that UI re-renders with new options
+  }
+
+  resetProgress() {
+    const defaultProgress = {
+      percentage: 0,
+      bytesUploaded: 0,
+      uploadComplete: false,
+      uploadStarted: null
+    };
+    const files = { ...this.getState().files
+    };
+    const updatedFiles = {};
+    Object.keys(files).forEach(fileID => {
+      const updatedFile = { ...files[fileID]
+      };
+      updatedFile.progress = { ...updatedFile.progress,
+        ...defaultProgress
+      };
+      updatedFiles[fileID] = updatedFile;
+    });
+    this.setState({
+      files: updatedFiles,
+      totalProgress: 0
+    });
+    this.emit('reset-progress');
+  }
+
+  addPreProcessor(fn) {
+    _classPrivateFieldLooseBase(this, _preProcessors)[_preProcessors].add(fn);
+  }
+
+  removePreProcessor(fn) {
+    return _classPrivateFieldLooseBase(this, _preProcessors)[_preProcessors].delete(fn);
+  }
+
+  addPostProcessor(fn) {
+    _classPrivateFieldLooseBase(this, _postProcessors)[_postProcessors].add(fn);
+  }
+
+  removePostProcessor(fn) {
+    return _classPrivateFieldLooseBase(this, _postProcessors)[_postProcessors].delete(fn);
+  }
+
+  addUploader(fn) {
+    _classPrivateFieldLooseBase(this, _uploaders)[_uploaders].add(fn);
+  }
+
+  removeUploader(fn) {
+    return _classPrivateFieldLooseBase(this, _uploaders)[_uploaders].delete(fn);
+  }
+
+  setMeta(data) {
+    const updatedMeta = { ...this.getState().meta,
+      ...data
+    };
+    const updatedFiles = { ...this.getState().files
+    };
+    Object.keys(updatedFiles).forEach(fileID => {
+      updatedFiles[fileID] = { ...updatedFiles[fileID],
+        meta: { ...updatedFiles[fileID].meta,
+          ...data
+        }
+      };
+    });
+    this.log('Adding metadata:');
+    this.log(data);
+    this.setState({
+      meta: updatedMeta,
+      files: updatedFiles
+    });
+  }
+
+  setFileMeta(fileID, data) {
+    const updatedFiles = { ...this.getState().files
+    };
+
+    if (!updatedFiles[fileID]) {
+      this.log('Was trying to set metadata for a file that has been removed: ', fileID);
+      return;
+    }
+
+    const newMeta = { ...updatedFiles[fileID].meta,
+      ...data
+    };
+    updatedFiles[fileID] = { ...updatedFiles[fileID],
+      meta: newMeta
+    };
+    this.setState({
+      files: updatedFiles
+    });
+  }
+  /**
+   * Get a file object.
+   *
+   * @param {string} fileID The ID of the file object to return.
+   */
+
+
+  getFile(fileID) {
+    return this.getState().files[fileID];
+  }
+  /**
+   * Get all files in an array.
+   */
+
+
+  getFiles() {
+    const {
+      files
+    } = this.getState();
+    return Object.values(files);
+  }
+
+  getObjectOfFilesPerState() {
+    const {
+      files: filesObject,
+      totalProgress,
+      error
+    } = this.getState();
+    const files = Object.values(filesObject);
+    const inProgressFiles = files.filter(_ref => {
+      let {
+        progress
+      } = _ref;
+      return !progress.uploadComplete && progress.uploadStarted;
+    });
+    const newFiles = files.filter(file => !file.progress.uploadStarted);
+    const startedFiles = files.filter(file => file.progress.uploadStarted || file.progress.preprocess || file.progress.postprocess);
+    const uploadStartedFiles = files.filter(file => file.progress.uploadStarted);
+    const pausedFiles = files.filter(file => file.isPaused);
+    const completeFiles = files.filter(file => file.progress.uploadComplete);
+    const erroredFiles = files.filter(file => file.error);
+    const inProgressNotPausedFiles = inProgressFiles.filter(file => !file.isPaused);
+    const processingFiles = files.filter(file => file.progress.preprocess || file.progress.postprocess);
+    return {
+      newFiles,
+      startedFiles,
+      uploadStartedFiles,
+      pausedFiles,
+      completeFiles,
+      erroredFiles,
+      inProgressFiles,
+      inProgressNotPausedFiles,
+      processingFiles,
+      isUploadStarted: uploadStartedFiles.length > 0,
+      isAllComplete: totalProgress === 100 && completeFiles.length === files.length && processingFiles.length === 0,
+      isAllErrored: !!error && erroredFiles.length === files.length,
+      isAllPaused: inProgressFiles.length !== 0 && pausedFiles.length === inProgressFiles.length,
+      isUploadInProgress: inProgressFiles.length > 0,
+      isSomeGhost: files.some(file => file.isGhost)
+    };
+  }
+  /*
+  * @constructs
+  * @param { Error } error
+  * @param { undefined } file
+  */
+
+  /*
+  * @constructs
+  * @param { RestrictionError } error
+  * @param { UppyFile | undefined } file
+  */
+
+
+  validateRestrictions(file, files) {
+    if (files === void 0) {
+      files = this.getFiles();
+    }
+
+    // TODO: directly return the Restriction error in next major version.
+    // we create RestrictionError's just to discard immediately, which doesn't make sense.
+    try {
+      _classPrivateFieldLooseBase(this, _restricter)[_restricter].validate(file, files);
+
+      return {
+        result: true
+      };
+    } catch (err) {
+      return {
+        result: false,
+        reason: err.message
+      };
+    }
+  }
+
+  checkIfFileAlreadyExists(fileID) {
+    const {
+      files
+    } = this.getState();
+
+    if (files[fileID] && !files[fileID].isGhost) {
+      return true;
+    }
+
+    return false;
+  }
+  /**
+   * Create a file state object based on user-provided `addFile()` options.
+   *
+   * Note this is extremely side-effectful and should only be done when a file state object
+   * will be added to state immediately afterward!
+   *
+   * The `files` value is passed in because it may be updated by the caller without updating the store.
+   */
+
+
+  /**
+   * Add a new file to `state.files`. This will run `onBeforeFileAdded`,
+   * try to guess file type in a clever way, check file against restrictions,
+   * and start an upload if `autoProceed === true`.
+   *
+   * @param {object} file object to add
+   * @returns {string} id for the added file
+   */
+  addFile(file) {
+    _classPrivateFieldLooseBase(this, _assertNewUploadAllowed)[_assertNewUploadAllowed](file);
+
+    const {
+      files
+    } = this.getState();
+
+    let newFile = _classPrivateFieldLooseBase(this, _checkAndCreateFileStateObject)[_checkAndCreateFileStateObject](files, file); // Users are asked to re-select recovered files without data,
+    // and to keep the progress, meta and everthing else, we only replace said data
+
+
+    if (files[newFile.id] && files[newFile.id].isGhost) {
+      newFile = { ...files[newFile.id],
+        data: file.data,
+        isGhost: false
+      };
+      this.log(`Replaced the blob in the restored ghost file: ${newFile.name}, ${newFile.id}`);
+    }
+
+    this.setState({
+      files: { ...files,
+        [newFile.id]: newFile
+      }
+    });
+    this.emit('file-added', newFile);
+    this.emit('files-added', [newFile]);
+    this.log(`Added file: ${newFile.name}, ${newFile.id}, mime type: ${newFile.type}`);
+
+    _classPrivateFieldLooseBase(this, _startIfAutoProceed)[_startIfAutoProceed]();
+
+    return newFile.id;
+  }
+  /**
+   * Add multiple files to `state.files`. See the `addFile()` documentation.
+   *
+   * If an error occurs while adding a file, it is logged and the user is notified.
+   * This is good for UI plugins, but not for programmatic use.
+   * Programmatic users should usually still use `addFile()` on individual files.
+   */
+
+
+  addFiles(fileDescriptors) {
+    _classPrivateFieldLooseBase(this, _assertNewUploadAllowed)[_assertNewUploadAllowed](); // create a copy of the files object only once
+
+
+    const files = { ...this.getState().files
+    };
+    const newFiles = [];
+    const errors = [];
+
+    for (let i = 0; i < fileDescriptors.length; i++) {
+      try {
+        let newFile = _classPrivateFieldLooseBase(this, _checkAndCreateFileStateObject)[_checkAndCreateFileStateObject](files, fileDescriptors[i]); // Users are asked to re-select recovered files without data,
+        // and to keep the progress, meta and everthing else, we only replace said data
+
+
+        if (files[newFile.id] && files[newFile.id].isGhost) {
+          newFile = { ...files[newFile.id],
+            data: fileDescriptors[i].data,
+            isGhost: false
+          };
+          this.log(`Replaced blob in a ghost file: ${newFile.name}, ${newFile.id}`);
+        }
+
+        files[newFile.id] = newFile;
+        newFiles.push(newFile);
+      } catch (err) {
+        if (!err.isRestriction) {
+          errors.push(err);
+        }
+      }
+    }
+
+    this.setState({
+      files
+    });
+    newFiles.forEach(newFile => {
+      this.emit('file-added', newFile);
+    });
+    this.emit('files-added', newFiles);
+
+    if (newFiles.length > 5) {
+      this.log(`Added batch of ${newFiles.length} files`);
+    } else {
+      Object.keys(newFiles).forEach(fileID => {
+        this.log(`Added file: ${newFiles[fileID].name}\n id: ${newFiles[fileID].id}\n type: ${newFiles[fileID].type}`);
+      });
+    }
+
+    if (newFiles.length > 0) {
+      _classPrivateFieldLooseBase(this, _startIfAutoProceed)[_startIfAutoProceed]();
+    }
+
+    if (errors.length > 0) {
+      let message = 'Multiple errors occurred while adding files:\n';
+      errors.forEach(subError => {
+        message += `\n * ${subError.message}`;
+      });
+      this.info({
+        message: this.i18n('addBulkFilesFailed', {
+          smart_count: errors.length
+        }),
+        details: message
+      }, 'error', this.opts.infoTimeout);
+
+      if (typeof AggregateError === 'function') {
+        throw new AggregateError(errors, message);
+      } else {
+        const err = new Error(message);
+        err.errors = errors;
+        throw err;
+      }
+    }
+  }
+
+  removeFiles(fileIDs, reason) {
+    const {
+      files,
+      currentUploads
+    } = this.getState();
+    const updatedFiles = { ...files
+    };
+    const updatedUploads = { ...currentUploads
+    };
+    const removedFiles = Object.create(null);
+    fileIDs.forEach(fileID => {
+      if (files[fileID]) {
+        removedFiles[fileID] = files[fileID];
+        delete updatedFiles[fileID];
+      }
+    }); // Remove files from the `fileIDs` list in each upload.
+
+    function fileIsNotRemoved(uploadFileID) {
+      return removedFiles[uploadFileID] === undefined;
+    }
+
+    Object.keys(updatedUploads).forEach(uploadID => {
+      const newFileIDs = currentUploads[uploadID].fileIDs.filter(fileIsNotRemoved); // Remove the upload if no files are associated with it anymore.
+
+      if (newFileIDs.length === 0) {
+        delete updatedUploads[uploadID];
+        return;
+      }
+
+      updatedUploads[uploadID] = { ...currentUploads[uploadID],
+        fileIDs: newFileIDs
+      };
+    });
+    const stateUpdate = {
+      currentUploads: updatedUploads,
+      files: updatedFiles
+    }; // If all files were removed - allow new uploads,
+    // and clear recoveredState
+
+    if (Object.keys(updatedFiles).length === 0) {
+      stateUpdate.allowNewUpload = true;
+      stateUpdate.error = null;
+      stateUpdate.recoveredState = null;
+    }
+
+    this.setState(stateUpdate);
+    this.calculateTotalProgress();
+    const removedFileIDs = Object.keys(removedFiles);
+    removedFileIDs.forEach(fileID => {
+      this.emit('file-removed', removedFiles[fileID], reason);
+    });
+
+    if (removedFileIDs.length > 5) {
+      this.log(`Removed ${removedFileIDs.length} files`);
+    } else {
+      this.log(`Removed files: ${removedFileIDs.join(', ')}`);
+    }
+  }
+
+  removeFile(fileID, reason) {
+    if (reason === void 0) {
+      reason = null;
+    }
+
+    this.removeFiles([fileID], reason);
+  }
+
+  pauseResume(fileID) {
+    if (!this.getState().capabilities.resumableUploads || this.getFile(fileID).uploadComplete) {
+      return undefined;
+    }
+
+    const wasPaused = this.getFile(fileID).isPaused || false;
+    const isPaused = !wasPaused;
+    this.setFileState(fileID, {
+      isPaused
+    });
+    this.emit('upload-pause', fileID, isPaused);
+    return isPaused;
+  }
+
+  pauseAll() {
+    const updatedFiles = { ...this.getState().files
+    };
+    const inProgressUpdatedFiles = Object.keys(updatedFiles).filter(file => {
+      return !updatedFiles[file].progress.uploadComplete && updatedFiles[file].progress.uploadStarted;
+    });
+    inProgressUpdatedFiles.forEach(file => {
+      const updatedFile = { ...updatedFiles[file],
+        isPaused: true
+      };
+      updatedFiles[file] = updatedFile;
+    });
+    this.setState({
+      files: updatedFiles
+    });
+    this.emit('pause-all');
+  }
+
+  resumeAll() {
+    const updatedFiles = { ...this.getState().files
+    };
+    const inProgressUpdatedFiles = Object.keys(updatedFiles).filter(file => {
+      return !updatedFiles[file].progress.uploadComplete && updatedFiles[file].progress.uploadStarted;
+    });
+    inProgressUpdatedFiles.forEach(file => {
+      const updatedFile = { ...updatedFiles[file],
+        isPaused: false,
+        error: null
+      };
+      updatedFiles[file] = updatedFile;
+    });
+    this.setState({
+      files: updatedFiles
+    });
+    this.emit('resume-all');
+  }
+
+  retryAll() {
+    const updatedFiles = { ...this.getState().files
+    };
+    const filesToRetry = Object.keys(updatedFiles).filter(file => {
+      return updatedFiles[file].error;
+    });
+    filesToRetry.forEach(file => {
+      const updatedFile = { ...updatedFiles[file],
+        isPaused: false,
+        error: null
+      };
+      updatedFiles[file] = updatedFile;
+    });
+    this.setState({
+      files: updatedFiles,
+      error: null
+    });
+    this.emit('retry-all', filesToRetry);
+
+    if (filesToRetry.length === 0) {
+      return Promise.resolve({
+        successful: [],
+        failed: []
+      });
+    }
+
+    const uploadID = _classPrivateFieldLooseBase(this, _createUpload)[_createUpload](filesToRetry, {
+      forceAllowNewUpload: true // create new upload even if allowNewUpload: false
+
+    });
+
+    return _classPrivateFieldLooseBase(this, _runUpload)[_runUpload](uploadID);
+  }
+
+  cancelAll(_temp) {
+    let {
+      reason = 'user'
+    } = _temp === void 0 ? {} : _temp;
+    this.emit('cancel-all', {
+      reason
+    }); // Only remove existing uploads if user is canceling
+
+    if (reason === 'user') {
+      const {
+        files
+      } = this.getState();
+      const fileIDs = Object.keys(files);
+
+      if (fileIDs.length) {
+        this.removeFiles(fileIDs, 'cancel-all');
+      }
+
+      this.setState({
+        totalProgress: 0,
+        error: null,
+        recoveredState: null
+      });
+    }
+  }
+
+  retryUpload(fileID) {
+    this.setFileState(fileID, {
+      error: null,
+      isPaused: false
+    });
+    this.emit('upload-retry', fileID);
+
+    const uploadID = _classPrivateFieldLooseBase(this, _createUpload)[_createUpload]([fileID], {
+      forceAllowNewUpload: true // create new upload even if allowNewUpload: false
+
+    });
+
+    return _classPrivateFieldLooseBase(this, _runUpload)[_runUpload](uploadID);
+  } // todo remove in next major. what is the point of the reset method when we have cancelAll or vice versa?
+
+
+  reset() {
+    this.cancelAll(...arguments);
+  }
+
+  logout() {
+    this.iteratePlugins(plugin => {
+      if (plugin.provider && plugin.provider.logout) {
+        plugin.provider.logout();
+      }
+    });
+  }
+
+  calculateProgress(file, data) {
+    if (file == null || !this.getFile(file.id)) {
+      this.log(`Not setting progress for a file that has been removed: ${file == null ? void 0 : file.id}`);
+      return;
+    } // bytesTotal may be null or zero; in that case we can't divide by it
+
+
+    const canHavePercentage = Number.isFinite(data.bytesTotal) && data.bytesTotal > 0;
+    this.setFileState(file.id, {
+      progress: { ...this.getFile(file.id).progress,
+        bytesUploaded: data.bytesUploaded,
+        bytesTotal: data.bytesTotal,
+        percentage: canHavePercentage ? Math.round(data.bytesUploaded / data.bytesTotal * 100) : 0
+      }
+    });
+    this.calculateTotalProgress();
+  }
+
+  calculateTotalProgress() {
+    // calculate total progress, using the number of files currently uploading,
+    // multiplied by 100 and the summ of individual progress of each file
+    const files = this.getFiles();
+    const inProgress = files.filter(file => {
+      return file.progress.uploadStarted || file.progress.preprocess || file.progress.postprocess;
+    });
+
+    if (inProgress.length === 0) {
+      this.emit('progress', 0);
+      this.setState({
+        totalProgress: 0
+      });
+      return;
+    }
+
+    const sizedFiles = inProgress.filter(file => file.progress.bytesTotal != null);
+    const unsizedFiles = inProgress.filter(file => file.progress.bytesTotal == null);
+
+    if (sizedFiles.length === 0) {
+      const progressMax = inProgress.length * 100;
+      const currentProgress = unsizedFiles.reduce((acc, file) => {
+        return acc + file.progress.percentage;
+      }, 0);
+      const totalProgress = Math.round(currentProgress / progressMax * 100);
+      this.setState({
+        totalProgress
+      });
+      return;
+    }
+
+    let totalSize = sizedFiles.reduce((acc, file) => {
+      return acc + file.progress.bytesTotal;
+    }, 0);
+    const averageSize = totalSize / sizedFiles.length;
+    totalSize += averageSize * unsizedFiles.length;
+    let uploadedSize = 0;
+    sizedFiles.forEach(file => {
+      uploadedSize += file.progress.bytesUploaded;
+    });
+    unsizedFiles.forEach(file => {
+      uploadedSize += averageSize * (file.progress.percentage || 0) / 100;
+    });
+    let totalProgress = totalSize === 0 ? 0 : Math.round(uploadedSize / totalSize * 100); // hot fix, because:
+    // uploadedSize ended up larger than totalSize, resulting in 1325% total
+
+    if (totalProgress > 100) {
+      totalProgress = 100;
+    }
+
+    this.setState({
+      totalProgress
+    });
+    this.emit('progress', totalProgress);
+  }
+  /**
+   * Registers listeners for all global actions, like:
+   * `error`, `file-removed`, `upload-progress`
+   */
+
+
+  updateOnlineStatus() {
+    const online = typeof window.navigator.onLine !== 'undefined' ? window.navigator.onLine : true;
+
+    if (!online) {
+      this.emit('is-offline');
+      this.info(this.i18n('noInternetConnection'), 'error', 0);
+      this.wasOffline = true;
+    } else {
+      this.emit('is-online');
+
+      if (this.wasOffline) {
+        this.emit('back-online');
+        this.info(this.i18n('connectedToInternet'), 'success', 3000);
+        this.wasOffline = false;
+      }
+    }
+  }
+
+  getID() {
+    return this.opts.id;
+  }
+  /**
+   * Registers a plugin with Core.
+   *
+   * @param {object} Plugin object
+   * @param {object} [opts] object with options to be passed to Plugin
+   * @returns {object} self for chaining
+   */
+  // eslint-disable-next-line no-shadow
+
+
+  use(Plugin, opts) {
+    if (typeof Plugin !== 'function') {
+      const msg = `Expected a plugin class, but got ${Plugin === null ? 'null' : typeof Plugin}.` + ' Please verify that the plugin was imported and spelled correctly.';
+      throw new TypeError(msg);
+    } // Instantiate
+
+
+    const plugin = new Plugin(this, opts);
+    const pluginId = plugin.id;
+
+    if (!pluginId) {
+      throw new Error('Your plugin must have an id');
+    }
+
+    if (!plugin.type) {
+      throw new Error('Your plugin must have a type');
+    }
+
+    const existsPluginAlready = this.getPlugin(pluginId);
+
+    if (existsPluginAlready) {
+      const msg = `Already found a plugin named '${existsPluginAlready.id}'. ` + `Tried to use: '${pluginId}'.\n` + 'Uppy plugins must have unique `id` options. See https://uppy.io/docs/plugins/#id.';
+      throw new Error(msg);
+    }
+
+    if (Plugin.VERSION) {
+      this.log(`Using ${pluginId} v${Plugin.VERSION}`);
+    }
+
+    if (plugin.type in _classPrivateFieldLooseBase(this, _plugins)[_plugins]) {
+      _classPrivateFieldLooseBase(this, _plugins)[_plugins][plugin.type].push(plugin);
+    } else {
+      _classPrivateFieldLooseBase(this, _plugins)[_plugins][plugin.type] = [plugin];
+    }
+
+    plugin.install();
+    return this;
+  }
+  /**
+   * Find one Plugin by name.
+   *
+   * @param {string} id plugin id
+   * @returns {BasePlugin|undefined}
+   */
+
+
+  getPlugin(id) {
+    for (const plugins of Object.values(_classPrivateFieldLooseBase(this, _plugins)[_plugins])) {
+      const foundPlugin = plugins.find(plugin => plugin.id === id);
+      if (foundPlugin != null) return foundPlugin;
+    }
+
+    return undefined;
+  }
+
+  [_Symbol$for](type) {
+    return _classPrivateFieldLooseBase(this, _plugins)[_plugins][type];
+  }
+  /**
+   * Iterate through all `use`d plugins.
+   *
+   * @param {Function} method that will be run on each plugin
+   */
+
+
+  iteratePlugins(method) {
+    Object.values(_classPrivateFieldLooseBase(this, _plugins)[_plugins]).flat(1).forEach(method);
+  }
+  /**
+   * Uninstall and remove a plugin.
+   *
+   * @param {object} instance The plugin instance to remove.
+   */
+
+
+  removePlugin(instance) {
+    this.log(`Removing plugin ${instance.id}`);
+    this.emit('plugin-remove', instance);
+
+    if (instance.uninstall) {
+      instance.uninstall();
+    }
+
+    const list = _classPrivateFieldLooseBase(this, _plugins)[_plugins][instance.type]; // list.indexOf failed here, because Vue3 converted the plugin instance
+    // to a Proxy object, which failed the strict comparison test:
+    // obj !== objProxy
+
+
+    const index = list.findIndex(item => item.id === instance.id);
+
+    if (index !== -1) {
+      list.splice(index, 1);
+    }
+
+    const state = this.getState();
+    const updatedState = {
+      plugins: { ...state.plugins,
+        [instance.id]: undefined
+      }
+    };
+    this.setState(updatedState);
+  }
+  /**
+   * Uninstall all plugins and close down this Uppy instance.
+   */
+
+
+  close(_temp2) {
+    let {
+      reason
+    } = _temp2 === void 0 ? {} : _temp2;
+    this.log(`Closing Uppy instance ${this.opts.id}: removing all files and uninstalling plugins`);
+    this.cancelAll({
+      reason
+    });
+
+    _classPrivateFieldLooseBase(this, _storeUnsubscribe)[_storeUnsubscribe]();
+
+    this.iteratePlugins(plugin => {
+      this.removePlugin(plugin);
+    });
+
+    if (typeof window !== 'undefined' && window.removeEventListener) {
+      window.removeEventListener('online', _classPrivateFieldLooseBase(this, _updateOnlineStatus)[_updateOnlineStatus]);
+      window.removeEventListener('offline', _classPrivateFieldLooseBase(this, _updateOnlineStatus)[_updateOnlineStatus]);
+    }
+  }
+
+  hideInfo() {
+    const {
+      info
+    } = this.getState();
+    this.setState({
+      info: info.slice(1)
+    });
+    this.emit('info-hidden');
+  }
+  /**
+   * Set info message in `state.info`, so that UI plugins like `Informer`
+   * can display the message.
+   *
+   * @param {string | object} message Message to be displayed by the informer
+   * @param {string} [type]
+   * @param {number} [duration]
+   */
+
+
+  info(message, type, duration) {
+    if (type === void 0) {
+      type = 'info';
+    }
+
+    if (duration === void 0) {
+      duration = 3000;
+    }
+
+    const isComplexMessage = typeof message === 'object';
+    this.setState({
+      info: [...this.getState().info, {
+        type,
+        message: isComplexMessage ? message.message : message,
+        details: isComplexMessage ? message.details : null
+      }]
+    });
+    setTimeout(() => this.hideInfo(), duration);
+    this.emit('info-visible');
+  }
+  /**
+   * Passes messages to a function, provided in `opts.logger`.
+   * If `opts.logger: Uppy.debugLogger` or `opts.debug: true`, logs to the browser console.
+   *
+   * @param {string|object} message to log
+   * @param {string} [type] optional `error` or `warning`
+   */
+
+
+  log(message, type) {
+    const {
+      logger
+    } = this.opts;
+
+    switch (type) {
+      case 'error':
+        logger.error(message);
+        break;
+
+      case 'warning':
+        logger.warn(message);
+        break;
+
+      default:
+        logger.debug(message);
+        break;
+    }
+  }
+  /**
+   * Restore an upload by its ID.
+   */
+
+
+  restore(uploadID) {
+    this.log(`Core: attempting to restore upload "${uploadID}"`);
+
+    if (!this.getState().currentUploads[uploadID]) {
+      _classPrivateFieldLooseBase(this, _removeUpload)[_removeUpload](uploadID);
+
+      return Promise.reject(new Error('Nonexistent upload'));
+    }
+
+    return _classPrivateFieldLooseBase(this, _runUpload)[_runUpload](uploadID);
+  }
+  /**
+   * Create an upload for a bunch of files.
+   *
+   * @param {Array<string>} fileIDs File IDs to include in this upload.
+   * @returns {string} ID of this upload.
+   */
+
+
+  [_Symbol$for2]() {
+    return _classPrivateFieldLooseBase(this, _createUpload)[_createUpload](...arguments);
+  }
+
+  /**
+   * Add data to an upload's result object.
+   *
+   * @param {string} uploadID The ID of the upload.
+   * @param {object} data Data properties to add to the result object.
+   */
+  addResultData(uploadID, data) {
+    if (!_classPrivateFieldLooseBase(this, _getUpload)[_getUpload](uploadID)) {
+      this.log(`Not setting result for an upload that has been removed: ${uploadID}`);
+      return;
+    }
+
+    const {
+      currentUploads
+    } = this.getState();
+    const currentUpload = { ...currentUploads[uploadID],
+      result: { ...currentUploads[uploadID].result,
+        ...data
+      }
+    };
+    this.setState({
+      currentUploads: { ...currentUploads,
+        [uploadID]: currentUpload
+      }
+    });
+  }
+  /**
+   * Remove an upload, eg. if it has been canceled or completed.
+   *
+   * @param {string} uploadID The ID of the upload.
+   */
+
+
+  /**
+   * Start an upload for all the files that are not currently being uploaded.
+   *
+   * @returns {Promise}
+   */
+  upload() {
+    var _classPrivateFieldLoo;
+
+    if (!((_classPrivateFieldLoo = _classPrivateFieldLooseBase(this, _plugins)[_plugins].uploader) != null && _classPrivateFieldLoo.length)) {
+      this.log('No uploader type plugins are used', 'warning');
+    }
+
+    let {
+      files
+    } = this.getState();
+    const onBeforeUploadResult = this.opts.onBeforeUpload(files);
+
+    if (onBeforeUploadResult === false) {
+      return Promise.reject(new Error('Not starting the upload because onBeforeUpload returned false'));
+    }
+
+    if (onBeforeUploadResult && typeof onBeforeUploadResult === 'object') {
+      files = onBeforeUploadResult; // Updating files in state, because uploader plugins receive file IDs,
+      // and then fetch the actual file object from state
+
+      this.setState({
+        files
+      });
+    }
+
+    return Promise.resolve().then(() => _classPrivateFieldLooseBase(this, _restricter)[_restricter].validateMinNumberOfFiles(files)).catch(err => {
+      _classPrivateFieldLooseBase(this, _informAndEmit)[_informAndEmit](err);
+
+      throw err;
+    }).then(() => {
+      if (!_classPrivateFieldLooseBase(this, _checkRequiredMetaFields)[_checkRequiredMetaFields](files)) {
+        throw new _Restricter.RestrictionError(this.i18n('missingRequiredMetaField'));
+      }
+    }).catch(err => {
+      // Doing this in a separate catch because we already emited and logged
+      // all the errors in `checkRequiredMetaFields` so we only throw a generic
+      // missing fields error here.
+      throw err;
+    }).then(() => {
+      const {
+        currentUploads
+      } = this.getState(); // get a list of files that are currently assigned to uploads
+
+      const currentlyUploadingFiles = Object.values(currentUploads).flatMap(curr => curr.fileIDs);
+      const waitingFileIDs = [];
+      Object.keys(files).forEach(fileID => {
+        const file = this.getFile(fileID); // if the file hasn't started uploading and hasn't already been assigned to an upload..
+
+        if (!file.progress.uploadStarted && currentlyUploadingFiles.indexOf(fileID) === -1) {
+          waitingFileIDs.push(file.id);
+        }
+      });
+
+      const uploadID = _classPrivateFieldLooseBase(this, _createUpload)[_createUpload](waitingFileIDs);
+
+      return _classPrivateFieldLooseBase(this, _runUpload)[_runUpload](uploadID);
+    }).catch(err => {
+      this.emit('error', err);
+      this.log(err, 'error');
+      throw err;
+    });
+  }
+
+}
+
+function _informAndEmit2(error, file) {
+  const {
+    message,
+    details = ''
+  } = error;
+
+  if (error.isRestriction) {
+    this.emit('restriction-failed', file, error);
+  } else {
+    this.emit('error', error);
+  }
+
+  this.info({
+    message,
+    details
+  }, 'error', this.opts.infoTimeout);
+  this.log(`${message} ${details}`.trim(), 'error');
+}
+
+function _checkRequiredMetaFieldsOnFile2(file) {
+  const {
+    missingFields,
+    error
+  } = _classPrivateFieldLooseBase(this, _restricter)[_restricter].getMissingRequiredMetaFields(file);
+
+  if (missingFields.length > 0) {
+    this.setFileState(file.id, {
+      missingRequiredMetaFields: missingFields
+    });
+    this.log(error.message);
+    this.emit('restriction-failed', file, error);
+    return false;
+  }
+
+  return true;
+}
+
+function _checkRequiredMetaFields2(files) {
+  let success = true;
+
+  for (const file of Object.values(files)) {
+    if (!_classPrivateFieldLooseBase(this, _checkRequiredMetaFieldsOnFile)[_checkRequiredMetaFieldsOnFile](file)) {
+      success = false;
+    }
+  }
+
+  return success;
+}
+
+function _assertNewUploadAllowed2(file) {
+  const {
+    allowNewUpload
+  } = this.getState();
+
+  if (allowNewUpload === false) {
+    const error = new _Restricter.RestrictionError(this.i18n('noMoreFilesAllowed'));
+
+    _classPrivateFieldLooseBase(this, _informAndEmit)[_informAndEmit](error, file);
+
+    throw error;
+  }
+}
+
+function _checkAndCreateFileStateObject2(files, fileDescriptor) {
+  const fileType = getFileType(fileDescriptor);
+  const fileName = getFileName(fileType, fileDescriptor);
+  const fileExtension = getFileNameAndExtension(fileName).extension;
+  const isRemote = Boolean(fileDescriptor.isRemote);
+  const fileID = generateFileID({ ...fileDescriptor,
+    type: fileType
+  });
+
+  if (this.checkIfFileAlreadyExists(fileID)) {
+    const error = new _Restricter.RestrictionError(this.i18n('noDuplicates', {
+      fileName
+    }));
+
+    _classPrivateFieldLooseBase(this, _informAndEmit)[_informAndEmit](error, fileDescriptor);
+
+    throw error;
+  }
+
+  const meta = fileDescriptor.meta || {};
+  meta.name = fileName;
+  meta.type = fileType; // `null` means the size is unknown.
+
+  const size = Number.isFinite(fileDescriptor.data.size) ? fileDescriptor.data.size : null;
+  let newFile = {
+    source: fileDescriptor.source || '',
+    id: fileID,
+    name: fileName,
+    extension: fileExtension || '',
+    meta: { ...this.getState().meta,
+      ...meta
+    },
+    type: fileType,
+    data: fileDescriptor.data,
+    progress: {
+      percentage: 0,
+      bytesUploaded: 0,
+      bytesTotal: size,
+      uploadComplete: false,
+      uploadStarted: null
+    },
+    size,
+    isRemote,
+    remote: fileDescriptor.remote || '',
+    preview: fileDescriptor.preview
+  };
+  const onBeforeFileAddedResult = this.opts.onBeforeFileAdded(newFile, files);
+
+  if (onBeforeFileAddedResult === false) {
+    // Don’t show UI info for this error, as it should be done by the developer
+    const error = new _Restricter.RestrictionError('Cannot add the file because onBeforeFileAdded returned false.');
+    this.emit('restriction-failed', fileDescriptor, error);
+    throw error;
+  } else if (typeof onBeforeFileAddedResult === 'object' && onBeforeFileAddedResult !== null) {
+    newFile = onBeforeFileAddedResult;
+  }
+
+  try {
+    const filesArray = Object.keys(files).map(i => files[i]);
+
+    _classPrivateFieldLooseBase(this, _restricter)[_restricter].validate(newFile, filesArray);
+  } catch (err) {
+    _classPrivateFieldLooseBase(this, _informAndEmit)[_informAndEmit](err, newFile);
+
+    throw err;
+  }
+
+  return newFile;
+}
+
+function _startIfAutoProceed2() {
+  if (this.opts.autoProceed && !this.scheduledAutoProceed) {
+    this.scheduledAutoProceed = setTimeout(() => {
+      this.scheduledAutoProceed = null;
+      this.upload().catch(err => {
+        if (!err.isRestriction) {
+          this.log(err.stack || err.message || err);
+        }
+      });
+    }, 4);
+  }
+}
+
+function _addListeners2() {
+  /**
+   * @param {Error} error
+   * @param {object} [file]
+   * @param {object} [response]
+   */
+  const errorHandler = (error, file, response) => {
+    let errorMsg = error.message || 'Unknown error';
+
+    if (error.details) {
+      errorMsg += ` ${error.details}`;
+    }
+
+    this.setState({
+      error: errorMsg
+    });
+
+    if (file != null && file.id in this.getState().files) {
+      this.setFileState(file.id, {
+        error: errorMsg,
+        response
+      });
+    }
+  };
+
+  this.on('error', errorHandler);
+  this.on('upload-error', (file, error, response) => {
+    errorHandler(error, file, response);
+
+    if (typeof error === 'object' && error.message) {
+      const newError = new Error(error.message);
+      newError.details = error.message;
+
+      if (error.details) {
+        newError.details += ` ${error.details}`;
+      }
+
+      newError.message = this.i18n('failedToUpload', {
+        file: file == null ? void 0 : file.name
+      });
+
+      _classPrivateFieldLooseBase(this, _informAndEmit)[_informAndEmit](newError);
+    } else {
+      _classPrivateFieldLooseBase(this, _informAndEmit)[_informAndEmit](error);
+    }
+  });
+  this.on('upload', () => {
+    this.setState({
+      error: null
+    });
+  });
+  this.on('upload-started', file => {
+    if (file == null || !this.getFile(file.id)) {
+      this.log(`Not setting progress for a file that has been removed: ${file == null ? void 0 : file.id}`);
+      return;
+    }
+
+    this.setFileState(file.id, {
+      progress: {
+        uploadStarted: Date.now(),
+        uploadComplete: false,
+        percentage: 0,
+        bytesUploaded: 0,
+        bytesTotal: file.size
+      }
+    });
+  });
+  this.on('upload-progress', this.calculateProgress);
+  this.on('upload-success', (file, uploadResp) => {
+    if (file == null || !this.getFile(file.id)) {
+      this.log(`Not setting progress for a file that has been removed: ${file == null ? void 0 : file.id}`);
+      return;
+    }
+
+    const currentProgress = this.getFile(file.id).progress;
+    this.setFileState(file.id, {
+      progress: { ...currentProgress,
+        postprocess: _classPrivateFieldLooseBase(this, _postProcessors)[_postProcessors].size > 0 ? {
+          mode: 'indeterminate'
+        } : null,
+        uploadComplete: true,
+        percentage: 100,
+        bytesUploaded: currentProgress.bytesTotal
+      },
+      response: uploadResp,
+      uploadURL: uploadResp.uploadURL,
+      isPaused: false
+    }); // Remote providers sometimes don't tell us the file size,
+    // but we can know how many bytes we uploaded once the upload is complete.
+
+    if (file.size == null) {
+      this.setFileState(file.id, {
+        size: uploadResp.bytesUploaded || currentProgress.bytesTotal
+      });
+    }
+
+    this.calculateTotalProgress();
+  });
+  this.on('preprocess-progress', (file, progress) => {
+    if (file == null || !this.getFile(file.id)) {
+      this.log(`Not setting progress for a file that has been removed: ${file == null ? void 0 : file.id}`);
+      return;
+    }
+
+    this.setFileState(file.id, {
+      progress: { ...this.getFile(file.id).progress,
+        preprocess: progress
+      }
+    });
+  });
+  this.on('preprocess-complete', file => {
+    if (file == null || !this.getFile(file.id)) {
+      this.log(`Not setting progress for a file that has been removed: ${file == null ? void 0 : file.id}`);
+      return;
+    }
+
+    const files = { ...this.getState().files
+    };
+    files[file.id] = { ...files[file.id],
+      progress: { ...files[file.id].progress
+      }
+    };
+    delete files[file.id].progress.preprocess;
+    this.setState({
+      files
+    });
+  });
+  this.on('postprocess-progress', (file, progress) => {
+    if (file == null || !this.getFile(file.id)) {
+      this.log(`Not setting progress for a file that has been removed: ${file == null ? void 0 : file.id}`);
+      return;
+    }
+
+    this.setFileState(file.id, {
+      progress: { ...this.getState().files[file.id].progress,
+        postprocess: progress
+      }
+    });
+  });
+  this.on('postprocess-complete', file => {
+    if (file == null || !this.getFile(file.id)) {
+      this.log(`Not setting progress for a file that has been removed: ${file == null ? void 0 : file.id}`);
+      return;
+    }
+
+    const files = { ...this.getState().files
+    };
+    files[file.id] = { ...files[file.id],
+      progress: { ...files[file.id].progress
+      }
+    };
+    delete files[file.id].progress.postprocess;
+    this.setState({
+      files
+    });
+  });
+  this.on('restored', () => {
+    // Files may have changed--ensure progress is still accurate.
+    this.calculateTotalProgress();
+  });
+  this.on('dashboard:file-edit-complete', file => {
+    if (file) {
+      _classPrivateFieldLooseBase(this, _checkRequiredMetaFieldsOnFile)[_checkRequiredMetaFieldsOnFile](file);
+    }
+  }); // show informer if offline
+
+  if (typeof window !== 'undefined' && window.addEventListener) {
+    window.addEventListener('online', _classPrivateFieldLooseBase(this, _updateOnlineStatus)[_updateOnlineStatus]);
+    window.addEventListener('offline', _classPrivateFieldLooseBase(this, _updateOnlineStatus)[_updateOnlineStatus]);
+    setTimeout(_classPrivateFieldLooseBase(this, _updateOnlineStatus)[_updateOnlineStatus], 3000);
+  }
+}
+
+function _createUpload2(fileIDs, opts) {
+  if (opts === void 0) {
+    opts = {};
+  }
+
+  // uppy.retryAll sets this to true — when retrying we want to ignore `allowNewUpload: false`
+  const {
+    forceAllowNewUpload = false
+  } = opts;
+  const {
+    allowNewUpload,
+    currentUploads
+  } = this.getState();
+
+  if (!allowNewUpload && !forceAllowNewUpload) {
+    throw new Error('Cannot create a new upload: already uploading.');
+  }
+
+  const uploadID = (0, _nonSecure.nanoid)();
+  this.emit('upload', {
+    id: uploadID,
+    fileIDs
+  });
+  this.setState({
+    allowNewUpload: this.opts.allowMultipleUploadBatches !== false && this.opts.allowMultipleUploads !== false,
+    currentUploads: { ...currentUploads,
+      [uploadID]: {
+        fileIDs,
+        step: 0,
+        result: {}
+      }
+    }
+  });
+  return uploadID;
+}
+
+function _getUpload2(uploadID) {
+  const {
+    currentUploads
+  } = this.getState();
+  return currentUploads[uploadID];
+}
+
+function _removeUpload2(uploadID) {
+  const currentUploads = { ...this.getState().currentUploads
+  };
+  delete currentUploads[uploadID];
+  this.setState({
+    currentUploads
+  });
+}
+
+async function _runUpload2(uploadID) {
+  let {
+    currentUploads
+  } = this.getState();
+  let currentUpload = currentUploads[uploadID];
+  const restoreStep = currentUpload.step || 0;
+  const steps = [..._classPrivateFieldLooseBase(this, _preProcessors)[_preProcessors], ..._classPrivateFieldLooseBase(this, _uploaders)[_uploaders], ..._classPrivateFieldLooseBase(this, _postProcessors)[_postProcessors]];
+
+  try {
+    for (let step = restoreStep; step < steps.length; step++) {
+      if (!currentUpload) {
+        break;
+      }
+
+      const fn = steps[step];
+      const updatedUpload = { ...currentUpload,
+        step
+      };
+      this.setState({
+        currentUploads: { ...currentUploads,
+          [uploadID]: updatedUpload
+        }
+      }); // TODO give this the `updatedUpload` object as its only parameter maybe?
+      // Otherwise when more metadata may be added to the upload this would keep getting more parameters
+
+      await fn(updatedUpload.fileIDs, uploadID); // Update currentUpload value in case it was modified asynchronously.
+
+      currentUploads = this.getState().currentUploads;
+      currentUpload = currentUploads[uploadID];
+    }
+  } catch (err) {
+    _classPrivateFieldLooseBase(this, _removeUpload)[_removeUpload](uploadID);
+
+    throw err;
+  } // Set result data.
+
+
+  if (currentUpload) {
+    // Mark postprocessing step as complete if necessary; this addresses a case where we might get
+    // stuck in the postprocessing UI while the upload is fully complete.
+    // If the postprocessing steps do not do any work, they may not emit postprocessing events at
+    // all, and never mark the postprocessing as complete. This is fine on its own but we
+    // introduced code in the @uppy/core upload-success handler to prepare postprocessing progress
+    // state if any postprocessors are registered. That is to avoid a "flash of completed state"
+    // before the postprocessing plugins can emit events.
+    //
+    // So, just in case an upload with postprocessing plugins *has* completed *without* emitting
+    // postprocessing completion, we do it instead.
+    currentUpload.fileIDs.forEach(fileID => {
+      const file = this.getFile(fileID);
+
+      if (file && file.progress.postprocess) {
+        this.emit('postprocess-complete', file);
+      }
+    });
+    const files = currentUpload.fileIDs.map(fileID => this.getFile(fileID));
+    const successful = files.filter(file => !file.error);
+    const failed = files.filter(file => file.error);
+    await this.addResultData(uploadID, {
+      successful,
+      failed,
+      uploadID
+    }); // Update currentUpload value in case it was modified asynchronously.
+
+    currentUploads = this.getState().currentUploads;
+    currentUpload = currentUploads[uploadID];
+  } // Emit completion events.
+  // This is in a separate function so that the `currentUploads` variable
+  // always refers to the latest state. In the handler right above it refers
+  // to an outdated object without the `.result` property.
+
+
+  let result;
+
+  if (currentUpload) {
+    result = currentUpload.result;
+    this.emit('complete', result);
+
+    _classPrivateFieldLooseBase(this, _removeUpload)[_removeUpload](uploadID);
+  }
+
+  if (result == null) {
+    this.log(`Not setting result for an upload that has been removed: ${uploadID}`);
+  }
+
+  return result;
+}
+
+Uppy.VERSION = packageJson.version;
+module.exports = Uppy;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/core/lib/getFileName.js":
+/*!****************************************************!*\
+  !*** ./node_modules/@uppy/core/lib/getFileName.js ***!
+  \****************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+function getFileName(fileType, fileDescriptor) {
+  if (fileDescriptor.name) {
+    return fileDescriptor.name;
+  }
+
+  if (fileType.split('/')[0] === 'image') {
+    return `${fileType.split('/')[0]}.${fileType.split('/')[1]}`;
+  }
+
+  return 'noname';
+}
+
+module.exports = getFileName;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/core/lib/index.js":
+/*!**********************************************!*\
+  !*** ./node_modules/@uppy/core/lib/index.js ***!
+  \**********************************************/
+/***/ ((module, exports, __webpack_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports.Uppy = exports.UIPlugin = exports.BasePlugin = void 0;
+Object.defineProperty(exports, "debugLogger", ({
+  enumerable: true,
+  get: function () {
+    return _loggers.debugLogger;
+  }
+}));
+
+var _loggers = __webpack_require__(/*! ./loggers.js */ "./node_modules/@uppy/core/lib/loggers.js");
+
+module.exports = __webpack_require__(/*! ./Uppy.js */ "./node_modules/@uppy/core/lib/Uppy.js");
+
+const _0 = __webpack_require__(/*! ./UIPlugin.js */ "./node_modules/@uppy/core/lib/UIPlugin.js");
+
+exports.UIPlugin = _0;
+
+const _1 = __webpack_require__(/*! ./BasePlugin.js */ "./node_modules/@uppy/core/lib/BasePlugin.js");
+
+exports.BasePlugin = _1;
+
+// TODO: remove all the following in the next major
+
+/* eslint-disable import/first */
+const Uppy = __webpack_require__(/*! ./Uppy.js */ "./node_modules/@uppy/core/lib/Uppy.js");
+
+exports.Uppy = Uppy;
+
+const UIPlugin = __webpack_require__(/*! ./UIPlugin.js */ "./node_modules/@uppy/core/lib/UIPlugin.js");
+
+const BasePlugin = __webpack_require__(/*! ./BasePlugin.js */ "./node_modules/@uppy/core/lib/BasePlugin.js");
+
+// Backward compatibility: we want those to keep being accessible as static
+// properties of `Uppy` to avoid a breaking change.
+Uppy.Uppy = Uppy;
+Uppy.UIPlugin = UIPlugin;
+Uppy.BasePlugin = BasePlugin;
+Uppy.debugLogger = _loggers.debugLogger;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/core/lib/locale.js":
+/*!***********************************************!*\
+  !*** ./node_modules/@uppy/core/lib/locale.js ***!
+  \***********************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+module.exports = {
+  strings: {
+    addBulkFilesFailed: {
+      0: 'Failed to add %{smart_count} file due to an internal error',
+      1: 'Failed to add %{smart_count} files due to internal errors'
+    },
+    youCanOnlyUploadX: {
+      0: 'You can only upload %{smart_count} file',
+      1: 'You can only upload %{smart_count} files'
+    },
+    youHaveToAtLeastSelectX: {
+      0: 'You have to select at least %{smart_count} file',
+      1: 'You have to select at least %{smart_count} files'
+    },
+    exceedsSize: '%{file} exceeds maximum allowed size of %{size}',
+    missingRequiredMetaField: 'Missing required meta fields',
+    missingRequiredMetaFieldOnFile: 'Missing required meta fields in %{fileName}',
+    inferiorSize: 'This file is smaller than the allowed size of %{size}',
+    youCanOnlyUploadFileTypes: 'You can only upload: %{types}',
+    noMoreFilesAllowed: 'Cannot add more files',
+    noDuplicates: "Cannot add the duplicate file '%{fileName}', it already exists",
+    companionError: 'Connection with Companion failed',
+    authAborted: 'Authentication aborted',
+    companionUnauthorizeHint: 'To unauthorize to your %{provider} account, please go to %{url}',
+    failedToUpload: 'Failed to upload %{file}',
+    noInternetConnection: 'No Internet connection',
+    connectedToInternet: 'Connected to the Internet',
+    // Strings for remote providers
+    noFilesFound: 'You have no files or folders here',
+    selectX: {
+      0: 'Select %{smart_count}',
+      1: 'Select %{smart_count}'
+    },
+    allFilesFromFolderNamed: 'All files from folder %{name}',
+    openFolderNamed: 'Open folder %{name}',
+    cancel: 'Cancel',
+    logOut: 'Log out',
+    filter: 'Filter',
+    resetFilter: 'Reset filter',
+    loading: 'Loading...',
+    authenticateWithTitle: 'Please authenticate with %{pluginName} to select files',
+    authenticateWith: 'Connect to %{pluginName}',
+    signInWithGoogle: 'Sign in with Google',
+    searchImages: 'Search for images',
+    enterTextToSearch: 'Enter text to search for images',
+    search: 'Search',
+    emptyFolderAdded: 'No files were added from empty folder',
+    folderAlreadyAdded: 'The folder "%{folder}" was already added',
+    folderAdded: {
+      0: 'Added %{smart_count} file from %{folder}',
+      1: 'Added %{smart_count} files from %{folder}'
+    }
+  }
+};
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/core/lib/loggers.js":
+/*!************************************************!*\
+  !*** ./node_modules/@uppy/core/lib/loggers.js ***!
+  \************************************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports.justErrorsLogger = exports.debugLogger = void 0;
+
+/* eslint-disable no-console */
+const getTimeStamp = __webpack_require__(/*! @uppy/utils/lib/getTimeStamp */ "./node_modules/@uppy/utils/lib/getTimeStamp.js"); // Swallow all logs, except errors.
+// default if logger is not set or debug: false
+
+
+const justErrorsLogger = {
+  debug: () => {},
+  warn: () => {},
+  error: function () {
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    return console.error(`[Uppy] [${getTimeStamp()}]`, ...args);
+  }
+}; // Print logs to console with namespace + timestamp,
+// set by logger: Uppy.debugLogger or debug: true
+
+exports.justErrorsLogger = justErrorsLogger;
+const debugLogger = {
+  debug: function () {
+    for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      args[_key2] = arguments[_key2];
+    }
+
+    return console.debug(`[Uppy] [${getTimeStamp()}]`, ...args);
+  },
+  warn: function () {
+    for (var _len3 = arguments.length, args = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+      args[_key3] = arguments[_key3];
+    }
+
+    return console.warn(`[Uppy] [${getTimeStamp()}]`, ...args);
+  },
+  error: function () {
+    for (var _len4 = arguments.length, args = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+      args[_key4] = arguments[_key4];
+    }
+
+    return console.error(`[Uppy] [${getTimeStamp()}]`, ...args);
+  }
+};
+exports.debugLogger = debugLogger;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/core/lib/supportsUploadProgress.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/@uppy/core/lib/supportsUploadProgress.js ***!
+  \***************************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+function supportsUploadProgress(userAgent) {
+  // Allow passing in userAgent for tests
+  if (userAgent == null && typeof navigator !== 'undefined') {
+    // eslint-disable-next-line no-param-reassign
+    userAgent = navigator.userAgent;
+  } // Assume it works because basically everything supports progress events.
+
+
+  if (!userAgent) return true;
+  const m = /Edge\/(\d+\.\d+)/.exec(userAgent);
+  if (!m) return true;
+  const edgeVersion = m[1];
+  let [major, minor] = edgeVersion.split('.');
+  major = parseInt(major, 10);
+  minor = parseInt(minor, 10); // Worked before:
+  // Edge 40.15063.0.0
+  // Microsoft EdgeHTML 15.15063
+
+  if (major < 15 || major === 15 && minor < 15063) {
+    return true;
+  } // Fixed in:
+  // Microsoft EdgeHTML 18.18218
+
+
+  if (major > 18 || major === 18 && minor >= 18218) {
+    return true;
+  } // other versions don't work.
+
+
+  return false;
+}
+
+// Edge 15.x does not fire 'progress' events on uploads.
+// See https://github.com/transloadit/uppy/issues/945
+// And https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/12224510/
+module.exports = supportsUploadProgress;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/drop-target/lib/index.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/@uppy/drop-target/lib/index.js ***!
+  \*****************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+const BasePlugin = __webpack_require__(/*! @uppy/core/lib/BasePlugin */ "./node_modules/@uppy/core/lib/BasePlugin.js");
+
+const getDroppedFiles = __webpack_require__(/*! @uppy/utils/lib/getDroppedFiles */ "./node_modules/@uppy/utils/lib/getDroppedFiles/index.js");
+
+const toArray = __webpack_require__(/*! @uppy/utils/lib/toArray */ "./node_modules/@uppy/utils/lib/toArray.js");
+
+const packageJson = {
+  "version": "1.1.3"
+};
+
+function isFileTransfer(event) {
+  var _event$dataTransfer$t, _event$dataTransfer$t2;
+
+  return (_event$dataTransfer$t = (_event$dataTransfer$t2 = event.dataTransfer.types) == null ? void 0 : _event$dataTransfer$t2.some(type => type === 'Files')) != null ? _event$dataTransfer$t : false;
+}
+/**
+ * Drop Target plugin
+ *
+ */
+
+
+class DropTarget extends BasePlugin {
+  constructor(uppy, opts) {
+    super(uppy, opts);
+
+    this.addFiles = files => {
+      const descriptors = files.map(file => ({
+        source: this.id,
+        name: file.name,
+        type: file.type,
+        data: file,
+        meta: {
+          // path of the file relative to the ancestor directory the user selected.
+          // e.g. 'docs/Old Prague/airbnb.pdf'
+          relativePath: file.relativePath || null
+        }
+      }));
+
+      try {
+        this.uppy.addFiles(descriptors);
+      } catch (err) {
+        this.uppy.log(err);
+      }
+    };
+
+    this.isFileTransfer = isFileTransfer;
+
+    this.handleDrop = async event => {
+      var _this$opts$onDrop, _this$opts;
+
+      if (!this.isFileTransfer(event)) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      clearTimeout(this.removeDragOverClassTimeout); // Remove dragover class
+
+      event.currentTarget.classList.remove('uppy-is-drag-over');
+      this.setPluginState({
+        isDraggingOver: false
+      }); // Let any acquirer plugin (Url/Webcam/etc.) handle drops to the root
+
+      this.uppy.iteratePlugins(plugin => {
+        if (plugin.type === 'acquirer') {
+          // Every Plugin with .type acquirer can define handleRootDrop(event)
+          plugin.handleRootDrop == null ? void 0 : plugin.handleRootDrop(event);
+        }
+      }); // Add all dropped files, handle errors
+
+      let executedDropErrorOnce = false;
+
+      const logDropError = error => {
+        this.uppy.log(error, 'error'); // In practice all drop errors are most likely the same,
+        // so let's just show one to avoid overwhelming the user
+
+        if (!executedDropErrorOnce) {
+          this.uppy.info(error.message, 'error');
+          executedDropErrorOnce = true;
+        }
+      };
+
+      const files = await getDroppedFiles(event.dataTransfer, {
+        logDropError
+      });
+
+      if (files.length > 0) {
+        this.uppy.log('[DropTarget] Files were dropped');
+        this.addFiles(files);
+      }
+
+      (_this$opts$onDrop = (_this$opts = this.opts).onDrop) == null ? void 0 : _this$opts$onDrop.call(_this$opts, event);
+    };
+
+    this.handleDragOver = event => {
+      var _this$opts$onDragOver, _this$opts2;
+
+      if (!this.isFileTransfer(event)) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation(); // Add a small (+) icon on drop
+      // (and prevent browsers from interpreting this as files being _moved_ into the browser,
+      // https://github.com/transloadit/uppy/issues/1978)
+
+      event.dataTransfer.dropEffect = 'copy'; // eslint-disable-line no-param-reassign
+
+      clearTimeout(this.removeDragOverClassTimeout);
+      event.currentTarget.classList.add('uppy-is-drag-over');
+      this.setPluginState({
+        isDraggingOver: true
+      });
+      (_this$opts$onDragOver = (_this$opts2 = this.opts).onDragOver) == null ? void 0 : _this$opts$onDragOver.call(_this$opts2, event);
+    };
+
+    this.handleDragLeave = event => {
+      var _this$opts$onDragLeav, _this$opts3;
+
+      if (!this.isFileTransfer(event)) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      const {
+        currentTarget
+      } = event;
+      clearTimeout(this.removeDragOverClassTimeout); // Timeout against flickering, this solution is taken from drag-drop library.
+      // Solution with 'pointer-events: none' didn't work across browsers.
+
+      this.removeDragOverClassTimeout = setTimeout(() => {
+        currentTarget.classList.remove('uppy-is-drag-over');
+        this.setPluginState({
+          isDraggingOver: false
+        });
+      }, 50);
+      (_this$opts$onDragLeav = (_this$opts3 = this.opts).onDragLeave) == null ? void 0 : _this$opts$onDragLeav.call(_this$opts3, event);
+    };
+
+    this.addListeners = () => {
+      const {
+        target
+      } = this.opts;
+
+      if (target instanceof Element) {
+        this.nodes = [target];
+      } else if (typeof target === 'string') {
+        this.nodes = toArray(document.querySelectorAll(target));
+      }
+
+      if (!this.nodes && !this.nodes.length > 0) {
+        throw new Error(`"${target}" does not match any HTML elements`);
+      }
+
+      this.nodes.forEach(node => {
+        node.addEventListener('dragover', this.handleDragOver, false);
+        node.addEventListener('dragleave', this.handleDragLeave, false);
+        node.addEventListener('drop', this.handleDrop, false);
+      });
+    };
+
+    this.removeListeners = () => {
+      if (this.nodes) {
+        this.nodes.forEach(node => {
+          node.removeEventListener('dragover', this.handleDragOver, false);
+          node.removeEventListener('dragleave', this.handleDragLeave, false);
+          node.removeEventListener('drop', this.handleDrop, false);
+        });
+      }
+    };
+
+    this.type = 'acquirer';
+    this.id = this.opts.id || 'DropTarget';
+    this.title = 'Drop Target'; // Default options
+
+    const defaultOpts = {
+      target: null
+    }; // Merge default options with the ones set by user
+
+    this.opts = { ...defaultOpts,
+      ...opts
+    };
+    this.removeDragOverClassTimeout = null;
+  }
+
+  install() {
+    this.setPluginState({
+      isDraggingOver: false
+    });
+    this.addListeners();
+  }
+
+  uninstall() {
+    this.removeListeners();
+  }
+
+}
+
+DropTarget.VERSION = packageJson.version;
+module.exports = DropTarget;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/store-default/lib/index.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/@uppy/store-default/lib/index.js ***!
+  \*******************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+function _classPrivateFieldLooseBase(receiver, privateKey) { if (!Object.prototype.hasOwnProperty.call(receiver, privateKey)) { throw new TypeError("attempted to use private field on non-instance"); } return receiver; }
+
+var id = 0;
+
+function _classPrivateFieldLooseKey(name) { return "__private_" + id++ + "_" + name; }
+
+const packageJson = {
+  "version": "2.1.0"
+};
+/**
+ * Default store that keeps state in a simple object.
+ */
+
+var _publish = /*#__PURE__*/_classPrivateFieldLooseKey("publish");
+
+class DefaultStore {
+  constructor() {
+    Object.defineProperty(this, _publish, {
+      value: _publish2
+    });
+    this.state = {};
+    this.callbacks = []; // TODO: use a Set instead, make it a private prop
+  }
+
+  getState() {
+    return this.state;
+  }
+
+  setState(patch) {
+    const prevState = { ...this.state
+    };
+    const nextState = { ...this.state,
+      ...patch
+    };
+    this.state = nextState;
+
+    _classPrivateFieldLooseBase(this, _publish)[_publish](prevState, nextState, patch);
+  }
+
+  subscribe(listener) {
+    this.callbacks.push(listener);
+    return () => {
+      // Remove the listener.
+      this.callbacks.splice(this.callbacks.indexOf(listener), 1);
+    };
+  }
+
+} // TODO: export the class instead in the next major.
+
+
+function _publish2() {
+  for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  this.callbacks.forEach(listener => {
+    listener(...args);
+  });
+}
+
+DefaultStore.VERSION = packageJson.version;
+
+function defaultStore() {
+  return new DefaultStore();
+}
+
+module.exports = defaultStore;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/tus/lib/getFingerprint.js":
+/*!******************************************************!*\
+  !*** ./node_modules/@uppy/tus/lib/getFingerprint.js ***!
+  \******************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var tus = __webpack_require__(/*! tus-js-client */ "./node_modules/tus-js-client/lib.esm/browser/index.js");
+
+function isCordova() {
+  return typeof window !== 'undefined' && (typeof window.PhoneGap !== 'undefined' || typeof window.Cordova !== 'undefined' || typeof window.cordova !== 'undefined');
+}
+
+function isReactNative() {
+  return typeof navigator !== 'undefined' && typeof navigator.product === 'string' && navigator.product.toLowerCase() === 'reactnative';
+} // We override tus fingerprint to uppy’s `file.id`, since the `file.id`
+// now also includes `relativePath` for files added from folders.
+// This means you can add 2 identical files, if one is in folder a,
+// the other in folder b — `a/file.jpg` and `b/file.jpg`, when added
+// together with a folder, will be treated as 2 separate files.
+//
+// For React Native and Cordova, we let tus-js-client’s default
+// fingerprint handling take charge.
+
+
+function getFingerprint(uppyFileObj) {
+  return (file, options) => {
+    if (isCordova() || isReactNative()) {
+      return tus.defaultOptions.fingerprint(file, options);
+    }
+
+    const uppyFingerprint = ['tus', uppyFileObj.id, options.endpoint].join('-');
+    return Promise.resolve(uppyFingerprint);
+  };
+}
+
+module.exports = getFingerprint;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/tus/lib/index.js":
+/*!*********************************************!*\
+  !*** ./node_modules/@uppy/tus/lib/index.js ***!
+  \*********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var tus = __webpack_require__(/*! tus-js-client */ "./node_modules/tus-js-client/lib.esm/browser/index.js");
+
+var _companionClient = __webpack_require__(/*! @uppy/companion-client */ "./node_modules/@uppy/companion-client/lib/index.js");
+
+var _RateLimitedQueue = __webpack_require__(/*! @uppy/utils/lib/RateLimitedQueue */ "./node_modules/@uppy/utils/lib/RateLimitedQueue.js");
+
+function _classPrivateFieldLooseBase(receiver, privateKey) { if (!Object.prototype.hasOwnProperty.call(receiver, privateKey)) { throw new TypeError("attempted to use private field on non-instance"); } return receiver; }
+
+var id = 0;
+
+function _classPrivateFieldLooseKey(name) { return "__private_" + id++ + "_" + name; }
+
+const BasePlugin = __webpack_require__(/*! @uppy/core/lib/BasePlugin */ "./node_modules/@uppy/core/lib/BasePlugin.js");
+
+const emitSocketProgress = __webpack_require__(/*! @uppy/utils/lib/emitSocketProgress */ "./node_modules/@uppy/utils/lib/emitSocketProgress.js");
+
+const getSocketHost = __webpack_require__(/*! @uppy/utils/lib/getSocketHost */ "./node_modules/@uppy/utils/lib/getSocketHost.js");
+
+const settle = __webpack_require__(/*! @uppy/utils/lib/settle */ "./node_modules/@uppy/utils/lib/settle.js");
+
+const EventTracker = __webpack_require__(/*! @uppy/utils/lib/EventTracker */ "./node_modules/@uppy/utils/lib/EventTracker.js");
+
+const NetworkError = __webpack_require__(/*! @uppy/utils/lib/NetworkError */ "./node_modules/@uppy/utils/lib/NetworkError.js");
+
+const isNetworkError = __webpack_require__(/*! @uppy/utils/lib/isNetworkError */ "./node_modules/@uppy/utils/lib/isNetworkError.js");
+
+const hasProperty = __webpack_require__(/*! @uppy/utils/lib/hasProperty */ "./node_modules/@uppy/utils/lib/hasProperty.js");
+
+const getFingerprint = __webpack_require__(/*! ./getFingerprint.js */ "./node_modules/@uppy/tus/lib/getFingerprint.js");
+
+const packageJson = {
+  "version": "2.4.1"
+};
+/** @typedef {import('..').TusOptions} TusOptions */
+
+/** @typedef {import('tus-js-client').UploadOptions} RawTusOptions */
+
+/** @typedef {import('@uppy/core').Uppy} Uppy */
+
+/** @typedef {import('@uppy/core').UppyFile} UppyFile */
+
+/** @typedef {import('@uppy/core').FailedUppyFile<{}>} FailedUppyFile */
+
+/**
+ * Extracted from https://github.com/tus/tus-js-client/blob/master/lib/upload.js#L13
+ * excepted we removed 'fingerprint' key to avoid adding more dependencies
+ *
+ * @type {RawTusOptions}
+ */
+
+const tusDefaultOptions = {
+  endpoint: '',
+  uploadUrl: null,
+  metadata: {},
+  uploadSize: null,
+  onProgress: null,
+  onChunkComplete: null,
+  onSuccess: null,
+  onError: null,
+  overridePatchMethod: false,
+  headers: {},
+  addRequestId: false,
+  chunkSize: Infinity,
+  retryDelays: [100, 1000, 3000, 5000],
+  parallelUploads: 1,
+  removeFingerprintOnSuccess: false,
+  uploadLengthDeferred: false,
+  uploadDataDuringCreation: false
+};
+/**
+ * Tus resumable file uploader
+ */
+
+var _retryDelayIterator = /*#__PURE__*/_classPrivateFieldLooseKey("retryDelayIterator");
+
+var _queueRequestSocketToken = /*#__PURE__*/_classPrivateFieldLooseKey("queueRequestSocketToken");
+
+var _requestSocketToken = /*#__PURE__*/_classPrivateFieldLooseKey("requestSocketToken");
+
+class Tus extends BasePlugin {
+  /**
+   * @param {Uppy} uppy
+   * @param {TusOptions} opts
+   */
+  constructor(uppy, _opts) {
+    var _this$opts$rateLimite, _this$opts$retryDelay;
+
+    super(uppy, _opts);
+    Object.defineProperty(this, _retryDelayIterator, {
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, _queueRequestSocketToken, {
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, _requestSocketToken, {
+      writable: true,
+      value: async file => {
+        const Client = file.remote.providerOptions.provider ? _companionClient.Provider : _companionClient.RequestClient;
+        const client = new Client(this.uppy, file.remote.providerOptions);
+        const opts = { ...this.opts
+        };
+
+        if (file.tus) {
+          // Install file-specific upload overrides.
+          Object.assign(opts, file.tus);
+        }
+
+        const res = await client.post(file.remote.url, { ...file.remote.body,
+          endpoint: opts.endpoint,
+          uploadUrl: opts.uploadUrl,
+          protocol: 'tus',
+          size: file.data.size,
+          headers: opts.headers,
+          metadata: file.meta
+        });
+        return res.token;
+      }
+    });
+    this.type = 'uploader';
+    this.id = this.opts.id || 'Tus';
+    this.title = 'Tus'; // set default options
+
+    const defaultOptions = {
+      useFastRemoteRetry: true,
+      limit: 20,
+      retryDelays: tusDefaultOptions.retryDelays,
+      withCredentials: false
+    }; // merge default options with the ones set by user
+
+    /** @type {import("..").TusOptions} */
+
+    this.opts = { ...defaultOptions,
+      ..._opts
+    };
+
+    if ('autoRetry' in _opts) {
+      throw new Error('The `autoRetry` option was deprecated and has been removed.');
+    }
+    /**
+     * Simultaneous upload limiting is shared across all uploads with this plugin.
+     *
+     * @type {RateLimitedQueue}
+     */
+
+
+    this.requests = (_this$opts$rateLimite = this.opts.rateLimitedQueue) != null ? _this$opts$rateLimite : new _RateLimitedQueue.RateLimitedQueue(this.opts.limit);
+    _classPrivateFieldLooseBase(this, _retryDelayIterator)[_retryDelayIterator] = (_this$opts$retryDelay = this.opts.retryDelays) == null ? void 0 : _this$opts$retryDelay.values();
+    this.uploaders = Object.create(null);
+    this.uploaderEvents = Object.create(null);
+    this.uploaderSockets = Object.create(null);
+    this.handleResetProgress = this.handleResetProgress.bind(this);
+    this.handleUpload = this.handleUpload.bind(this);
+    _classPrivateFieldLooseBase(this, _queueRequestSocketToken)[_queueRequestSocketToken] = this.requests.wrapPromiseFunction(_classPrivateFieldLooseBase(this, _requestSocketToken)[_requestSocketToken]);
+  }
+
+  handleResetProgress() {
+    const files = { ...this.uppy.getState().files
+    };
+    Object.keys(files).forEach(fileID => {
+      // Only clone the file object if it has a Tus `uploadUrl` attached.
+      if (files[fileID].tus && files[fileID].tus.uploadUrl) {
+        const tusState = { ...files[fileID].tus
+        };
+        delete tusState.uploadUrl;
+        files[fileID] = { ...files[fileID],
+          tus: tusState
+        };
+      }
+    });
+    this.uppy.setState({
+      files
+    });
+  }
+  /**
+   * Clean up all references for a file's upload: the tus.Upload instance,
+   * any events related to the file, and the Companion WebSocket connection.
+   *
+   * @param {string} fileID
+   */
+
+
+  resetUploaderReferences(fileID, opts) {
+    if (opts === void 0) {
+      opts = {};
+    }
+
+    if (this.uploaders[fileID]) {
+      const uploader = this.uploaders[fileID];
+      uploader.abort();
+
+      if (opts.abort) {
+        uploader.abort(true);
+      }
+
+      this.uploaders[fileID] = null;
+    }
+
+    if (this.uploaderEvents[fileID]) {
+      this.uploaderEvents[fileID].remove();
+      this.uploaderEvents[fileID] = null;
+    }
+
+    if (this.uploaderSockets[fileID]) {
+      this.uploaderSockets[fileID].close();
+      this.uploaderSockets[fileID] = null;
+    }
+  }
+  /**
+   * Create a new Tus upload.
+   *
+   * A lot can happen during an upload, so this is quite hard to follow!
+   * - First, the upload is started. If the file was already paused by the time the upload starts, nothing should happen.
+   *   If the `limit` option is used, the upload must be queued onto the `this.requests` queue.
+   *   When an upload starts, we store the tus.Upload instance, and an EventTracker instance that manages the event listeners
+   *   for pausing, cancellation, removal, etc.
+   * - While the upload is in progress, it may be paused or cancelled.
+   *   Pausing aborts the underlying tus.Upload, and removes the upload from the `this.requests` queue. All other state is
+   *   maintained.
+   *   Cancelling removes the upload from the `this.requests` queue, and completely aborts the upload-- the `tus.Upload`
+   *   instance is aborted and discarded, the EventTracker instance is destroyed (removing all listeners).
+   *   Resuming the upload uses the `this.requests` queue as well, to prevent selectively pausing and resuming uploads from
+   *   bypassing the limit.
+   * - After completing an upload, the tus.Upload and EventTracker instances are cleaned up, and the upload is marked as done
+   *   in the `this.requests` queue.
+   * - When an upload completed with an error, the same happens as on successful completion, but the `upload()` promise is
+   *   rejected.
+   *
+   * When working on this function, keep in mind:
+   *  - When an upload is completed or cancelled for any reason, the tus.Upload and EventTracker instances need to be cleaned
+   *    up using this.resetUploaderReferences().
+   *  - When an upload is cancelled or paused, for any reason, it needs to be removed from the `this.requests` queue using
+   *    `queuedRequest.abort()`.
+   *  - When an upload is completed for any reason, including errors, it needs to be marked as such using
+   *    `queuedRequest.done()`.
+   *  - When an upload is started or resumed, it needs to go through the `this.requests` queue. The `queuedRequest` variable
+   *    must be updated so the other uses of it are valid.
+   *  - Before replacing the `queuedRequest` variable, the previous `queuedRequest` must be aborted, else it will keep taking
+   *    up a spot in the queue.
+   *
+   * @param {UppyFile} file for use with upload
+   * @returns {Promise<void>}
+   */
+
+
+  upload(file) {
+    var _this = this;
+
+    this.resetUploaderReferences(file.id); // Create a new tus upload
+
+    return new Promise((resolve, reject) => {
+      let queuedRequest;
+      let qRequest;
+      let upload;
+      this.uppy.emit('upload-started', file);
+      const opts = { ...this.opts,
+        ...(file.tus || {})
+      };
+
+      if (typeof opts.headers === 'function') {
+        opts.headers = opts.headers(file);
+      }
+      /** @type {RawTusOptions} */
+
+
+      const uploadOptions = { ...tusDefaultOptions,
+        ...opts
+      }; // We override tus fingerprint to uppy’s `file.id`, since the `file.id`
+      // now also includes `relativePath` for files added from folders.
+      // This means you can add 2 identical files, if one is in folder a,
+      // the other in folder b.
+
+      uploadOptions.fingerprint = getFingerprint(file);
+
+      uploadOptions.onBeforeRequest = req => {
+        const xhr = req.getUnderlyingObject();
+        xhr.withCredentials = !!opts.withCredentials;
+        let userProvidedPromise;
+
+        if (typeof opts.onBeforeRequest === 'function') {
+          userProvidedPromise = opts.onBeforeRequest(req);
+        }
+
+        if (hasProperty(queuedRequest, 'shouldBeRequeued')) {
+          if (!queuedRequest.shouldBeRequeued) return Promise.reject();
+          let done;
+          const p = new Promise(res => {
+            // eslint-disable-line promise/param-names
+            done = res;
+          });
+          queuedRequest = this.requests.run(() => {
+            if (file.isPaused) {
+              queuedRequest.abort();
+            }
+
+            done();
+            return () => {};
+          }); // If the request has been requeued because it was rate limited by the
+          // remote server, we want to wait for `RateLimitedQueue` to dispatch
+          // the re-try request.
+          // Therefore we create a promise that the queue will resolve when
+          // enough time has elapsed to expect not to be rate-limited again.
+          // This means we can hold the Tus retry here with a `Promise.all`,
+          // together with the returned value of the user provided
+          // `onBeforeRequest` option callback (in case it returns a promise).
+
+          return Promise.all([p, userProvidedPromise]);
+        }
+
+        return userProvidedPromise;
+      };
+
+      uploadOptions.onError = err => {
+        this.uppy.log(err);
+        const xhr = err.originalRequest ? err.originalRequest.getUnderlyingObject() : null;
+
+        if (isNetworkError(xhr)) {
+          // eslint-disable-next-line no-param-reassign
+          err = new NetworkError(err, xhr);
+        }
+
+        this.resetUploaderReferences(file.id);
+        queuedRequest.abort();
+        this.uppy.emit('upload-error', file, err);
+        reject(err);
+      };
+
+      uploadOptions.onProgress = (bytesUploaded, bytesTotal) => {
+        this.onReceiveUploadUrl(file, upload.url);
+        this.uppy.emit('upload-progress', file, {
+          uploader: this,
+          bytesUploaded,
+          bytesTotal
+        });
+      };
+
+      uploadOptions.onSuccess = () => {
+        const uploadResp = {
+          uploadURL: upload.url
+        };
+        this.resetUploaderReferences(file.id);
+        queuedRequest.done();
+        this.uppy.emit('upload-success', file, uploadResp);
+
+        if (upload.url) {
+          this.uppy.log(`Download ${upload.file.name} from ${upload.url}`);
+        }
+
+        resolve(upload);
+      };
+
+      const defaultOnShouldRetry = err => {
+        var _err$originalResponse;
+
+        const status = err == null ? void 0 : (_err$originalResponse = err.originalResponse) == null ? void 0 : _err$originalResponse.getStatus();
+
+        if (status === 429) {
+          // HTTP 429 Too Many Requests => to avoid the whole download to fail, pause all requests.
+          if (!this.requests.isPaused) {
+            var _classPrivateFieldLoo;
+
+            const next = (_classPrivateFieldLoo = _classPrivateFieldLooseBase(this, _retryDelayIterator)[_retryDelayIterator]) == null ? void 0 : _classPrivateFieldLoo.next();
+
+            if (next == null || next.done) {
+              return false;
+            }
+
+            this.requests.rateLimit(next.value);
+          }
+        } else if (status > 400 && status < 500 && status !== 409) {
+          // HTTP 4xx, the server won't send anything, it's doesn't make sense to retry
+          return false;
+        } else if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+          // The navigator is offline, let's wait for it to come back online.
+          if (!this.requests.isPaused) {
+            this.requests.pause();
+            window.addEventListener('online', () => {
+              this.requests.resume();
+            }, {
+              once: true
+            });
+          }
+        }
+
+        queuedRequest.abort();
+        queuedRequest = {
+          shouldBeRequeued: true,
+
+          abort() {
+            this.shouldBeRequeued = false;
+          },
+
+          done() {
+            throw new Error('Cannot mark a queued request as done: this indicates a bug');
+          },
+
+          fn() {
+            throw new Error('Cannot run a queued request: this indicates a bug');
+          }
+
+        };
+        return true;
+      };
+
+      if (opts.onShouldRetry != null) {
+        uploadOptions.onShouldRetry = function () {
+          for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+            args[_key] = arguments[_key];
+          }
+
+          return opts.onShouldRetry(...args, defaultOnShouldRetry);
+        };
+      } else {
+        uploadOptions.onShouldRetry = defaultOnShouldRetry;
+      }
+
+      const copyProp = (obj, srcProp, destProp) => {
+        if (hasProperty(obj, srcProp) && !hasProperty(obj, destProp)) {
+          // eslint-disable-next-line no-param-reassign
+          obj[destProp] = obj[srcProp];
+        }
+      };
+      /** @type {Record<string, string>} */
+
+
+      const meta = {};
+      const metaFields = Array.isArray(opts.metaFields) ? opts.metaFields // Send along all fields by default.
+      : Object.keys(file.meta);
+      metaFields.forEach(item => {
+        meta[item] = file.meta[item];
+      }); // tusd uses metadata fields 'filetype' and 'filename'
+
+      copyProp(meta, 'type', 'filetype');
+      copyProp(meta, 'name', 'filename');
+      uploadOptions.metadata = meta;
+      upload = new tus.Upload(file.data, uploadOptions);
+      this.uploaders[file.id] = upload;
+      this.uploaderEvents[file.id] = new EventTracker(this.uppy); // eslint-disable-next-line prefer-const
+
+      qRequest = () => {
+        if (!file.isPaused) {
+          upload.start();
+        } // Don't do anything here, the caller will take care of cancelling the upload itself
+        // using resetUploaderReferences(). This is because resetUploaderReferences() has to be
+        // called when this request is still in the queue, and has not been started yet, too. At
+        // that point this cancellation function is not going to be called.
+        // Also, we need to remove the request from the queue _without_ destroying everything
+        // related to this upload to handle pauses.
+
+
+        return () => {};
+      };
+
+      upload.findPreviousUploads().then(previousUploads => {
+        const previousUpload = previousUploads[0];
+
+        if (previousUpload) {
+          this.uppy.log(`[Tus] Resuming upload of ${file.id} started at ${previousUpload.creationTime}`);
+          upload.resumeFromPreviousUpload(previousUpload);
+        }
+      });
+      queuedRequest = this.requests.run(qRequest);
+      this.onFileRemove(file.id, targetFileID => {
+        queuedRequest.abort();
+        this.resetUploaderReferences(file.id, {
+          abort: !!upload.url
+        });
+        resolve(`upload ${targetFileID} was removed`);
+      });
+      this.onPause(file.id, isPaused => {
+        queuedRequest.abort();
+
+        if (isPaused) {
+          // Remove this file from the queue so another file can start in its place.
+          upload.abort();
+        } else {
+          // Resuming an upload should be queued, else you could pause and then
+          // resume a queued upload to make it skip the queue.
+          queuedRequest = this.requests.run(qRequest);
+        }
+      });
+      this.onPauseAll(file.id, () => {
+        queuedRequest.abort();
+        upload.abort();
+      });
+      this.onCancelAll(file.id, function (_temp) {
+        let {
+          reason
+        } = _temp === void 0 ? {} : _temp;
+
+        if (reason === 'user') {
+          queuedRequest.abort();
+
+          _this.resetUploaderReferences(file.id, {
+            abort: !!upload.url
+          });
+        }
+
+        resolve(`upload ${file.id} was canceled`);
+      });
+      this.onResumeAll(file.id, () => {
+        queuedRequest.abort();
+
+        if (file.error) {
+          upload.abort();
+        }
+
+        queuedRequest = this.requests.run(qRequest);
+      });
+    }).catch(err => {
+      this.uppy.emit('upload-error', file, err);
+      throw err;
+    });
+  }
+
+  /**
+   * @param {UppyFile} file for use with upload
+   * @returns {Promise<void>}
+   */
+  async uploadRemote(file) {
+    this.resetUploaderReferences(file.id); // Don't double-emit upload-started for Golden Retriever-restored files that were already started
+
+    if (!file.progress.uploadStarted || !file.isRestored) {
+      this.uppy.emit('upload-started', file);
+    }
+
+    try {
+      if (file.serverToken) {
+        return this.connectToServerSocket(file);
+      }
+
+      const serverToken = await _classPrivateFieldLooseBase(this, _queueRequestSocketToken)[_queueRequestSocketToken](file);
+      this.uppy.setFileState(file.id, {
+        serverToken
+      });
+      return this.connectToServerSocket(this.uppy.getFile(file.id));
+    } catch (err) {
+      this.uppy.emit('upload-error', file, err);
+      throw err;
+    }
+  }
+  /**
+   * See the comment on the upload() method.
+   *
+   * Additionally, when an upload is removed, completed, or cancelled, we need to close the WebSocket connection. This is
+   * handled by the resetUploaderReferences() function, so the same guidelines apply as in upload().
+   *
+   * @param {UppyFile} file
+   */
+
+
+  connectToServerSocket(file) {
+    var _this2 = this;
+
+    return new Promise((resolve, reject) => {
+      const token = file.serverToken;
+      const host = getSocketHost(file.remote.companionUrl);
+      const socket = new _companionClient.Socket({
+        target: `${host}/api/${token}`
+      });
+      this.uploaderSockets[file.id] = socket;
+      this.uploaderEvents[file.id] = new EventTracker(this.uppy);
+      let queuedRequest;
+      this.onFileRemove(file.id, () => {
+        queuedRequest.abort();
+        socket.send('cancel', {});
+        this.resetUploaderReferences(file.id);
+        resolve(`upload ${file.id} was removed`);
+      });
+      this.onPause(file.id, isPaused => {
+        if (isPaused) {
+          // Remove this file from the queue so another file can start in its place.
+          queuedRequest.abort();
+          socket.send('pause', {});
+        } else {
+          // Resuming an upload should be queued, else you could pause and then
+          // resume a queued upload to make it skip the queue.
+          queuedRequest.abort();
+          queuedRequest = this.requests.run(() => {
+            socket.send('resume', {});
+            return () => {};
+          });
+        }
+      });
+      this.onPauseAll(file.id, () => {
+        queuedRequest.abort();
+        socket.send('pause', {});
+      });
+      this.onCancelAll(file.id, function (_temp2) {
+        let {
+          reason
+        } = _temp2 === void 0 ? {} : _temp2;
+
+        if (reason === 'user') {
+          queuedRequest.abort();
+          socket.send('cancel', {});
+
+          _this2.resetUploaderReferences(file.id);
+        }
+
+        resolve(`upload ${file.id} was canceled`);
+      });
+      this.onResumeAll(file.id, () => {
+        queuedRequest.abort();
+
+        if (file.error) {
+          socket.send('pause', {});
+        }
+
+        queuedRequest = this.requests.run(() => {
+          socket.send('resume', {});
+          return () => {};
+        });
+      });
+      this.onRetry(file.id, () => {
+        // Only do the retry if the upload is actually in progress;
+        // else we could try to send these messages when the upload is still queued.
+        // We may need a better check for this since the socket may also be closed
+        // for other reasons, like network failures.
+        if (socket.isOpen) {
+          socket.send('pause', {});
+          socket.send('resume', {});
+        }
+      });
+      this.onRetryAll(file.id, () => {
+        // See the comment in the onRetry() call
+        if (socket.isOpen) {
+          socket.send('pause', {});
+          socket.send('resume', {});
+        }
+      });
+      socket.on('progress', progressData => emitSocketProgress(this, progressData, file));
+      socket.on('error', errData => {
+        const {
+          message
+        } = errData.error;
+        const error = Object.assign(new Error(message), {
+          cause: errData.error
+        }); // If the remote retry optimisation should not be used,
+        // close the socket—this will tell companion to clear state and delete the file.
+
+        if (!this.opts.useFastRemoteRetry) {
+          this.resetUploaderReferences(file.id); // Remove the serverToken so that a new one will be created for the retry.
+
+          this.uppy.setFileState(file.id, {
+            serverToken: null
+          });
+        } else {
+          socket.close();
+        }
+
+        this.uppy.emit('upload-error', file, error);
+        queuedRequest.done();
+        reject(error);
+      });
+      socket.on('success', data => {
+        const uploadResp = {
+          uploadURL: data.url
+        };
+        this.uppy.emit('upload-success', file, uploadResp);
+        this.resetUploaderReferences(file.id);
+        queuedRequest.done();
+        resolve();
+      });
+      queuedRequest = this.requests.run(() => {
+        if (file.isPaused) {
+          socket.send('pause', {});
+        } // Don't do anything here, the caller will take care of cancelling the upload itself
+        // using resetUploaderReferences(). This is because resetUploaderReferences() has to be
+        // called when this request is still in the queue, and has not been started yet, too. At
+        // that point this cancellation function is not going to be called.
+        // Also, we need to remove the request from the queue _without_ destroying everything
+        // related to this upload to handle pauses.
+
+
+        return () => {};
+      });
+    });
+  }
+  /**
+   * Store the uploadUrl on the file options, so that when Golden Retriever
+   * restores state, we will continue uploading to the correct URL.
+   *
+   * @param {UppyFile} file
+   * @param {string} uploadURL
+   */
+
+
+  onReceiveUploadUrl(file, uploadURL) {
+    const currentFile = this.uppy.getFile(file.id);
+    if (!currentFile) return; // Only do the update if we didn't have an upload URL yet.
+
+    if (!currentFile.tus || currentFile.tus.uploadUrl !== uploadURL) {
+      this.uppy.log('[Tus] Storing upload url');
+      this.uppy.setFileState(currentFile.id, {
+        tus: { ...currentFile.tus,
+          uploadUrl: uploadURL
+        }
+      });
+    }
+  }
+  /**
+   * @param {string} fileID
+   * @param {function(string): void} cb
+   */
+
+
+  onFileRemove(fileID, cb) {
+    this.uploaderEvents[fileID].on('file-removed', file => {
+      if (fileID === file.id) cb(file.id);
+    });
+  }
+  /**
+   * @param {string} fileID
+   * @param {function(boolean): void} cb
+   */
+
+
+  onPause(fileID, cb) {
+    this.uploaderEvents[fileID].on('upload-pause', (targetFileID, isPaused) => {
+      if (fileID === targetFileID) {
+        // const isPaused = this.uppy.pauseResume(fileID)
+        cb(isPaused);
+      }
+    });
+  }
+  /**
+   * @param {string} fileID
+   * @param {function(): void} cb
+   */
+
+
+  onRetry(fileID, cb) {
+    this.uploaderEvents[fileID].on('upload-retry', targetFileID => {
+      if (fileID === targetFileID) {
+        cb();
+      }
+    });
+  }
+  /**
+   * @param {string} fileID
+   * @param {function(): void} cb
+   */
+
+
+  onRetryAll(fileID, cb) {
+    this.uploaderEvents[fileID].on('retry-all', () => {
+      if (!this.uppy.getFile(fileID)) return;
+      cb();
+    });
+  }
+  /**
+   * @param {string} fileID
+   * @param {function(): void} cb
+   */
+
+
+  onPauseAll(fileID, cb) {
+    this.uploaderEvents[fileID].on('pause-all', () => {
+      if (!this.uppy.getFile(fileID)) return;
+      cb();
+    });
+  }
+  /**
+   * @param {string} fileID
+   * @param {function(): void} eventHandler
+   */
+
+
+  onCancelAll(fileID, eventHandler) {
+    var _this3 = this;
+
+    this.uploaderEvents[fileID].on('cancel-all', function () {
+      if (!_this3.uppy.getFile(fileID)) return;
+      eventHandler(...arguments);
+    });
+  }
+  /**
+   * @param {string} fileID
+   * @param {function(): void} cb
+   */
+
+
+  onResumeAll(fileID, cb) {
+    this.uploaderEvents[fileID].on('resume-all', () => {
+      if (!this.uppy.getFile(fileID)) return;
+      cb();
+    });
+  }
+  /**
+   * @param {(UppyFile | FailedUppyFile)[]} files
+   */
+
+
+  uploadFiles(files) {
+    const promises = files.map((file, i) => {
+      const current = i + 1;
+      const total = files.length;
+
+      if ('error' in file && file.error) {
+        return Promise.reject(new Error(file.error));
+      }
+
+      if (file.isRemote) {
+        // We emit upload-started here, so that it's also emitted for files
+        // that have to wait due to the `limit` option.
+        // Don't double-emit upload-started for Golden Retriever-restored files that were already started
+        if (!file.progress.uploadStarted || !file.isRestored) {
+          this.uppy.emit('upload-started', file);
+        }
+
+        return this.uploadRemote(file, current, total);
+      } // Don't double-emit upload-started for Golden Retriever-restored files that were already started
+
+
+      if (!file.progress.uploadStarted || !file.isRestored) {
+        this.uppy.emit('upload-started', file);
+      }
+
+      return this.upload(file, current, total);
+    });
+    return settle(promises);
+  }
+  /**
+   * @param {string[]} fileIDs
+   */
+
+
+  handleUpload(fileIDs) {
+    if (fileIDs.length === 0) {
+      this.uppy.log('[Tus] No files to upload');
+      return Promise.resolve();
+    }
+
+    if (this.opts.limit === 0) {
+      this.uppy.log('[Tus] When uploading multiple files at once, consider setting the `limit` option (to `10` for example), to limit the number of concurrent uploads, which helps prevent memory and network issues: https://uppy.io/docs/tus/#limit-0', 'warning');
+    }
+
+    this.uppy.log('[Tus] Uploading...');
+    const filesToUpload = fileIDs.map(fileID => this.uppy.getFile(fileID));
+    return this.uploadFiles(filesToUpload).then(() => null);
+  }
+
+  install() {
+    this.uppy.setState({
+      capabilities: { ...this.uppy.getState().capabilities,
+        resumableUploads: true
+      }
+    });
+    this.uppy.addUploader(this.handleUpload);
+    this.uppy.on('reset-progress', this.handleResetProgress);
+  }
+
+  uninstall() {
+    this.uppy.setState({
+      capabilities: { ...this.uppy.getState().capabilities,
+        resumableUploads: false
+      }
+    });
+    this.uppy.removeUploader(this.handleUpload);
+  }
+
+}
+
+Tus.VERSION = packageJson.version;
+module.exports = Tus;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/AbortController.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/AbortController.js ***!
+  \*********************************************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports.createAbortError = exports.AbortSignal = exports.AbortController = void 0;
+
+/**
+ * Little AbortController proxy module so we can swap out the implementation easily later.
+ */
+const {
+  AbortController
+} = globalThis;
+exports.AbortController = AbortController;
+const {
+  AbortSignal
+} = globalThis;
+exports.AbortSignal = AbortSignal;
+
+const createAbortError = function (message) {
+  if (message === void 0) {
+    message = 'Aborted';
+  }
+
+  return new DOMException(message, 'AbortError');
+};
+
+exports.createAbortError = createAbortError;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/ErrorWithCause.js":
+/*!********************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/ErrorWithCause.js ***!
+  \********************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+const hasProperty = __webpack_require__(/*! ./hasProperty.js */ "./node_modules/@uppy/utils/lib/hasProperty.js");
+
+class ErrorWithCause extends Error {
+  constructor(message, options) {
+    if (options === void 0) {
+      options = {};
+    }
+
+    super(message);
+    this.cause = options.cause;
+
+    if (this.cause && hasProperty(this.cause, 'isNetworkError')) {
+      this.isNetworkError = this.cause.isNetworkError;
+    }
+  }
+
+}
+
+module.exports = ErrorWithCause;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/EventTracker.js":
+/*!******************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/EventTracker.js ***!
+  \******************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+function _classPrivateFieldLooseBase(receiver, privateKey) { if (!Object.prototype.hasOwnProperty.call(receiver, privateKey)) { throw new TypeError("attempted to use private field on non-instance"); } return receiver; }
+
+var id = 0;
+
+function _classPrivateFieldLooseKey(name) { return "__private_" + id++ + "_" + name; }
+
+var _emitter = /*#__PURE__*/_classPrivateFieldLooseKey("emitter");
+
+var _events = /*#__PURE__*/_classPrivateFieldLooseKey("events");
+
+class EventTracker {
+  constructor(emitter) {
+    Object.defineProperty(this, _emitter, {
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, _events, {
+      writable: true,
+      value: []
+    });
+    _classPrivateFieldLooseBase(this, _emitter)[_emitter] = emitter;
+  }
+
+  on(event, fn) {
+    _classPrivateFieldLooseBase(this, _events)[_events].push([event, fn]);
+
+    return _classPrivateFieldLooseBase(this, _emitter)[_emitter].on(event, fn);
+  }
+
+  remove() {
+    for (const [event, fn] of _classPrivateFieldLooseBase(this, _events)[_events].splice(0)) {
+      _classPrivateFieldLooseBase(this, _emitter)[_emitter].off(event, fn);
+    }
+  }
+
+}
+
+/**
+ * Create a wrapper around an event emitter with a `remove` method to remove
+ * all events that were added using the wrapped emitter.
+ */
+module.exports = EventTracker;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/NetworkError.js":
+/*!******************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/NetworkError.js ***!
+  \******************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+class NetworkError extends Error {
+  constructor(error, xhr) {
+    if (xhr === void 0) {
+      xhr = null;
+    }
+
+    super(`This looks like a network error, the endpoint might be blocked by an internet provider or a firewall.`);
+    this.cause = error;
+    this.isNetworkError = true;
+    this.request = xhr;
+  }
+
+}
+
+module.exports = NetworkError;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/RateLimitedQueue.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/RateLimitedQueue.js ***!
+  \**********************************************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports.internalRateLimitedQueue = exports.RateLimitedQueue = void 0;
+
+function _classPrivateFieldLooseBase(receiver, privateKey) { if (!Object.prototype.hasOwnProperty.call(receiver, privateKey)) { throw new TypeError("attempted to use private field on non-instance"); } return receiver; }
+
+var id = 0;
+
+function _classPrivateFieldLooseKey(name) { return "__private_" + id++ + "_" + name; }
+
+function createCancelError() {
+  return new Error('Cancelled');
+}
+
+var _activeRequests = /*#__PURE__*/_classPrivateFieldLooseKey("activeRequests");
+
+var _queuedHandlers = /*#__PURE__*/_classPrivateFieldLooseKey("queuedHandlers");
+
+var _paused = /*#__PURE__*/_classPrivateFieldLooseKey("paused");
+
+var _pauseTimer = /*#__PURE__*/_classPrivateFieldLooseKey("pauseTimer");
+
+var _downLimit = /*#__PURE__*/_classPrivateFieldLooseKey("downLimit");
+
+var _upperLimit = /*#__PURE__*/_classPrivateFieldLooseKey("upperLimit");
+
+var _rateLimitingTimer = /*#__PURE__*/_classPrivateFieldLooseKey("rateLimitingTimer");
+
+var _call = /*#__PURE__*/_classPrivateFieldLooseKey("call");
+
+var _queueNext = /*#__PURE__*/_classPrivateFieldLooseKey("queueNext");
+
+var _next = /*#__PURE__*/_classPrivateFieldLooseKey("next");
+
+var _queue = /*#__PURE__*/_classPrivateFieldLooseKey("queue");
+
+var _dequeue = /*#__PURE__*/_classPrivateFieldLooseKey("dequeue");
+
+var _resume = /*#__PURE__*/_classPrivateFieldLooseKey("resume");
+
+var _increaseLimit = /*#__PURE__*/_classPrivateFieldLooseKey("increaseLimit");
+
+class RateLimitedQueue {
+  constructor(limit) {
+    Object.defineProperty(this, _dequeue, {
+      value: _dequeue2
+    });
+    Object.defineProperty(this, _queue, {
+      value: _queue2
+    });
+    Object.defineProperty(this, _next, {
+      value: _next2
+    });
+    Object.defineProperty(this, _queueNext, {
+      value: _queueNext2
+    });
+    Object.defineProperty(this, _call, {
+      value: _call2
+    });
+    Object.defineProperty(this, _activeRequests, {
+      writable: true,
+      value: 0
+    });
+    Object.defineProperty(this, _queuedHandlers, {
+      writable: true,
+      value: []
+    });
+    Object.defineProperty(this, _paused, {
+      writable: true,
+      value: false
+    });
+    Object.defineProperty(this, _pauseTimer, {
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, _downLimit, {
+      writable: true,
+      value: 1
+    });
+    Object.defineProperty(this, _upperLimit, {
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, _rateLimitingTimer, {
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, _resume, {
+      writable: true,
+      value: () => this.resume()
+    });
+    Object.defineProperty(this, _increaseLimit, {
+      writable: true,
+      value: () => {
+        if (_classPrivateFieldLooseBase(this, _paused)[_paused]) {
+          _classPrivateFieldLooseBase(this, _rateLimitingTimer)[_rateLimitingTimer] = setTimeout(_classPrivateFieldLooseBase(this, _increaseLimit)[_increaseLimit], 0);
+          return;
+        }
+
+        _classPrivateFieldLooseBase(this, _downLimit)[_downLimit] = this.limit;
+        this.limit = Math.ceil((_classPrivateFieldLooseBase(this, _upperLimit)[_upperLimit] + _classPrivateFieldLooseBase(this, _downLimit)[_downLimit]) / 2);
+
+        for (let i = _classPrivateFieldLooseBase(this, _downLimit)[_downLimit]; i <= this.limit; i++) {
+          _classPrivateFieldLooseBase(this, _queueNext)[_queueNext]();
+        }
+
+        if (_classPrivateFieldLooseBase(this, _upperLimit)[_upperLimit] - _classPrivateFieldLooseBase(this, _downLimit)[_downLimit] > 3) {
+          _classPrivateFieldLooseBase(this, _rateLimitingTimer)[_rateLimitingTimer] = setTimeout(_classPrivateFieldLooseBase(this, _increaseLimit)[_increaseLimit], 2000);
+        } else {
+          _classPrivateFieldLooseBase(this, _downLimit)[_downLimit] = Math.floor(_classPrivateFieldLooseBase(this, _downLimit)[_downLimit] / 2);
+        }
+      }
+    });
+
+    if (typeof limit !== 'number' || limit === 0) {
+      this.limit = Infinity;
+    } else {
+      this.limit = limit;
+    }
+  }
+
+  run(fn, queueOptions) {
+    if (!_classPrivateFieldLooseBase(this, _paused)[_paused] && _classPrivateFieldLooseBase(this, _activeRequests)[_activeRequests] < this.limit) {
+      return _classPrivateFieldLooseBase(this, _call)[_call](fn);
+    }
+
+    return _classPrivateFieldLooseBase(this, _queue)[_queue](fn, queueOptions);
+  }
+
+  wrapPromiseFunction(fn, queueOptions) {
+    var _this = this;
+
+    return function () {
+      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      let queuedRequest;
+      const outerPromise = new Promise((resolve, reject) => {
+        queuedRequest = _this.run(() => {
+          let cancelError;
+          let innerPromise;
+
+          try {
+            innerPromise = Promise.resolve(fn(...args));
+          } catch (err) {
+            innerPromise = Promise.reject(err);
+          }
+
+          innerPromise.then(result => {
+            if (cancelError) {
+              reject(cancelError);
+            } else {
+              queuedRequest.done();
+              resolve(result);
+            }
+          }, err => {
+            if (cancelError) {
+              reject(cancelError);
+            } else {
+              queuedRequest.done();
+              reject(err);
+            }
+          });
+          return () => {
+            cancelError = createCancelError();
+          };
+        }, queueOptions);
+      });
+
+      outerPromise.abort = () => {
+        queuedRequest.abort();
+      };
+
+      return outerPromise;
+    };
+  }
+
+  resume() {
+    _classPrivateFieldLooseBase(this, _paused)[_paused] = false;
+    clearTimeout(_classPrivateFieldLooseBase(this, _pauseTimer)[_pauseTimer]);
+
+    for (let i = 0; i < this.limit; i++) {
+      _classPrivateFieldLooseBase(this, _queueNext)[_queueNext]();
+    }
+  }
+
+  /**
+   * Freezes the queue for a while or indefinitely.
+   *
+   * @param {number | null } [duration] Duration for the pause to happen, in milliseconds.
+   *                                    If omitted, the queue won't resume automatically.
+   */
+  pause(duration) {
+    if (duration === void 0) {
+      duration = null;
+    }
+
+    _classPrivateFieldLooseBase(this, _paused)[_paused] = true;
+    clearTimeout(_classPrivateFieldLooseBase(this, _pauseTimer)[_pauseTimer]);
+
+    if (duration != null) {
+      _classPrivateFieldLooseBase(this, _pauseTimer)[_pauseTimer] = setTimeout(_classPrivateFieldLooseBase(this, _resume)[_resume], duration);
+    }
+  }
+  /**
+   * Pauses the queue for a duration, and lower the limit of concurrent requests
+   * when the queue resumes. When the queue resumes, it tries to progressively
+   * increase the limit in `this.#increaseLimit` until another call is made to
+   * `this.rateLimit`.
+   * Call this function when using the RateLimitedQueue for network requests and
+   * the remote server responds with 429 HTTP code.
+   *
+   * @param {number} duration in milliseconds.
+   */
+
+
+  rateLimit(duration) {
+    clearTimeout(_classPrivateFieldLooseBase(this, _rateLimitingTimer)[_rateLimitingTimer]);
+    this.pause(duration);
+
+    if (this.limit > 1 && Number.isFinite(this.limit)) {
+      _classPrivateFieldLooseBase(this, _upperLimit)[_upperLimit] = this.limit - 1;
+      this.limit = _classPrivateFieldLooseBase(this, _downLimit)[_downLimit];
+      _classPrivateFieldLooseBase(this, _rateLimitingTimer)[_rateLimitingTimer] = setTimeout(_classPrivateFieldLooseBase(this, _increaseLimit)[_increaseLimit], duration);
+    }
+  }
+
+  get isPaused() {
+    return _classPrivateFieldLooseBase(this, _paused)[_paused];
+  }
+
+}
+
+exports.RateLimitedQueue = RateLimitedQueue;
+
+function _call2(fn) {
+  _classPrivateFieldLooseBase(this, _activeRequests)[_activeRequests] += 1;
+  let done = false;
+  let cancelActive;
+
+  try {
+    cancelActive = fn();
+  } catch (err) {
+    _classPrivateFieldLooseBase(this, _activeRequests)[_activeRequests] -= 1;
+    throw err;
+  }
+
+  return {
+    abort: () => {
+      if (done) return;
+      done = true;
+      _classPrivateFieldLooseBase(this, _activeRequests)[_activeRequests] -= 1;
+      cancelActive();
+
+      _classPrivateFieldLooseBase(this, _queueNext)[_queueNext]();
+    },
+    done: () => {
+      if (done) return;
+      done = true;
+      _classPrivateFieldLooseBase(this, _activeRequests)[_activeRequests] -= 1;
+
+      _classPrivateFieldLooseBase(this, _queueNext)[_queueNext]();
+    }
+  };
+}
+
+function _queueNext2() {
+  // Do it soon but not immediately, this allows clearing out the entire queue synchronously
+  // one by one without continuously _advancing_ it (and starting new tasks before immediately
+  // aborting them)
+  queueMicrotask(() => _classPrivateFieldLooseBase(this, _next)[_next]());
+}
+
+function _next2() {
+  if (_classPrivateFieldLooseBase(this, _paused)[_paused] || _classPrivateFieldLooseBase(this, _activeRequests)[_activeRequests] >= this.limit) {
+    return;
+  }
+
+  if (_classPrivateFieldLooseBase(this, _queuedHandlers)[_queuedHandlers].length === 0) {
+    return;
+  } // Dispatch the next request, and update the abort/done handlers
+  // so that cancelling it does the Right Thing (and doesn't just try
+  // to dequeue an already-running request).
+
+
+  const next = _classPrivateFieldLooseBase(this, _queuedHandlers)[_queuedHandlers].shift();
+
+  const handler = _classPrivateFieldLooseBase(this, _call)[_call](next.fn);
+
+  next.abort = handler.abort;
+  next.done = handler.done;
+}
+
+function _queue2(fn, options) {
+  if (options === void 0) {
+    options = {};
+  }
+
+  const handler = {
+    fn,
+    priority: options.priority || 0,
+    abort: () => {
+      _classPrivateFieldLooseBase(this, _dequeue)[_dequeue](handler);
+    },
+    done: () => {
+      throw new Error('Cannot mark a queued request as done: this indicates a bug');
+    }
+  };
+
+  const index = _classPrivateFieldLooseBase(this, _queuedHandlers)[_queuedHandlers].findIndex(other => {
+    return handler.priority > other.priority;
+  });
+
+  if (index === -1) {
+    _classPrivateFieldLooseBase(this, _queuedHandlers)[_queuedHandlers].push(handler);
+  } else {
+    _classPrivateFieldLooseBase(this, _queuedHandlers)[_queuedHandlers].splice(index, 0, handler);
+  }
+
+  return handler;
+}
+
+function _dequeue2(handler) {
+  const index = _classPrivateFieldLooseBase(this, _queuedHandlers)[_queuedHandlers].indexOf(handler);
+
+  if (index !== -1) {
+    _classPrivateFieldLooseBase(this, _queuedHandlers)[_queuedHandlers].splice(index, 1);
+  }
+}
+
+const internalRateLimitedQueue = Symbol('__queue');
+exports.internalRateLimitedQueue = internalRateLimitedQueue;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/Translator.js":
+/*!****************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/Translator.js ***!
+  \****************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+function _classPrivateFieldLooseBase(receiver, privateKey) { if (!Object.prototype.hasOwnProperty.call(receiver, privateKey)) { throw new TypeError("attempted to use private field on non-instance"); } return receiver; }
+
+var id = 0;
+
+function _classPrivateFieldLooseKey(name) { return "__private_" + id++ + "_" + name; }
+
+const has = __webpack_require__(/*! ./hasProperty.js */ "./node_modules/@uppy/utils/lib/hasProperty.js");
+
+function insertReplacement(source, rx, replacement) {
+  const newParts = [];
+  source.forEach(chunk => {
+    // When the source contains multiple placeholders for interpolation,
+    // we should ignore chunks that are not strings, because those
+    // can be JSX objects and will be otherwise incorrectly turned into strings.
+    // Without this condition we’d get this: [object Object] hello [object Object] my <button>
+    if (typeof chunk !== 'string') {
+      return newParts.push(chunk);
+    }
+
+    return rx[Symbol.split](chunk).forEach((raw, i, list) => {
+      if (raw !== '') {
+        newParts.push(raw);
+      } // Interlace with the `replacement` value
+
+
+      if (i < list.length - 1) {
+        newParts.push(replacement);
+      }
+    });
+  });
+  return newParts;
+}
+/**
+ * Takes a string with placeholder variables like `%{smart_count} file selected`
+ * and replaces it with values from options `{smart_count: 5}`
+ *
+ * @license https://github.com/airbnb/polyglot.js/blob/master/LICENSE
+ * taken from https://github.com/airbnb/polyglot.js/blob/master/lib/polyglot.js#L299
+ *
+ * @param {string} phrase that needs interpolation, with placeholders
+ * @param {object} options with values that will be used to replace placeholders
+ * @returns {any[]} interpolated
+ */
+
+
+function interpolate(phrase, options) {
+  const dollarRegex = /\$/g;
+  const dollarBillsYall = '$$$$';
+  let interpolated = [phrase];
+  if (options == null) return interpolated;
+
+  for (const arg of Object.keys(options)) {
+    if (arg !== '_') {
+      // Ensure replacement value is escaped to prevent special $-prefixed
+      // regex replace tokens. the "$$$$" is needed because each "$" needs to
+      // be escaped with "$" itself, and we need two in the resulting output.
+      let replacement = options[arg];
+
+      if (typeof replacement === 'string') {
+        replacement = dollarRegex[Symbol.replace](replacement, dollarBillsYall);
+      } // We create a new `RegExp` each time instead of using a more-efficient
+      // string replace so that the same argument can be replaced multiple times
+      // in the same phrase.
+
+
+      interpolated = insertReplacement(interpolated, new RegExp(`%\\{${arg}\\}`, 'g'), replacement);
+    }
+  }
+
+  return interpolated;
+}
+/**
+ * Translates strings with interpolation & pluralization support.
+ * Extensible with custom dictionaries and pluralization functions.
+ *
+ * Borrows heavily from and inspired by Polyglot https://github.com/airbnb/polyglot.js,
+ * basically a stripped-down version of it. Differences: pluralization functions are not hardcoded
+ * and can be easily added among with dictionaries, nested objects are used for pluralization
+ * as opposed to `||||` delimeter
+ *
+ * Usage example: `translator.translate('files_chosen', {smart_count: 3})`
+ */
+
+
+var _apply = /*#__PURE__*/_classPrivateFieldLooseKey("apply");
+
+class Translator {
+  /**
+   * @param {object|Array<object>} locales - locale or list of locales.
+   */
+  constructor(locales) {
+    Object.defineProperty(this, _apply, {
+      value: _apply2
+    });
+    this.locale = {
+      strings: {},
+
+      pluralize(n) {
+        if (n === 1) {
+          return 0;
+        }
+
+        return 1;
+      }
+
+    };
+
+    if (Array.isArray(locales)) {
+      locales.forEach(_classPrivateFieldLooseBase(this, _apply)[_apply], this);
+    } else {
+      _classPrivateFieldLooseBase(this, _apply)[_apply](locales);
+    }
+  }
+
+  /**
+   * Public translate method
+   *
+   * @param {string} key
+   * @param {object} options with values that will be used later to replace placeholders in string
+   * @returns {string} translated (and interpolated)
+   */
+  translate(key, options) {
+    return this.translateArray(key, options).join('');
+  }
+  /**
+   * Get a translation and return the translated and interpolated parts as an array.
+   *
+   * @param {string} key
+   * @param {object} options with values that will be used to replace placeholders
+   * @returns {Array} The translated and interpolated parts, in order.
+   */
+
+
+  translateArray(key, options) {
+    if (!has(this.locale.strings, key)) {
+      throw new Error(`missing string: ${key}`);
+    }
+
+    const string = this.locale.strings[key];
+    const hasPluralForms = typeof string === 'object';
+
+    if (hasPluralForms) {
+      if (options && typeof options.smart_count !== 'undefined') {
+        const plural = this.locale.pluralize(options.smart_count);
+        return interpolate(string[plural], options);
+      }
+
+      throw new Error('Attempted to use a string with plural forms, but no value was given for %{smart_count}');
+    }
+
+    return interpolate(string, options);
+  }
+
+}
+
+function _apply2(locale) {
+  if (!(locale != null && locale.strings)) {
+    return;
+  }
+
+  const prevLocale = this.locale;
+  this.locale = { ...prevLocale,
+    strings: { ...prevLocale.strings,
+      ...locale.strings
+    }
+  };
+  this.locale.pluralize = locale.pluralize || prevLocale.pluralize;
+}
+
+module.exports = Translator;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/delay.js":
+/*!***********************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/delay.js ***!
+  \***********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var _AbortController = __webpack_require__(/*! ./AbortController.js */ "./node_modules/@uppy/utils/lib/AbortController.js");
+
+function delay(ms, opts) {
+  return new Promise((resolve, reject) => {
+    var _opts$signal, _opts$signal2;
+
+    if (opts != null && (_opts$signal = opts.signal) != null && _opts$signal.aborted) {
+      return reject((0, _AbortController.createAbortError)());
+    }
+
+    const timeout = setTimeout(() => {
+      cleanup(); // eslint-disable-line no-use-before-define
+
+      resolve();
+    }, ms);
+
+    function onabort() {
+      clearTimeout(timeout);
+      cleanup(); // eslint-disable-line no-use-before-define
+
+      reject((0, _AbortController.createAbortError)());
+    }
+
+    opts == null ? void 0 : (_opts$signal2 = opts.signal) == null ? void 0 : _opts$signal2.addEventListener('abort', onabort);
+
+    function cleanup() {
+      var _opts$signal3;
+
+      opts == null ? void 0 : (_opts$signal3 = opts.signal) == null ? void 0 : _opts$signal3.removeEventListener('abort', onabort);
+    }
+
+    return undefined;
+  });
+}
+
+/**
+ * Return a Promise that resolves after `ms` milliseconds.
+ *
+ * @param {number} ms - Number of milliseconds to wait.
+ * @param {{ signal?: AbortSignal }} [opts] - An abort signal that can be used to cancel the delay early.
+ * @returns {Promise<void>} A Promise that resolves after the given amount of `ms`.
+ */
+module.exports = delay;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/emitSocketProgress.js":
+/*!************************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/emitSocketProgress.js ***!
+  \************************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+const throttle = __webpack_require__(/*! lodash.throttle */ "./node_modules/lodash.throttle/index.js");
+
+function emitSocketProgress(uploader, progressData, file) {
+  const {
+    progress,
+    bytesUploaded,
+    bytesTotal
+  } = progressData;
+
+  if (progress) {
+    uploader.uppy.log(`Upload progress: ${progress}`);
+    uploader.uppy.emit('upload-progress', file, {
+      uploader,
+      bytesUploaded,
+      bytesTotal
+    });
+  }
+}
+
+module.exports = throttle(emitSocketProgress, 300, {
+  leading: true,
+  trailing: true
+});
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/fetchWithNetworkError.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/fetchWithNetworkError.js ***!
+  \***************************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+const NetworkError = __webpack_require__(/*! ./NetworkError.js */ "./node_modules/@uppy/utils/lib/NetworkError.js");
+/**
+ * Wrapper around window.fetch that throws a NetworkError when appropriate
+ */
+
+
+function fetchWithNetworkError() {
+  return fetch(...arguments).catch(err => {
+    if (err.name === 'AbortError') {
+      throw err;
+    } else {
+      throw new NetworkError(err);
+    }
+  });
+}
+
+module.exports = fetchWithNetworkError;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/findDOMElement.js":
+/*!********************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/findDOMElement.js ***!
+  \********************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+const isDOMElement = __webpack_require__(/*! ./isDOMElement.js */ "./node_modules/@uppy/utils/lib/isDOMElement.js");
+/**
+ * Find a DOM element.
+ *
+ * @param {Node|string} element
+ * @returns {Node|null}
+ */
+
+
+function findDOMElement(element, context) {
+  if (context === void 0) {
+    context = document;
+  }
+
+  if (typeof element === 'string') {
+    return context.querySelector(element);
+  }
+
+  if (isDOMElement(element)) {
+    return element;
+  }
+
+  return null;
+}
+
+module.exports = findDOMElement;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/generateFileID.js":
+/*!********************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/generateFileID.js ***!
+  \********************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+function encodeCharacter(character) {
+  return character.charCodeAt(0).toString(32);
+}
+
+function encodeFilename(name) {
+  let suffix = '';
+  return name.replace(/[^A-Z0-9]/ig, character => {
+    suffix += `-${encodeCharacter(character)}`;
+    return '/';
+  }) + suffix;
+}
+/**
+ * Takes a file object and turns it into fileID, by converting file.name to lowercase,
+ * removing extra characters and adding type, size and lastModified
+ *
+ * @param {object} file
+ * @returns {string} the fileID
+ */
+
+
+function generateFileID(file) {
+  // It's tempting to do `[items].filter(Boolean).join('-')` here, but that
+  // is slower! simple string concatenation is fast
+  let id = 'uppy';
+
+  if (typeof file.name === 'string') {
+    id += `-${encodeFilename(file.name.toLowerCase())}`;
+  }
+
+  if (file.type !== undefined) {
+    id += `-${file.type}`;
+  }
+
+  if (file.meta && typeof file.meta.relativePath === 'string') {
+    id += `-${encodeFilename(file.meta.relativePath.toLowerCase())}`;
+  }
+
+  if (file.data.size !== undefined) {
+    id += `-${file.data.size}`;
+  }
+
+  if (file.data.lastModified !== undefined) {
+    id += `-${file.data.lastModified}`;
+  }
+
+  return id;
+}
+
+module.exports = generateFileID;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/getDroppedFiles/index.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/getDroppedFiles/index.js ***!
+  \***************************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+const webkitGetAsEntryApi = __webpack_require__(/*! ./utils/webkitGetAsEntryApi/index.js */ "./node_modules/@uppy/utils/lib/getDroppedFiles/utils/webkitGetAsEntryApi/index.js");
+
+const fallbackApi = __webpack_require__(/*! ./utils/fallbackApi.js */ "./node_modules/@uppy/utils/lib/getDroppedFiles/utils/fallbackApi.js");
+/**
+ * Returns a promise that resolves to the array of dropped files (if a folder is
+ * dropped, and browser supports folder parsing - promise resolves to the flat
+ * array of all files in all directories).
+ * Each file has .relativePath prop appended to it (e.g. "/docs/Prague/ticket_from_prague_to_ufa.pdf")
+ * if browser supports it. Otherwise it's undefined.
+ *
+ * @param {DataTransfer} dataTransfer
+ * @param {Function} logDropError - a function that's called every time some
+ * folder or some file error out (e.g. because of the folder name being too long
+ * on Windows). Notice that resulting promise will always be resolved anyway.
+ *
+ * @returns {Promise} - Array<File>
+ */
+
+
+function getDroppedFiles(dataTransfer, _temp) {
+  var _dataTransfer$items;
+
+  let {
+    logDropError = () => {}
+  } = _temp === void 0 ? {} : _temp;
+
+  // Get all files from all subdirs. Works (at least) in Chrome, Mozilla, and Safari
+  if ((_dataTransfer$items = dataTransfer.items) != null && _dataTransfer$items[0] && 'webkitGetAsEntry' in dataTransfer.items[0]) {
+    return webkitGetAsEntryApi(dataTransfer, logDropError); // Otherwise just return all first-order files
+  }
+
+  return fallbackApi(dataTransfer);
+}
+
+module.exports = getDroppedFiles;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/getDroppedFiles/utils/fallbackApi.js":
+/*!***************************************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/getDroppedFiles/utils/fallbackApi.js ***!
+  \***************************************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+const toArray = __webpack_require__(/*! ../../toArray.js */ "./node_modules/@uppy/utils/lib/toArray.js"); // .files fallback, should be implemented in any browser
+
+
+function fallbackApi(dataTransfer) {
+  const files = toArray(dataTransfer.files);
+  return Promise.resolve(files);
+}
+
+module.exports = fallbackApi;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/getDroppedFiles/utils/webkitGetAsEntryApi/getFilesAndDirectoriesFromDirectory.js":
+/*!***********************************************************************************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/getDroppedFiles/utils/webkitGetAsEntryApi/getFilesAndDirectoriesFromDirectory.js ***!
+  \***********************************************************************************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+function getFilesAndDirectoriesFromDirectory(directoryReader, oldEntries, logDropError, _ref) {
+  let {
+    onSuccess
+  } = _ref;
+  directoryReader.readEntries(entries => {
+    const newEntries = [...oldEntries, ...entries]; // According to the FileSystem API spec, getFilesAndDirectoriesFromDirectory()
+    // must be called until it calls the onSuccess with an empty array.
+
+    if (entries.length) {
+      setTimeout(() => {
+        getFilesAndDirectoriesFromDirectory(directoryReader, newEntries, logDropError, {
+          onSuccess
+        });
+      }, 0); // Done iterating this particular directory
+    } else {
+      onSuccess(newEntries);
+    }
+  }, // Make sure we resolve on error anyway, it's fine if only one directory couldn't be parsed!
+  error => {
+    logDropError(error);
+    onSuccess(oldEntries);
+  });
+}
+
+/**
+ * Recursive function, calls the original callback() when the directory is entirely parsed.
+ *
+ * @param {FileSystemDirectoryReader} directoryReader
+ * @param {Array} oldEntries
+ * @param {Function} logDropError
+ * @param {Function} callback - called with ([ all files and directories in that directoryReader ])
+ */
+module.exports = getFilesAndDirectoriesFromDirectory;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/getDroppedFiles/utils/webkitGetAsEntryApi/getRelativePath.js":
+/*!***************************************************************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/getDroppedFiles/utils/webkitGetAsEntryApi/getRelativePath.js ***!
+  \***************************************************************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+function getRelativePath(fileEntry) {
+  // fileEntry.fullPath - "/simpsons/hi.jpeg" or undefined (for browsers that don't support it)
+  // fileEntry.name - "hi.jpeg"
+  if (!fileEntry.fullPath || fileEntry.fullPath === `/${fileEntry.name}`) {
+    return null;
+  }
+
+  return fileEntry.fullPath;
+}
+
+/**
+ * Get the relative path from the FileEntry#fullPath, because File#webkitRelativePath is always '', at least onDrop.
+ *
+ * @param {FileEntry} fileEntry
+ *
+ * @returns {string|null} - if file is not in a folder - return null (this is to
+ * be consistent with .relativePath-s of files selected from My Device). If file
+ * is in a folder - return its fullPath, e.g. '/simpsons/hi.jpeg'.
+ */
+module.exports = getRelativePath;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/getDroppedFiles/utils/webkitGetAsEntryApi/index.js":
+/*!*****************************************************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/getDroppedFiles/utils/webkitGetAsEntryApi/index.js ***!
+  \*****************************************************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+const getRelativePath = __webpack_require__(/*! ./getRelativePath.js */ "./node_modules/@uppy/utils/lib/getDroppedFiles/utils/webkitGetAsEntryApi/getRelativePath.js");
+
+const getFilesAndDirectoriesFromDirectory = __webpack_require__(/*! ./getFilesAndDirectoriesFromDirectory.js */ "./node_modules/@uppy/utils/lib/getDroppedFiles/utils/webkitGetAsEntryApi/getFilesAndDirectoriesFromDirectory.js");
+
+const toArray = __webpack_require__(/*! ../../../toArray.js */ "./node_modules/@uppy/utils/lib/toArray.js");
+
+function webkitGetAsEntryApi(dataTransfer, logDropError) {
+  const files = [];
+  const rootPromises = [];
+  /**
+   * Returns a resolved promise, when :files array is enhanced
+   *
+   * @param {(FileSystemFileEntry|FileSystemDirectoryEntry)} entry
+   * @returns {Promise} - empty promise that resolves when :files is enhanced with a file
+   */
+
+  const createPromiseToAddFileOrParseDirectory = entry => new Promise(resolve => {
+    // This is a base call
+    if (entry.isFile) {
+      // Creates a new File object which can be used to read the file.
+      entry.file(file => {
+        // eslint-disable-next-line no-param-reassign
+        file.relativePath = getRelativePath(entry);
+        files.push(file);
+        resolve();
+      }, // Make sure we resolve on error anyway, it's fine if only one file couldn't be read!
+      error => {
+        logDropError(error);
+        resolve();
+      }); // This is a recursive call
+    } else if (entry.isDirectory) {
+      const directoryReader = entry.createReader();
+      getFilesAndDirectoriesFromDirectory(directoryReader, [], logDropError, {
+        onSuccess: entries => resolve(Promise.all(entries.map(createPromiseToAddFileOrParseDirectory)))
+      });
+    }
+  }); // For each dropped item, - make sure it's a file/directory, and start deepening in!
+
+
+  toArray(dataTransfer.items).forEach(item => {
+    const entry = item.webkitGetAsEntry(); // :entry can be null when we drop the url e.g.
+
+    if (entry) {
+      rootPromises.push(createPromiseToAddFileOrParseDirectory(entry));
+    }
+  });
+  return Promise.all(rootPromises).then(() => files);
+}
+
+module.exports = webkitGetAsEntryApi;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/getFileNameAndExtension.js":
+/*!*****************************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/getFileNameAndExtension.js ***!
+  \*****************************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+function getFileNameAndExtension(fullFileName) {
+  const lastDot = fullFileName.lastIndexOf('.'); // these count as no extension: "no-dot", "trailing-dot."
+
+  if (lastDot === -1 || lastDot === fullFileName.length - 1) {
+    return {
+      name: fullFileName,
+      extension: undefined
+    };
+  }
+
+  return {
+    name: fullFileName.slice(0, lastDot),
+    extension: fullFileName.slice(lastDot + 1)
+  };
+}
+
+/**
+ * Takes a full filename string and returns an object {name, extension}
+ *
+ * @param {string} fullFileName
+ * @returns {object} {name, extension}
+ */
+module.exports = getFileNameAndExtension;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/getFileType.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/getFileType.js ***!
+  \*****************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+const getFileNameAndExtension = __webpack_require__(/*! ./getFileNameAndExtension.js */ "./node_modules/@uppy/utils/lib/getFileNameAndExtension.js");
+
+const mimeTypes = __webpack_require__(/*! ./mimeTypes.js */ "./node_modules/@uppy/utils/lib/mimeTypes.js");
+
+function getFileType(file) {
+  var _getFileNameAndExtens;
+
+  if (file.type) return file.type;
+  const fileExtension = file.name ? (_getFileNameAndExtens = getFileNameAndExtension(file.name).extension) == null ? void 0 : _getFileNameAndExtens.toLowerCase() : null;
+
+  if (fileExtension && fileExtension in mimeTypes) {
+    // else, see if we can map extension to a mime type
+    return mimeTypes[fileExtension];
+  } // if all fails, fall back to a generic byte stream type
+
+
+  return 'application/octet-stream';
+}
+
+module.exports = getFileType;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/getSocketHost.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/getSocketHost.js ***!
+  \*******************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+function getSocketHost(url) {
+  // get the host domain
+  const regex = /^(?:https?:\/\/|\/\/)?(?:[^@\n]+@)?(?:www\.)?([^\n]+)/i;
+  const host = regex.exec(url)[1];
+  const socketProtocol = /^http:\/\//i.test(url) ? 'ws' : 'wss';
+  return `${socketProtocol}://${host}`;
+}
+
+module.exports = getSocketHost;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/getTextDirection.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/getTextDirection.js ***!
+  \**********************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+/**
+ * Get the declared text direction for an element.
+ *
+ * @param {Node} element
+ * @returns {string|undefined}
+ */
+function getTextDirection(element) {
+  var _element;
+
+  // There is another way to determine text direction using getComputedStyle(), as done here:
+  // https://github.com/pencil-js/text-direction/blob/2a235ce95089b3185acec3b51313cbba921b3811/text-direction.js
+  //
+  // We do not use that approach because we are interested specifically in the _declared_ text direction.
+  // If no text direction is declared, we have to provide our own explicit text direction so our
+  // bidirectional CSS style sheets work.
+  while (element && !element.dir) {
+    // eslint-disable-next-line no-param-reassign
+    element = element.parentNode;
+  }
+
+  return (_element = element) == null ? void 0 : _element.dir;
+}
+
+module.exports = getTextDirection;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/getTimeStamp.js":
+/*!******************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/getTimeStamp.js ***!
+  \******************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+/**
+ * Adds zero to strings shorter than two characters.
+ *
+ * @param {number} number
+ * @returns {string}
+ */
+function pad(number) {
+  return number < 10 ? `0${number}` : number.toString();
+}
+/**
+ * Returns a timestamp in the format of `hours:minutes:seconds`
+ */
+
+
+function getTimeStamp() {
+  const date = new Date();
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+module.exports = getTimeStamp;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/hasProperty.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/hasProperty.js ***!
+  \*****************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+function has(object, key) {
+  return Object.prototype.hasOwnProperty.call(object, key);
+}
+
+module.exports = has;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/isDOMElement.js":
+/*!******************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/isDOMElement.js ***!
+  \******************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+function isDOMElement(obj) {
+  return (obj == null ? void 0 : obj.nodeType) === Node.ELEMENT_NODE;
+}
+
+/**
+ * Check if an object is a DOM element. Duck-typing based on `nodeType`.
+ *
+ * @param {*} obj
+ */
+module.exports = isDOMElement;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/isNetworkError.js":
+/*!********************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/isNetworkError.js ***!
+  \********************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+function isNetworkError(xhr) {
+  if (!xhr) {
+    return false;
+  }
+
+  return xhr.readyState !== 0 && xhr.readyState !== 4 || xhr.status === 0;
+}
+
+module.exports = isNetworkError;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/mimeTypes.js":
+/*!***************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/mimeTypes.js ***!
+  \***************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+// ___Why not add the mime-types package?
+//    It's 19.7kB gzipped, and we only need mime types for well-known extensions (for file previews).
+// ___Where to take new extensions from?
+//    https://github.com/jshttp/mime-db/blob/master/db.json
+module.exports = {
+  md: 'text/markdown',
+  markdown: 'text/markdown',
+  mp4: 'video/mp4',
+  mp3: 'audio/mp3',
+  svg: 'image/svg+xml',
+  jpg: 'image/jpeg',
+  png: 'image/png',
+  gif: 'image/gif',
+  heic: 'image/heic',
+  heif: 'image/heif',
+  yaml: 'text/yaml',
+  yml: 'text/yaml',
+  csv: 'text/csv',
+  tsv: 'text/tab-separated-values',
+  tab: 'text/tab-separated-values',
+  avi: 'video/x-msvideo',
+  mks: 'video/x-matroska',
+  mkv: 'video/x-matroska',
+  mov: 'video/quicktime',
+  dicom: 'application/dicom',
+  doc: 'application/msword',
+  docm: 'application/vnd.ms-word.document.macroenabled.12',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  dot: 'application/msword',
+  dotm: 'application/vnd.ms-word.template.macroenabled.12',
+  dotx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.template',
+  xla: 'application/vnd.ms-excel',
+  xlam: 'application/vnd.ms-excel.addin.macroenabled.12',
+  xlc: 'application/vnd.ms-excel',
+  xlf: 'application/x-xliff+xml',
+  xlm: 'application/vnd.ms-excel',
+  xls: 'application/vnd.ms-excel',
+  xlsb: 'application/vnd.ms-excel.sheet.binary.macroenabled.12',
+  xlsm: 'application/vnd.ms-excel.sheet.macroenabled.12',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  xlt: 'application/vnd.ms-excel',
+  xltm: 'application/vnd.ms-excel.template.macroenabled.12',
+  xltx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.template',
+  xlw: 'application/vnd.ms-excel',
+  txt: 'text/plain',
+  text: 'text/plain',
+  conf: 'text/plain',
+  log: 'text/plain',
+  pdf: 'application/pdf',
+  zip: 'application/zip',
+  '7z': 'application/x-7z-compressed',
+  rar: 'application/x-rar-compressed',
+  tar: 'application/x-tar',
+  gz: 'application/gzip',
+  dmg: 'application/x-apple-diskimage'
+};
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/settle.js":
+/*!************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/settle.js ***!
+  \************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+function settle(promises) {
+  const resolutions = [];
+  const rejections = [];
+
+  function resolved(value) {
+    resolutions.push(value);
+  }
+
+  function rejected(error) {
+    rejections.push(error);
+  }
+
+  const wait = Promise.all(promises.map(promise => promise.then(resolved, rejected)));
+  return wait.then(() => {
+    return {
+      successful: resolutions,
+      failed: rejections
+    };
+  });
+}
+
+module.exports = settle;
+
+/***/ }),
+
+/***/ "./node_modules/@uppy/utils/lib/toArray.js":
+/*!*************************************************!*\
+  !*** ./node_modules/@uppy/utils/lib/toArray.js ***!
+  \*************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+/**
+ * Converts list into array
+ */
+module.exports = Array.from;
+
+/***/ }),
+
+/***/ "./node_modules/nanoid/non-secure/index.cjs":
+/*!**************************************************!*\
+  !*** ./node_modules/nanoid/non-secure/index.cjs ***!
+  \**************************************************/
+/***/ ((module) => {
+
+let urlAlphabet =
+  'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict'
+let customAlphabet = (alphabet, defaultSize = 21) => {
+  return (size = defaultSize) => {
+    let id = ''
+    let i = size
+    while (i--) {
+      id += alphabet[(Math.random() * alphabet.length) | 0]
+    }
+    return id
+  }
+}
+let nanoid = (size = 21) => {
+  let id = ''
+  let i = size
+  while (i--) {
+    id += urlAlphabet[(Math.random() * 64) | 0]
+  }
+  return id
+}
+module.exports = { nanoid, customAlphabet }
+
+
 /***/ })
 
 /******/ 	});
@@ -8514,7 +11028,7 @@ module.exports = function(text, test, separator) {
 /******/ 		};
 /******/ 	
 /******/ 		// Execute the module function
-/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);
 /******/ 	
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
@@ -8584,73 +11098,20 @@ var __webpack_exports__ = {};
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _uppy_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @uppy/core */ "./node_modules/@uppy/core/lib/index.js");
 /* harmony import */ var _uppy_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_uppy_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _uppy_drop_target__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @uppy/drop-target */ "./node_modules/@uppy/drop-target/lib/index.js");
-/* harmony import */ var _uppy_drop_target__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_uppy_drop_target__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _uppy_aws_s3_multipart__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @uppy/aws-s3-multipart */ "./node_modules/@uppy/aws-s3-multipart/lib/index.js");
-/* harmony import */ var _uppy_aws_s3_multipart__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_uppy_aws_s3_multipart__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _uppy_tus__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @uppy/tus */ "./node_modules/@uppy/tus/lib/index.js");
+/* harmony import */ var _uppy_tus__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_uppy_tus__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _uppy_drop_target__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @uppy/drop-target */ "./node_modules/@uppy/drop-target/lib/index.js");
+/* harmony import */ var _uppy_drop_target__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_uppy_drop_target__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _uppy_aws_s3_multipart__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @uppy/aws-s3-multipart */ "./node_modules/@uppy/aws-s3-multipart/lib/index.js");
+/* harmony import */ var _uppy_aws_s3_multipart__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_uppy_aws_s3_multipart__WEBPACK_IMPORTED_MODULE_3__);
 
 
 
-
-window.Shuttle = function (config) {
-  return {
-    config: config,
-    uppy: null,
-    state: 'IDLE',
-    percent: 0,
-    files: {},
-    filesUploaded: 0,
-    filesRemaining: function filesRemaining() {
-      return this.uppy ? this.uppy.getFiles().length - this.filesUploaded : 0;
-    },
-    showDetails: false,
-    setState: function setState(state) {
-      this.state = state;
-    },
-    complete: function complete() {
-      var _this = this;
-
-      this.setState('COMPLETE');
-      this.uppy.reset();
-      this.percent = 0;
-      this.files = {};
-      this.filesUploaded = 0;
-      setTimeout(function () {
-        if (_this.state === 'COMPLETE') {
-          _this.setState('IDLE');
-        }
-      }, 3000);
-    },
-    unload: function unloadHandler(e) {
-      if (this.state === 'UPLOADING') {
-        e.preventDefault();
-        e.returnValue = 'Are you sure you want to leave this page? Uploads in progress will be cancelled.';
-      }
-    },
-    loadFiles: function loadFiles(event) {
-      var _this2 = this;
-
-      Array.from(event.target.files).forEach(function (file) {
-        try {
-          _this2.uppy.addFile({
-            source: 'file input',
-            name: file.name,
-            type: file.type,
-            data: file,
-            meta: {}
-          });
-        } catch (err) {
-          uppy.log(err);
-        }
-      });
-      event.target.value = null;
-    }
-  };
-};
 
 window.Uppy = (_uppy_core__WEBPACK_IMPORTED_MODULE_0___default());
-window.UppyDropTarget = (_uppy_drop_target__WEBPACK_IMPORTED_MODULE_1___default());
-window.AwsS3Multipart = (_uppy_aws_s3_multipart__WEBPACK_IMPORTED_MODULE_2___default());
+window.Tus = (_uppy_tus__WEBPACK_IMPORTED_MODULE_1___default());
+window.UppyDropTarget = (_uppy_drop_target__WEBPACK_IMPORTED_MODULE_2___default());
+window.AwsS3Multipart = (_uppy_aws_s3_multipart__WEBPACK_IMPORTED_MODULE_3___default());
 })();
 
 /******/ })()
