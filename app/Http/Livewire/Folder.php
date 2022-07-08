@@ -7,6 +7,8 @@ namespace App\Http\Livewire;
 use App\Models\Folder as FolderModel;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
+use JsonException;
 use Livewire\Component;
 
 class Folder extends Component
@@ -21,7 +23,7 @@ class Folder extends Component
 
     public $fileUploads;
 
-    public $fileUpload;
+    public array $fileUpload = [];
 
     public bool $show = false;
 
@@ -42,9 +44,18 @@ class Folder extends Component
         return $this->folder->uploads;
     }
 
+    /**
+     * @throws JsonException
+     */
     public function getFileUploadDetails($file): void
     {
-        $this->fileUpload = $file;
+        $attributes = json_decode(
+            stripslashes(html_entity_decode($file)), associative: true, depth: 512, flags: JSON_THROW_ON_ERROR
+        );
+
+        $attributes['s3_url'] = Storage::temporaryUrl(path: $attributes['key'], expiration: now()->addMinutes(value: 10));
+
+        $this->fileUpload = (array) $attributes;
 
         $this->togglePanel();
     }

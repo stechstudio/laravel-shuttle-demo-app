@@ -40,7 +40,24 @@
 
                         <div class="relative mt-6 flex-1 px-4 sm:px-6">
                             <div class="absolute inset-0 px-4 sm:px-6">
-                                {{ $fileUpload }}
+                                @if ($fileUpload !== [])
+                                    @if (str_contains(haystack: $fileUpload['type'], needle: 'image'))
+                                        <img src="{{ $fileUpload['s3_url'] }}" alt="Dynamic uploaded file">
+                                    @else
+                                        <p class="border-b-2 border-dashed py-4">No preview is available for this file type</p>
+                                    @endif
+                                @endif
+
+                                @foreach ($fileUpload as $key => $value)
+                                    <p class="border-b-2 border-dashed py-4">
+                                        <span class="uppercase">{{ str_replace(search: '_', replace: ' ', subject: $key) }}</span>:
+                                        @if ($key === 's3_url')
+                                            <a href="{{ $value }}" class="text-blue-500 hover:text-blue-600 hover:underline" target="_blank">View</a>
+                                        @else
+                                            {{ $value }}
+                                        @endif
+                                    </p>
+                                @endforeach
                             </div>
                         </div>
                     </div>

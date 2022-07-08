@@ -11,6 +11,7 @@ use STS\Shuttle\Facades\Shuttle;
 
 Auth::login(User::first());
 
+Route::redirect(uri: '/', destination: '/folders');
 Route::get(uri: '/folders', action: FileBrowser::class)->name('folders.index');
 Route::get(uri: '/folders/{folder}', action: Folder::class)->name('folders.show');
 
