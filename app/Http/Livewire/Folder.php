@@ -53,7 +53,7 @@ class Folder extends Component
             stripslashes(html_entity_decode($file)), associative: true, depth: 512, flags: JSON_THROW_ON_ERROR
         );
 
-        $attributes['s3_url'] = Storage::temporaryUrl(path: $attributes['key'], expiration: now()->addMinutes(value: 10));
+        $attributes['s3_url'] = Storage::temporaryUrl(path: $attributes['key'], expiration: now()->addMinutes(value: 15));
 
         $this->fileUpload = (array) $attributes;
 
