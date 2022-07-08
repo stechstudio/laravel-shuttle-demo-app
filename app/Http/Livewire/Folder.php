@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace App\Http\Livewire;
 
 use App\Models\Folder as FolderModel;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use JsonException;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Folder extends Component
 {
+    use WithPagination;
+
     protected $listeners = [
         'uploadSuccess',
     ];
@@ -21,8 +24,6 @@ class Folder extends Component
 
     public FolderModel $folder;
 
-    public $fileUploads;
-
     public array $fileUpload = [];
 
     public bool $show = false;
@@ -30,18 +31,21 @@ class Folder extends Component
     public function mount(): void
     {
         $this->uploadContext = ['folder_id' => $this->folder->id];
-
-        $this->fileUploads = $this->getFileUploads();
     }
 
     public function render(): View
     {
-        return view(view: 'livewire.folder');
+        return view(view: 'livewire.folder', data: [
+            'fileUploads' => $this->getFileUploads(),
+        ]);
     }
 
-    public function getFileUploads(): Collection
+    public function getFileUploads(): LengthAwarePaginator
     {
-        return $this->folder->uploads;
+        return $this->folder
+            ->uploads()
+            ->orderByDesc(column: 'created_at')
+            ->paginate(perPage: 20);
     }
 
     /**
@@ -67,8 +71,6 @@ class Folder extends Component
 
     public function uploadSuccess($file): void
     {
-        $this->fileUploads = $this->folder->uploads;
-
         $this->emit('refresh');
     }
 }

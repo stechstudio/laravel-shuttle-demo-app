@@ -13,21 +13,27 @@
                 Drag your files here to begin the upload process
             </p>
 
-            @forelse ($fileUploads as $fileUpload)
-                <div class="block text-center text-4xl items-center p-6 border-2 border-dashed hover:bg-gray-100">
-                    <div wire:click="getFileUploadDetails('{{ $fileUpload }}')" class="flex shrink-0 text-right justify-between items-center cursor-pointer">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-12 h-12">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
+            <div class="mb-4">
+                @forelse ($fileUploads as $fileUpload)
+                    <div class="block text-center text-4xl items-center p-6 border-2 border-dashed hover:bg-gray-100">
+                        <div wire:click="getFileUploadDetails('{{ $fileUpload }}')" class="flex shrink-0 text-right justify-between items-center cursor-pointer">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-12 h-12">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
 
-                        {{ $fileUpload->name }}
+                            {{ $fileUpload->name }}
+                        </div>
                     </div>
-                </div>
-            @empty
-                <div class="block text-center text-4xl items-center p-6 border-2 border-dashed cursor-not-allowed">
-                    <p>There are currently no folders to display.</p>
-                </div>
-            @endforelse
+                @empty
+                    <div class="block text-center text-4xl items-center p-6 border-2 border-dashed cursor-not-allowed">
+                        <p>There are currently no folders to display.</p>
+                    </div>
+                @endforelse
+            </div>
+
+            <div class="block items-center p-6 border-2 border-dashed">
+                {{ $fileUploads->links() }}
+            </div>
         </div>
     </div>
 </div>
