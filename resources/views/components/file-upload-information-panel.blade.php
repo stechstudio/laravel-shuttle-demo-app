@@ -42,7 +42,9 @@
                             <div class="absolute inset-0 px-4 sm:px-6">
                                 @if ($fileUpload !== [])
                                     @if (str_contains(haystack: $fileUpload['type'], needle: 'image'))
-                                        <img src="{{ $fileUpload['s3_url'] }}" alt="Dynamic uploaded file">
+                                        <div class="border-b-2 border-dashed py-4">
+                                            <img src="{{ $fileUpload['s3_url'] }}" alt="Dynamic uploaded file" class="border">
+                                        </div>
                                     @else
                                         <p class="border-b-2 border-dashed py-4">No preview is available for this file type</p>
                                     @endif
