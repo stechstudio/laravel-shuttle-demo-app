@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "df5b76bb0b7f065d96b31cd3ac02b82f",
+    "content-hash": "bb97766fd7d699b4516a024df10345d0",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -58,16 +58,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.231.1",
+            "version": "3.231.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "8dba16a1141be30f2a8090f5716454eccb4b6fd1"
+                "reference": "9a7c2a8c4b7f95074749e1a7b575e6b4486bdcab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/8dba16a1141be30f2a8090f5716454eccb4b6fd1",
-                "reference": "8dba16a1141be30f2a8090f5716454eccb4b6fd1",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/9a7c2a8c4b7f95074749e1a7b575e6b4486bdcab",
+                "reference": "9a7c2a8c4b7f95074749e1a7b575e6b4486bdcab",
                 "shasum": ""
             },
             "require": {
@@ -144,9 +144,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.231.1"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.231.2"
             },
-            "time": "2022-07-07T18:16:39+00:00"
+            "time": "2022-07-08T18:16:11+00:00"
         },
         {
             "name": "brick/math",
@@ -5657,10 +5657,16 @@
         {
             "name": "stechstudio/laravel-shuttle",
             "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/stechstudio/laravel-shuttle.git",
+                "reference": "bd99f6275aa9ffb78aa38be5b02085721fa06595"
+            },
             "dist": {
-                "type": "path",
-                "url": "../laravel-shuttle",
-                "reference": "dbfb2a72bbdd59d5794c37243b1559fab952b5d2"
+                "type": "zip",
+                "url": "https://api.github.com/repos/stechstudio/laravel-shuttle/zipball/bd99f6275aa9ffb78aa38be5b02085721fa06595",
+                "reference": "bd99f6275aa9ffb78aa38be5b02085721fa06595",
+                "shasum": ""
             },
             "require": {
                 "illuminate/contracts": "^9.19.0",
@@ -5679,6 +5685,7 @@
                 "phpunit/phpunit": "^9.5",
                 "spatie/laravel-ray": "^1.29"
             },
+            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -5696,22 +5703,7 @@
                     "STS\\Shuttle\\Database\\Factories\\": "database/factories"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "STS\\Shuttle\\Tests\\": "tests"
-                }
-            },
-            "scripts": {
-                "analyse": [
-                    "vendor/bin/phpstan analyse"
-                ],
-                "test": [
-                    "vendor/bin/pest"
-                ],
-                "test-coverage": [
-                    "vendor/bin/pest coverage"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -5734,9 +5726,17 @@
                 "laravel-shuttle",
                 "stechstudio"
             ],
-            "transport-options": {
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/stechstudio/laravel-shuttle/issues",
+                "source": "https://github.com/stechstudio/laravel-shuttle/tree/main"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/stechstudio",
+                    "type": "github"
+                }
+            ],
+            "time": "2022-07-08T19:24:44+00:00"
         },
         {
             "name": "symfony/console",
