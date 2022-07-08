@@ -5660,7 +5660,7 @@
             "dist": {
                 "type": "path",
                 "url": "../laravel-shuttle",
-                "reference": "44bcc1f5d1a93d500374ffd9f5c5931570c1aa4b"
+                "reference": "214a328ffe571b08ecad5c8ff16e818fd3fe0e08"
             },
             "require": {
                 "illuminate/contracts": "^9.19.0",
