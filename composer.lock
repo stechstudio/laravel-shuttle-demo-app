@@ -5660,12 +5660,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/stechstudio/laravel-shuttle.git",
-                "reference": "bd99f6275aa9ffb78aa38be5b02085721fa06595"
+                "reference": "b45be5ff39ebceb284277a31951e09a614aa4742"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/stechstudio/laravel-shuttle/zipball/bd99f6275aa9ffb78aa38be5b02085721fa06595",
-                "reference": "bd99f6275aa9ffb78aa38be5b02085721fa06595",
+                "url": "https://api.github.com/repos/stechstudio/laravel-shuttle/zipball/b45be5ff39ebceb284277a31951e09a614aa4742",
+                "reference": "b45be5ff39ebceb284277a31951e09a614aa4742",
                 "shasum": ""
             },
             "require": {
@@ -5736,7 +5736,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-07-08T19:24:44+00:00"
+            "time": "2022-07-11T11:33:55+00:00"
         },
         {
             "name": "symfony/console",
