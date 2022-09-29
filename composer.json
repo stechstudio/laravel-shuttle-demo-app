@@ -14,7 +14,7 @@
         "laravel/sanctum": "^2.14.1",
         "laravel/tinker": "^2.7",
         "livewire/livewire": "^2.10",
-        "stechstudio/laravel-shuttle": "dev-main"
+        "stechstudio/laravel-shuttle": "dev-fixes"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
@@ -53,7 +53,7 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [ ]
         }
     },
     "config": {
@@ -62,5 +62,11 @@
         "sort-packages": true
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../laravel-shuttle"
+        }
+    ]
 }

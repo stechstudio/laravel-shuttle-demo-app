@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use STS\Shuttle\Facades\Shuttle;
 
-Auth::login(User::first());
+Auth::login(user: User::find(1));
 
 Route::redirect(uri: '/', destination: '/folders');
 Route::get(uri: '/folders', action: FileBrowser::class)->name('folders.index');
