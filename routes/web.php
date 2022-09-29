@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Route;
 use STS\Shuttle\Facades\Shuttle;
 
 Route::redirect(uri: '/', destination: '/folders');
+
+Route::get(uri: '/login', action: [\App\Http\Controllers\LoginController::class, 'index']);
+Route::post(uri: '/login', action: [\App\Http\Controllers\LoginController::class, 'store'])->name('login');
+
 Route::get(uri: '/folders', action: FileBrowser::class)->name('folders.index');
 Route::get(uri: '/folders/{folder}', action: Folder::class)->name('folders.show');
 
